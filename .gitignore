@@ -5,7 +5,7 @@ conf.inc.php
 files/*
 !files/.htaccess
 styles/*
-!styles/common
+!styles/default
 !styles/anego
 styles/anego/templates_c/*
 tmp/*
