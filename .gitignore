@@ -1,0 +1,13 @@
+customization
+experimental
+oldanego
+conf.inc.php
+files/*
+!files/.htaccess
+styles/*
+!styles/common
+!styles/anego
+styles/anego/templates_c/*
+tmp/*
+var/*
+!var/.htaccess

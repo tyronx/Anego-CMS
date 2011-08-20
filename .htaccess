@@ -1,0 +1,25 @@
+<IfModule mod_rewrite.c>
+	RewriteEngine on
+	
+	# Javascript loader
+	RewriteRule ^ld(.*)$  jsld.php?g=$1
+	# Load page
+	RewriteRule ^pg(.*)$  index.php?p=$1
+	RewriteRule ^admin$ admin.php
+	RewriteRule ^admin-pg(.*)$ admin.php?p=$1
+	RewriteRule ^md(.*)-(.*)$ modules/$1/?a=rc&data=$2
+	
+	RewriteRule ^rwcheck$  index.php?rewrite=1
+	
+	# Block GET requests that contain /etc/
+	RewriteCond %{REQUEST_URI} (ftp|https?):|/etc/ [NC,OR]
+	RewriteCond %{QUERY_STRING} (ftp|https?):|/etc/ [NC]
+	RewriteRule .* - [F,L]
+	
+	# Make site available over www.domain.com as well (also avoids google duplicate content)
+	# Uncomment this and replace anego.at with your domain
+	#RewriteCond %{HTTP_HOST} ^anego\.at [NC]
+	#RewriteRule (.*) http://www.anego.at/$1 [R=301,L]
+
+
+</IfModule>
