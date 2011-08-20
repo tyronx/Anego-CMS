@@ -1,0 +1,34 @@
+Anego - Readme
+===================
+
+Version 0.01
+
+A content managment leveraging newest web technologies such as HTML5 and AJAX
+
+Copyright
+---------
+
+Copyright (C) 2001-2011 Tyron Madlener (tyron.at)
+
+License
+-------
+
+This program is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License version 2, as published by the
+Free Software Foundation.
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+details.
+
+You should have received a copy of the GNU General Public License along with
+this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+St, Fifth Floor, Boston, MA  02110-1301  USA
+
+Requirements
+------------
+
+* PHP 5.2 or later
+* MySQL 5.0 or later
+* a web-browser (doh!)
