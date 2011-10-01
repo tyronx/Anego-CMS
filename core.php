@@ -289,7 +289,7 @@ function AdminBar($p) {
 	$userRole = UserRole();
 	if(LOGINOK && $userRole>=Role::ProMod) {
 		if($p!=-1)
-			$anego->AddLink("<a href=\"javascript:Core.editPage($p)\" id=\"pageEditLink\">$lng_editpage</a>");
+			$anego->AddLink("<a href=\"javascript:Core.editPage()\" id=\"pageEditLink\">$lng_editpage</a>");
 		
 		$anego->AddLink("<a href=\"admin?a=pgad\" onclick=\"$(this).attr('href','#adm/pgad'); Core.loadPage('adm/pgad');\">$lng_adminpages</a>");
 		$anego->AddLink("<a href=\"admin?a=filad\" onclick=\"$(this).attr('href','#adm/filad'); Core.loadPage('adm/filad');\">$lng_adminfiles</a>");
@@ -303,7 +303,7 @@ function PrintPage($p) {
 	global $lng_permission, $lng_pagetitle,$lng_nofirstpage;
 	
 	$anego->curPg = $p;
-	$anego->AddJsPreload("\tanego.curPg='pg/$p';");
+	$anego->AddJsPreload("\tanego.curPg='pg$p';");
 	
 	AdminBar($p);
 	

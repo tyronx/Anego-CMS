@@ -5,8 +5,9 @@
 /* Turns off the page editing interface */
 Core.endEdit = function(ignorePage) {
 	var unloadDragDrop = function() {
+		anego.editmode=false; 
 		$('#pageEditLink').html(lngMain.edit_page);
-		$('#pageEditLink').attr('href','javascript:Core.editPage(\''+Core.curPg.id+'\')');
+		$('#pageEditLink').attr('href','javascript:Core.editPage()');
 		
 		this.dragdrop=null;
 		CloseDialog();
@@ -17,7 +18,7 @@ Core.endEdit = function(ignorePage) {
 		unloadDragDrop();
 	else 
 		Core.loadPage(Core.curPg,{
-			beforeContentLoaded: function() { anego.editmode=false; unloadDragDrop(); },
+			beforeContentLoaded: unloadDragDrop,
 			forceLoad:true
 		});
 }

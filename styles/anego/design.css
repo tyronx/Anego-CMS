@@ -84,7 +84,7 @@ div#name {
 	left:450px;
 	top:-22px;
 	height:17px;
-	width:500px;
+/*	width:500px;*/
 	z-index:5;
 }
 .mainnav > li {

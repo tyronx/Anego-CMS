@@ -70,8 +70,7 @@ function CoreFunctions() {
 	
 	this.pageInfo=function(page) {
 		var pginfo = {};
-		var result = /^(\w+)(\d+|\/\w+)(\/(.*))?/.exec(page)
-		
+		var result = /^([a-zA-Z_]+)(\d+|\/[a-zA-Z_]+)(\/(.*))?/.exec(page)
 		// No anchor means we need to load the home page
 		if(! page)
 			return {
@@ -109,7 +108,11 @@ function CoreFunctions() {
 		/* Links to pages on the same site that are made with tinymce/etc. need to be converted */
 		$('#content a').attr('href',function(idx,attr) { return attr.replace(/^pg(\d+)/g,'#pg$1'); } );
 		/* Default lightbox links */
-		$('a[rel*="lightbox"]').lightBox();
+		$('a[rel*="lightbox"], a.lightbox').fancybox({
+			'overlayShow'	: false,
+			'transitionIn'	: 'elastic',
+			'transitionOut'	: 'elastic'
+		});
 	}
 	
 	this.initPageContentEdit=function(data) {
@@ -160,7 +163,7 @@ function CoreFunctions() {
 		//$('#name').append('c');
 		
 		/* Don't load same page (also seems to be buggy in ie if loaded twice).*/
-		if(newpage.fullpath==Core.curPg.fullpath && (typeof settings.forceLoad=='undefined' || settings.forceLoad==false)) {
+		if(newpage.fullpath == Core.curPg.fullpath && (typeof settings.forceLoad=='undefined' || settings.forceLoad==false)) {
 			loadingPage=null;
 			return false;
 		}
@@ -303,10 +306,12 @@ function CoreFunctions() {
 	}
 	
 	/* Opens the page editing interface */
-	// Paremeter: page: (int)
+	// Paremeter: (optional) page: (int)
 	//			  (optional) data: already received edit page data (will skip get request)
 	this.editPage = function(page, data) {
 		var aw;
+		
+		if(!page) page = Core.curPg.id;
 		
 		/* Dragdrop initialized -> only reinitalize for the contents */
 		if(this.dragdrop!=null) {
