@@ -189,12 +189,12 @@ function CoreFunctions() {
 				get = { a: newpage.id.substr(1), noheader: 1 };
 				$('#pageEditLink').parent().css('display','none');
 				if(anego.editmode) this.endEdit(true);
-				this.selectPage(-1); // Unselect selected page
+				this.selectPage(null); // Unselect selected page
 				break;
 				
 			case 'pg':
 				$('#pageEditLink').parent().css('display','');
-				this.selectPage(newpage.fullpath);
+				this.selectPage(newpage);
 				
 				get = {a:'p',p:newpage.id};
 				if(anego.editmode)
@@ -281,18 +281,38 @@ function CoreFunctions() {
 	
 	/* Overwrite this method if needed */
 	this.selectPage = function(page) {
-		var el=$('#menu .mainnav li a[onclick="Core.loadPage(\''+page+'\')"]').parent();
+		if(anego.submenuStyle == 'visible') return;
 		
-		// Deselect old page
-		$('#menu .mainnav li.navSelected .subnavbox').css('display','none');
+		var el=$('#menu .mainnav li a[onclick="Core.loadPage(\'' + page.fullpath + '\')"]').parent();
+		
+		// If this is a child of a child we just need to make sure its visible
+		if(el.hasClass('subsubitem')) {
+			el.show();
+			// Make sure subnav list is visible
+			el.parent().parent().css('display','');
+			return;
+		}
+		
+		// Deselect old page, unless its always visible
+		if(anego.submenuStyle != 'submenu onselect' || $('#menu .mainnav li.navSelected').parents('ul').length > 2 ) {
+			$('#menu .mainnav li.navSelected .subnavbox').hide();
+		}
+		
+		// Remove current selection
+		$('#menu .mainnav li.navSelected div.subsubitems').hide();
 		$('#menu .mainnav li.navSelected').removeClass('navSelected');
 		
+		// No page select => we just unselect the current page
+		if(page == null) return;
+		
 		// If a sub page is clicked, leave submenu open and parent menu selected
-		if(el.parent().hasClass('subnavlist')) {
+		if(el.parents().hasClass('subnavlist')) {
 			// Remove other subpages selection
 			el.parent().find('li.navSelected').removeClass('navSelected');
 			// Menu selected, add class to the. <li>
 			el.addClass('navSelected');
+			// If this page again has children, show them
+			el.children('div.subsubitems').show();
 			// Make sure subnav list is visible
 			el.parent().parent().css('display','');
 			// Make sure parent element is selected
@@ -300,8 +320,8 @@ function CoreFunctions() {
 		} else {
 			// Select new page
 			// jQuery rocks. Seriously.
-			$('#menu .mainnav li a[onclick="Core.loadPage(\''+page+'\')"]').parents('li').first().addClass('navSelected');
-			$('#menu .mainnav li.navSelected .subnavbox').css('display','');
+			$('#menu .mainnav li a[onclick="Core.loadPage(\'' + page.fullpath + '\')"]').parents('li').first().addClass('navSelected');
+			$('#menu .mainnav li.navSelected .subnavbox').show();
 		}
 	}
 	

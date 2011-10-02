@@ -117,8 +117,6 @@ switch($_GET['a']) {
 		
 	/* Page Administration */
 	case 'pgad':
-		$footer = "$(function() { $('.menuTree').MyTree(); } );";
-	
 		/* Ajax call */
 		if(isset($_GET['noheader'])) {
 			if(UserRole() < Role::ProMod) BailAjax($lng_missing_rights);
@@ -126,7 +124,7 @@ switch($_GET['a']) {
 			$json = Array();
 			$json['title'] = 'Anego - Admin';
 			$json['js'] = Array('ld.am');
-			$json['content']="\t<script type=\"text/javascript\">$(document).ready(function() {\n".$footer."\n});\n\t</script>\n".PrintLinks();
+			$json['content'] = PrintLinks();
 			
 			exit("200\n".json_encode($json));
 		}
@@ -475,7 +473,7 @@ switch($_GET['a']) {
 		if(!mysql_query("COMMIT"))
 			BailAjax("500\nCouldn't commit change","COMMIT");
 
-		echo "200\n";
+		echo "200\n".PrintLinks();
 		exit();
 		
 		break;
@@ -685,7 +683,7 @@ function PrintLinksRec($parent, $menu, $first=0) {
 
 	if($first) {
 		echo '<div class="innertreeDiv">';
-		echo "<img alt=\"\" title=\"".$GLOBALS['lng_addpage']."\" class=\"adp\" src=\"".$defIcons['add']."\"> <a href=\"javascript:AddPage(0,0,'$menu',$id)\">".$GLOBALS['lng_createnew']."</a>"; 
+		echo "<img alt=\"\" title=\"".$GLOBALS['lng_addpage']."\" class=\"adp\" src=\"".$defIcons['add']."\"> <a href=\"javascript:adminMenu.addPage(0,0,'$menu',$id)\">".$GLOBALS['lng_createnew']."</a>"; 
 	
 		if($menu==MENU_MAIN)
 			echo '<ul id="tree_major" class="menuTree">';
@@ -712,9 +710,9 @@ function PrintLinksRec($parent, $menu, $first=0) {
 		if($j==$numRows)
 			echo '<img src="styles/default/img/cleardot.gif" class="listImg last"><span class="listEl">';
 		else echo '<img src="styles/default/img/cleardot.gif" class="listImg"><span class="listEl">';
-		echo "<a id=\"adm".$row['idx']."\" href=\"javascript:RenamePage(".$row['idx'].",'".addslashes(htmlentities($row['name'],ENT_COMPAT,'UTF-8'))."','".addslashes(htmlentities($row['info'],ENT_COMPAT,'UTF-8'))."',".$row['visibility'].",".$row['subpoint'].",'".$row['file']."')\">$name</a> ";
+		echo "<a id=\"adm".$row['idx']."\" href=\"javascript:adminMenu.renamePage(".$row['idx'].",'".addslashes(htmlentities($row['name'],ENT_COMPAT,'UTF-8'))."','".addslashes(htmlentities($row['info'],ENT_COMPAT,'UTF-8'))."',".$row['visibility'].",".$row['subpoint'].",'".$row['file']."')\">$name</a> ";
 		echo '</span>';
-		echo "<a href=\"javascript:DelPage(".$row['idx'].")\"><img class=\"adp smallIcon smallimgBin\" alt=\"".$GLOBALS['lng_deletepage']."\" title=\"".$GLOBALS['lng_deletepage']."\" src=\"styles/default/img/cleardot.gif\"></a>\n";
+		echo "<a href=\"javascript:adminMenu.delPage(".$row['idx'].")\"><img class=\"adp smallIcon smallimgBin\" alt=\"".$GLOBALS['lng_deletepage']."\" title=\"".$GLOBALS['lng_deletepage']."\" src=\"styles/default/img/cleardot.gif\"></a>\n";
 		PrintLinksRec($row['idx'], $menu);
 		echo "</li>\n\n";
 		

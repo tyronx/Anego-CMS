@@ -3,28 +3,69 @@
  * Copyright (C) 2011  tyron.at, Tyron Madlener
  * You may do stuff with this files in ways the GPL 2.0 allows you to, but please attribute my work
  ******************************************************************/
-jQuery.fn.MyTree = function() {
-	return	this.each(function() {
+(function($) {
+	jQuery.fn.sortableTree = function(method) {
+		
+		var methods = {
+			init : function(options) {
+				// Already initialized
+				if($(this).data('sortableTree') != undefined || $(this).data('sortableTree') != null)
+					return false;
+				
+				var tb = new sortableTreeInstance(this, options);
+				tb.init();
+				$(this).data('sortableTree',tb);
+			},/*
+			refresh : function( ) { 
+				$(this).data('sortableTree').refresh();
+			},*/
+			destroy : function( ) { 
+				$(this).data('sortableTree').destroy();
+				$(this).data('sortableTree',null);
+			}
+		};
+		
+		if ( methods[method] ) {
+			return methods[method].apply( this, Array.prototype.slice.call( arguments, 1 ));
+		} else if ( typeof method === 'object' || ! method ) {
+			return methods.init.apply( this, arguments );
+		} else {
+			$.error( 'Method ' +  method + ' does not exist on jQuery.sortableTree' );
+		}    
+		
+		function sortableTreeInstance(tree, options) {
 			var draggedElement;
 			var listElements=new Array();
 			var overElement=null;
 			var dropAt = null;
 			var draggedAwayListNode = null;
-			var tree = this;
 			var mouseDownOn=null;
 			var dragger;
 			var dragging=false;
 			var draggerIcon = $('<img src="styles/default/img/cleardot.gif" alt="" class="iconDrop"> ');
+			
+			if(!options) options = {};
+				
+			this.init = function() {
+				$('body').append(dragger = $('<div style="display:none;" class="dragger"></div>'));
+				
+				$(tree).find('li').each(function() {
+					listElements[listElements.length]=this;
+				});
+				
+				bindElementEvents($(tree).find('li span'));
+				
+				$(document).mousemove(onMouseMove);
+				$(document).mouseup(onMouseUp);
+			};
+			
+			this.destroy = function() {
+				dragger.remove();
+				$(document).unbind('moousemove',onMouseMove);
+				$(document).unbind('moouseup',onMouseUp);
+			};
 		
-			$('body').append(dragger=$('<div style="display:none;" class="dragger"></div>'));
-			
-			$(tree).find('li').each(function() {
-				listElements[listElements.length]=this;
-			});
-			
-			bindElementEvents($(tree).find('li span'));
-			
-			$(document).mousemove(function(event) {
+			function onMouseMove(event) {
 				if(mouseDownOn!=null) {
 					dragger.html($(mouseDownOn).clone());
 					dragger.prepend(draggerIcon);
@@ -97,9 +138,9 @@ jQuery.fn.MyTree = function() {
 					
 					overElement = ov;
 				}
-			});
+			}
 			
-			$(document).mouseup(function () {
+			function onMouseUp(event) {
 				dragging=false;
 				mouseDownOn=null;
 				var newNode;
@@ -190,14 +231,10 @@ jQuery.fn.MyTree = function() {
 					
 					checkforLast(tree);
 					
-					$.get('admin.php', {a:'movenode', movingNode:newNode.attr('id'), targetNode:target, position:pos},
-						function(data) {
-							// Checks for errors
-							GetAnswer(data);
-						});
-					
+					if(options.moved)
+						options.moved(newNode.attr('id'), target, pos);
 				}
-			});
+			}
 			
 			function checkforLast(el) {
 				$(el).children().last().children('.listImg').addClass('last');
@@ -226,5 +263,6 @@ jQuery.fn.MyTree = function() {
 					return false;
 				});
 			}
-		});
-}
+		}
+	}
+})( jQuery );

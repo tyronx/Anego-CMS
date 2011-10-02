@@ -54,6 +54,7 @@ $anego->assign('language',$language);
 $anego->assign('lng_editpage',$lng_editpage);
 // Tells the loader to load all default javascript files
 $anego->AddJsModule('de');
+$anego->AddJsModule('am');
 $anego->AddJsModule('ad'.$language);
 //$anego->assign('lng_savechanges',$lng_savechanges);
 //$anego->assign('lng_cancelchanges',$lng_cancelchanges);
@@ -158,7 +159,7 @@ function BailErr($msg,$log="",$log_once=0) {
 }
 function BailAjax($msg,$query='') {
 	logError($msg,$query);
-	exit("500\n$mymsg");
+	exit("500\n$msg");
 }
 
 function logError($msg, $query = '') {

@@ -484,7 +484,7 @@ class Anego extends Smarty {
 				$hasChildren = true;
 				
 				$vis='';
-				if($cfg['submenuStyle']=='auto' || $cfg['submenuStyle']=='submenu onselect' || $cfg['submenuStyle']=='onselect')  
+				if($cfg['submenuStyle']=='auto' || $cfg['submenuStyle']=='onselect')  
 					$vis = 'style="display:none;"';
 				$item.='<div class="bothclear">'.$this->MenuItemLink($row,$k).'</div>';
 				
@@ -498,20 +498,20 @@ class Anego extends Smarty {
 					//	else 
 					$sitem.=$this->MenuItemLink($row2);
 					
-					if($cfg['submenuStyle'] != 'submenu onselect' || in_array($row2['idx'],$curParents) || $row2['idx']==$this->curPg) {
-						$q = "SELECT * FROM ".PAGES." WHERE parent_idx=".$row2['idx']." AND (visibility&2)=2 ".(!LOGINOK?"AND (visibility&1)=1":"")." ORDER BY position";
-						$res3 = @mysql_query($q) or
-							BailSQL($GLOBALS['lng_failedchildermain'].$row['name'],$q);
+					//if($cfg['submenuStyle'] != 'submenu onselect' || in_array($row2['idx'],$curParents) || $row2['idx']==$this->curPg) {
+					$q = "SELECT * FROM ".PAGES." WHERE parent_idx=".$row2['idx']." AND (visibility&2)=2 ".(!LOGINOK?"AND (visibility&1)=1":"")." ORDER BY position";
+					$res3 = @mysql_query($q) or
+						BailSQL($GLOBALS['lng_failedchildermain'].$row['name'],$q);
 
-						if(mysql_affected_rows()) {
-							$sitem.='<div class="subsubitems">';
-							while($row3 = mysql_fetch_array($res3)) {
-								if($row3['idx']==$this->curPg) $childSelected=true;
-								$sitem.='<div class="subsubitem">'.$this->MenuItemLink($row3)."</div>";
-							}
-							$sitem.='</div>';
+					if(mysql_affected_rows()) {
+						$sitem.='<div style="' . (($cfg['submenuStyle']=='visible')?'':'display:none;')  . '" class="subsubitems">';
+						while($row3 = mysql_fetch_array($res3)) {
+							if($row3['idx']==$this->curPg) $childSelected=true;
+							$sitem.='<div class="subsubitem">'.$this->MenuItemLink($row3)."</div>";
 						}
+						$sitem.='</div>';
 					}
+					//}
 
 					$j++;
 					$sitem.="</li>\n\t\t\t\t";

@@ -43,7 +43,7 @@ $cfg['galThumbnailHeight'] = 120;
 
 /* How show submenus be displayed, default is visible
  * visible: always visible
- * auto: appear when user moves over mouse
+ * auto: appear when user moves over mouse (not correctly implemented yet)
  * onselect: appears when the parent-menu is being clicked
  * submenu onselect: 2 level deep submenus appear when clicked, 1 level deep always visible
 */
