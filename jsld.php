@@ -124,9 +124,11 @@ if(in_array('de',$k)) {
 	else $modules = Array();
 	
 	$directLoad = Array();
-	foreach($modules as $mid=>$mod) 
-		if(isset($mod['config']['allowdirectLoad']) && $mod['config']['allowdirectLoad'])
-			$directLoad[]=$mid;
+	if(is_array($modules) && count($modules)) {
+		foreach($modules as $mid=>$mod) 
+			if(isset($mod['config']['allowdirectLoad']) && $mod['config']['allowdirectLoad'])
+				$directLoad[]=$mid;
+	}
 	
 	$init = '';
 	if(count($directLoad))
