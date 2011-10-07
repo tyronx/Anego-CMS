@@ -218,8 +218,8 @@ function AdminMenuFunctions() {
 				$("#menu").html(data);
 				$.post("index.php?a=minormenu",function(data) {
 					$("#minornav").html(data);
-					/* "Upgrade degraded links to ajax loading again */
-					Core.ajaxifyMenu();
+					/* Upgrade "degraded" links to ajax loading again */
+					if(anego.pageLoad=='ajax') Core.ajaxifyMenu();
 				});
 			});
 		}

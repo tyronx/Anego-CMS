@@ -75,6 +75,10 @@ function CoreFunctions() {
 	// anego.curPg is fullpath string, Core.curPg is splitted object containing usfull infos about the current page
 	var curPg;
 	
+	/* Pages are identified by a type followed by an identifier and may then nest infinitely seperated by slashes
+	  e.g. pg34, pgad, blog23, blog23/item123/screenshot1/8
+	  This function splits each segment into a more readable js-object
+  	*/
 	this.pageInfo=function(page) {
 		var pginfo = {};
 		var result = /^([a-zA-Z_]+)(\d+|\/[a-zA-Z_]+)(\/(.*))?/.exec(page)
@@ -123,8 +127,8 @@ function CoreFunctions() {
 		Core.editPage(Core.curPg.id, data);
 	}
 	
+	/* Fix degraded links for ajax loading */
 	this.ajaxifyMenu=function() {
-		/* Fix degraded links for ajax loading */
 		if(anego.editmode) {
 			$('.mainnav li a').attr('href',function(idx,attr) { return attr.replace(/admin-(pg\d+)/g,'admin#$1'); });
 			$("#minornav li a").attr('href',function(idx,attr) { return attr.replace(/admin-(pg\d+)/g,'admin#$1'); });
@@ -140,9 +144,13 @@ function CoreFunctions() {
 		window.location.href = window.location.href.replace(/\?.*/g,'');
 	}
 
-	/* Parameter page is a string, whereas the first letter identify the type and the appended number/name the entry id/page */
-	// e.g. (pg)34, (adm)setg
-	// callback may be a function to be called once the page has loaded
+	/* Loads a page. Parameter:
+	 * newpage: must be a valid pageInfo object like the ones created by pageInfo()
+	 * settings: {
+	 *  beforeContentLoaded: callback when the content has been loaded but not inserted into the page yet
+	 *  afterContentLoaded: callback when the page is loaded and content is inserted.
+	 *  forceLoad: Ignores some checks to force reload the page on Core.EndEdit()
+	*/
 	this.loadPage=function(newpage,settings) {
 		if(typeof settings != 'object')
 			settings = new Object();
@@ -167,8 +175,8 @@ function CoreFunctions() {
 		//$('#name').append('c');
 		
 		/* Don't load same page (also seems to be buggy in ie if loaded twice).*/
-		if(newpage.fullpath == Core.curPg.fullpath && (typeof settings.forceLoad=='undefined' || settings.forceLoad==false)) {
-			loadingPage=null;
+		if(newpage.fullpath == Core.curPg.fullpath && (typeof settings.forceLoad == 'undefined' || settings.forceLoad == false)) {
+			loadingPage = null;
 			return false;
 		}
 		
@@ -178,7 +186,7 @@ function CoreFunctions() {
 		 * The browser will load a new site because he sees it as a different file, hence our GET request fails with an
 		 * empty error message. So: Don't load pages with ajax in such cases.
 		*/
-		if(location.pathname[location.pathname.length-1]!='/') {
+		if(location.pathname[location.pathname.length-1] != '/' && (typeof settings.forceLoad == 'undefined' || settings.forceLoad == false)) {
 			loadingPage=null;
 			return false;
 		}
@@ -245,7 +253,7 @@ function CoreFunctions() {
 			if(anego.editmode) { // from admin.php
 				$('#content').html(data.content);
 				that.initPageContentEdit(data);
-			} else {			 // from index.php (ajax.php)
+			} else {             // from index.php (ajax.php)
 				$('#content').html(data.content);
 				that.initPageContent();
 			}
@@ -284,6 +292,7 @@ function CoreFunctions() {
 	}
 	
 	/* Overwrite this method if needed */
+	// Adds the correct "selected" css classes and shows menuitems where needed
 	this.selectPage = function(page) {
 		if(anego.submenuStyle == 'visible') return;
 		
@@ -368,6 +377,7 @@ function CoreFunctions() {
 		});
 	}
 
+	// This function is being called by the RSH library which tracks events where the user presses back and forward on his browser
 	this.historyChange=function(newLocation) {
 		if(! newLocation && !firstLoad) return firstLoad=true;
 		firstLoad = true;
@@ -391,12 +401,16 @@ function CoreFunctions() {
 			loadHooks[i](newpage);
 	}
 	
+	// Through this function, custom page loading events can be implemented
+	// If added function returns true, Core.loadPage() will only call the hook and then exit
 	// Be really careful when calling loadpage inside a hook function, 
 	// as it will fire the loadPage event again, so make sure not to fall in a endless loop
 	this.addloadPageHook=function(fn) {
 		loadHooks.push(fn);
 	}
 
+	// Loads a javascript file dynamically by adding it to the documents <head>
+	// May also be a js module (ld.am); avoids also more or less duplicate loading of jsfiles / modules
 	this.loadJavascript=function(file) {
 		if(loadedJsFiles.contains(file)) return;
 		// Split javacript loader files, check them individually if already loaded
@@ -417,6 +431,7 @@ function CoreFunctions() {
 		}
 	}
 	
+	// Loads given css file
 	this.loadCSS = function(file) {
 		$('head').append('<link rel="stylesheet" href="'+file+'" type="text/css" media="screen">');	
 	}
@@ -433,7 +448,6 @@ function CoreFunctions() {
 			return results[1];
 	}
 
-	
 	/* ajax post request, similar to $.post, but allows multiple simultaneous requests */
 	this.postData = function(data, url, callback,timeoutcallback) {
 		var req = createXHR();
@@ -684,6 +698,14 @@ function BoundBy(x, minx, maxx) {
 	return Math.min(maxx,Math.max(x,minx));
 }
 
+/* Most AJAX request reply a 3 digit number at the beginning. 
+ * If it is 200 it means the request was successfull, anything
+ * else than that means something went wrong. Though the exact type of the
+ * returned number have no impact at all, it is currently loosely oriented
+ * at http error codes where 3xx denote permission errors, 5xx internal errors, and 4xx not found errors.
+ * Todo: Every occurrence of GetAnswer() should ideally be replaced with JSON responses + $.loadJSON() 
+ * and error numbers should be given some actual meaning
+ */
 function GetAnswer(text) {
 	if(text.substr(0,3)!='200') {
 		alert(text.substr(4));
@@ -788,6 +810,7 @@ function createXHR() {
     return xhrObj;
 }
 
+// Todo: Can these 4 functions be factored away through use of their respective jQuery alternatives?
 function f_scrollTop() {
 	return f_filterResults (
 		window.pageYOffset ? window.pageYOffset : 0,

@@ -1,13 +1,17 @@
 <?
+/* Types of "galleries", mostly outdated */
+// Normal gallery
 define("DTYPE_NORMAL",0);
-
+// Gallery in admin mode: Also displays folders and files as well as options to rename and delete files
 define("DTYPE_ADMIN",1);
+// 2,3,4 => Not used anymore
 define("DTYPE_INSERTIMG",2);
 define("DTYPE_INSERTGAL",3);
 define("DTYPE_INSERTFILE",4);
-
+// Normal gallery but displays folders
 define("DTYPE_IMGANDFOLDERS",5);
 
+/* Types of "files" */
 define('IMAGE',1);
 define('FOLDER',2);
 define('ADMIN_IMAGE',3);
@@ -15,6 +19,10 @@ define('ADMIN_FOLDER',4);
 define('ADD_IMAGE',5);
 define('ADD_GALLERY',6);
 
+/* Is used for the outdated gallery style using bbcode and for file management 
+ * Creates a navigate-able list of files in a given folder (folders can be clicked to browse them)
+*/
+// Todo: Rewrite the whole file manager and throw away all this gallery code 
 function Gallery($root="",$dtype=DTYPE_NORMAL, $rows=-1, $cols=-1, $width=-1, $height=-1) {
 	global $site, $_SERVER, $c_uidx, $cfg;
 	
@@ -215,6 +223,7 @@ function Gallery($root="",$dtype=DTYPE_NORMAL, $rows=-1, $cols=-1, $width=-1, $h
 	return $str;
 }
 
+// Displays a single file within a "gallery"
 function DisplayItem($type, $vars,$galnumber) {
 	/* Wondering about the weird identation of the HTML code? 
 	 * Its just to keep the resulting html code more or less tidy 
@@ -280,6 +289,7 @@ function DisplayItem($type, $vars,$galnumber) {
 
 require(SMARTYPATH.'Smarty.class.php');
 
+/* Main HTML Output class based on Smarty */
 class Anego extends Smarty {
 	var $smarty;
 	var $header_general, $header_jspreload, $header_prependjs,$header_appendjs, $admin_links;
@@ -303,48 +313,55 @@ class Anego extends Smarty {
 		$this->admin_links = Array();
 		$this->header_css = Array();
 	}
-
+	
+	// Adds a link to the admin bar
 	function AddLink($link) {
 		$this->admin_links[]=$link;
 	}
 	
+	// Adds a js module as defined in jsld.php
 	function AddJsModule($module) {
 		$this->header_jsmodules .= '.'.$module;
 	}
 	
+	// Adds a css file to the header
 	function AddCSSFile($css) {
 		$this->header_css[] = $css;
 	}
 	
-	// Adds direct javascript code before any lib is loaded (make your constant definition here)
+	// Adds direct javascript CODE before any lib is loaded (make your constant definition here)
 	function AddJsPreload($script) {
 		$this->header_jspreload[] = $script;
 	}
 
-	// Adds js files before the main libs get loaded
+	// Adds javascript files before the main libs get loaded
 	function prependJSFile($path) {
 		$this->header_prependjs[] = $path;
 	}
 	
-	// Adds js files after the main libs get loaded
+	// Adds javascript files after the main libs get loaded
 	function appendJSFile($path) {
 		$this->header_appendjs[] = $path;
 	}
 
+	// Appends given string to the <head> element
 	function AddHeadHeader($str) {
 		$this->header_general[] = $str;
 	}
 	
+	// Appends given string to the div#footer element
 	function AddFooter($str) {
 		$this->footer[] = $str;
 	}
 	
+	// Appends given string to the div#content element
 	function AddContent($str) {
 		$this->content.=$str;
 	}
 	
+	// Displays given template and ends php execution
 	function display($template, $cache_id = null, $compile_id = null) {
-		/******* Custom setup code *********/
+		/******* Custom style setup code *********/
 		if(file_exists("styles/" . $this->curStyle . "/custom.php"))
 			include("styles/" . $this->curStyle . "/custom.php");
 
@@ -452,12 +469,13 @@ class Anego extends Smarty {
 		}*/	
 	}
 	
+	// Builds the main menu array
 	// TODO: Defenitely cache this. 3 boxed queries - horrible
 	//		 and in the process make it endlessly boxable, not just 3 levels
 	function MainMenu() {
 		global $cfg;
 		
-		if($this->curPg>0)  {
+		if($this->curPg > 0)  {
 			// level 0,1,2 
 			// Mark a level 1 item as selected when a level 2 item is the current page
 			$q = "SELECT p1.parent_idx,p1.idx FROM ".PAGES." as p1, ".PAGES." as p2 WHERE p2.idx=".$this->curPg." AND p2.parent_idx=p1.idx";
@@ -544,6 +562,7 @@ class Anego extends Smarty {
 		return $items;
 	}
 	
+	// Generates one menu item link from a given database row.
 	// $k == If not false: Children div element id
 	function MenuItemLink($row,$k=false) {
 		global $cfg;
