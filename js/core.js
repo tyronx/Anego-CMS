@@ -1,3 +1,11 @@
+
+var fancyBoxSettings = {
+	'cyclic'		: false,
+	'overlayShow'	: false,
+	'transitionIn'	: 'elastic',
+	'transitionOut'	: 'elastic'
+}
+
 /***** Some array extensions *****/
 
 Array.prototype.contains=function(element) {
@@ -107,12 +115,8 @@ function CoreFunctions() {
 		$('.hiddenEmail').defuscate();
 		/* Links to pages on the same site that are made with tinymce/etc. need to be converted */
 		$('#content a').attr('href',function(idx,attr) { return attr.replace(/^pg(\d+)/g,'#pg$1'); } );
-		/* Default lightbox links */
-		$('a[rel*="lightbox"], a.lightbox').fancybox({
-			'overlayShow'	: false,
-			'transitionIn'	: 'elastic',
-			'transitionOut'	: 'elastic'
-		});
+		/* Default zoomable picture links */
+		$('a.zoomable').fancybox(fancyBoxSettings);
 	}
 	
 	this.initPageContentEdit=function(data) {
@@ -283,10 +287,11 @@ function CoreFunctions() {
 	this.selectPage = function(page) {
 		if(anego.submenuStyle == 'visible') return;
 		
-		var el=$('#menu .mainnav li a[onclick="Core.loadPage(\'' + page.fullpath + '\')"]').parent();
+		var el = null;
+		if(page != null) el = $('#menu .mainnav li a[onclick="Core.loadPage(\'' + page.fullpath + '\')"]').parent();
 		
 		// If this is a child of a child we just need to make sure its visible
-		if(el.hasClass('subsubitem')) {
+		if(el != null && el.hasClass('subsubitem')) {
 			el.show();
 			// Make sure subnav list is visible
 			el.parent().parent().css('display','');
@@ -553,11 +558,11 @@ function OpenDialog(settings) {
 		$('#inactive').css('position','static');
 	else $('#inactive').css('position','absolute');
 	
-	/* Get previously saved position if it is set and no custom position supplied */
+	/* Get previously saved position if it is set and no custom position supplied, but limit to viewable area  */
 	if(settings.top==undefined && settings.left==undefined) {
 		if(localStorage.getItem("anego_dlg_"+settings.title+"_left")!=null) {
-			settings.left=BoundBy(localStorage.getItem("anego_dlg_"+settings.title+"_left"),0,f_clientHeight()-$('#dlgBox').width());
-			settings.top =BoundBy(localStorage.getItem("anego_dlg_"+settings.title+"_top"),0,f_clientWidth()-$('#dlgBox').height());
+			settings.left=BoundBy(localStorage.getItem("anego_dlg_"+settings.title+"_left"),0,f_clientWidth()-$('#dlgBox').width());
+			settings.top =BoundBy(localStorage.getItem("anego_dlg_"+settings.title+"_top"),0,f_clientHeight()-$('#dlgBox').height());
 		}
 	}
 	/* Position element if any coordinate is set */

@@ -58,11 +58,12 @@ if(isset($_POST['insert'])) {
 	$name_sized = substr($file,0,strrpos($file,'.')).'_r'.substr($file,strrpos($file,'.'));
 	
 	if(CopyResized($path,$_POST['width'],$_POST['height'],true,'file','',$cfg['imagePath'].$name_sized)) {
+		// Also keep a copy of the original size picture
 		copy($path,$cfg['imagePath'].$file);
 		// delete from tmp directory if its there & possible to delete
 		if(is_file($cfg['tmpPath'].$file)) @unlink($cfg['tmpPath'].$file);
 		
-		exit("200\n".$cfg['domain'].$cfg['imagePath'].$name_sized);
+		exit("200\n".$cfg['domain'].$cfg['imagePath'].$name_sized."\n".$cfg['domain'].$cfg['imagePath'].$file);
 	} else exit("500\nnot ok :(");
 }
 
@@ -358,9 +359,13 @@ function fastimagecopyresampled (&$dst_image, $src_image, $dst_x, $dst_y, $src_x
 							<tr>
 								<td class="column1"><label id="widthlabel" for="width">{#phpimage_dlg.dimensions}</label></td> 
 								<td colspan="2">
-									<input name="width" type="text" id="width" value="" size="5" maxlength="5" class="size" onkeyup="ImageDialog.widthPress();" /> x 
-									<input name="height" type="text" id="height" value="" size="5" maxlength="5" class="size" onkeyup="ImageDialog.heightPress();" /> px &nbsp;&nbsp;<a href="#" onclick="ImageDialog.setoriginalSize()">{#phpimage_dlg.origsize}</a>
+									<input name="width" type="text" id="width" value="" size="5" maxlength="5" class="size" onkeydown="ImageDialog.widthDown(event);" onkeyup="ImageDialog.widthPress(event);" /> x 
+									<input name="height" type="text" id="height" value="" size="5" maxlength="5" class="size" onkeydown="ImageDialog.heightDown(event);" onkeyup="ImageDialog.heightPress(event);" /> px &nbsp;&nbsp;<a href="#" onclick="ImageDialog.setoriginalSize()">{#phpimage_dlg.origsize}</a>
 								</td>
+							</tr>
+							<tr id="zoomableRow" style="display:none;">
+								<td class="column1"></td> 
+								<td colspan="2"><input id="zoomable" name="zoomable" type="checkbox" value="1" checked="checked"/> <label id="zoomablelabel" for="zoomable">{#phpimage_dlg.iszoomable}</label></td> 
 							</tr>
 						</table>
 				</fieldset>

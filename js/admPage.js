@@ -6,6 +6,8 @@
 Core.endEdit = function(ignorePage) {
 	var unloadDragDrop = function() {
 		anego.editmode=false; 
+		/* Default zoomable picture links */
+		$('a.zoomable').fancybox(fancyBoxSettings);
 		$('#pageEditLink').html(lngMain.edit_page);
 		$('#pageEditLink').attr('href','javascript:Core.editPage()');
 		
