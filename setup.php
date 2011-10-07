@@ -206,24 +206,29 @@ div#padder {
 					<li><b>Set up database</b><br>
 			<?php
 						if(isset($_GET['a']) && $_GET['a']=='indb') {
-							$sql=file('tables.sql');
-							$installOK=true;
-							$statement='';
-							foreach($sql as $line) {
-								if($cfg['tablePrefix']!='anego_' && preg_match('/CREATE/',$line))
-									$line=str_replace('anego_',$cfg['tablePrefix'],$line);
-								
-								$statement.=$line;
-								
-								if(preg_match("/;$/",$line))
-									if(!@mysql_query($statement)) {
-										echo '<b>Automatic creation of tables failed, please create them manually (use tables.sql file)</b><br>';
-										echo '<span class="err">(Error was \''.mysql_error().'\')</span><br>';
-										$installOK=false;
-										break;
-									} else $statement='';
+							if(file_exists('tables.sql')) {
+								$sql=file('tables.sql');
+								$installOK=true;
+								$statement='';
+								foreach($sql as $line) {
+									if($cfg['tablePrefix']!='anego_' && preg_match('/CREATE/',$line))
+										$line=str_replace('anego_',$cfg['tablePrefix'],$line);
+									
+									$statement.=$line;
+									
+									if(preg_match("/;$/",$line))
+										if(!@mysql_query($statement)) {
+											echo '<b>Automatic creation of tables failed, please create them manually (use tables.sql file)</b><br>';
+											echo '<span class="err">(Error was \''.mysql_error().'\')</span><br>';
+											$installOK=false;
+											break;
+										} else $statement='';
+								}
+								if($installOK) echo 'Tables created.<br>';
+							} else {
+								echo '<b>Can\'t create tables, tables.sql file missing</b><br>';
+								$installOK=false;
 							}
-							if($installOK) echo 'Tables created.<br>';
 						}
 						
 						$tablesOK=false;

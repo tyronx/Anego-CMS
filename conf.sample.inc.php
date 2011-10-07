@@ -1,7 +1,7 @@
 <?
 /******** User accounts ********/
 
-$cfg['tablePrefix'] = 'test_';
+$cfg['tablePrefix'] = 'anego_';
 
 // generate user accounts with setup.php
 // Insert only lower case names here
