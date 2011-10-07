@@ -320,38 +320,40 @@ switch($_GET['a']) {
 	case 'ap':
 		if(UserRole() < Role::ProMod) Bail($lng_missing_rights);
 		
-		$id=intval($_POST['id']);
-		$subm=intval($_POST['subm']);
-		$nolink=intval($_POST['nolink']);
-		$vis =intval($_POST['vis']);
+		$subm = intval($_POST['subm']);
+		$nolink = intval($_POST['nolink']);
+		$vis = intval($_POST['vis']);
+		$intopage = intval($_POST['intopage']);
+		// Todo: For multi-menus check here the database for valid menu names!
+		$menu = in_array($_POST['menu'],array('MINOR','MAIN')) ? $_POST['menu'] : 'MAIN';
 		$pos = 0;
 		$par = 0;
+			
 		
-		$q="SELECT * FROM ".PAGES." WHERE idx=$id";
-		$res = mysql_query($q) or
-			BailAjax($lng_pageinfo,$q);
-		
-		//if(!mysql_num_rows($res)) exit("400\nNo/Wrong page id?");
-		
-		$row = mysql_fetch_array($res);
-		
-		if(!isset($_POST['intopage'])) {
-			if($id!=0) {
-				// Free up one position by moving down all the other
-				$q = "UPDATE ".PAGES." SET position=position+1 WHERE parent_idx=".$row['parent_idx']." AND position>".$row['position'];
-				mysql_query($q) or
-					BailAjax($lng_failedfreeing,$q);
-						
-				$pos= $row['position']+1;
-				$par = $row['parent_idx'];
-			}
+		if(! $intopage) {
+			// Add page to the bottom of the root tree
+			$q = "SELECT MAX(position) as pos FROM ".PAGES." WHERE parent_idx=0 AND menu='".$menu."'";
+			$res = mysql_query($q) or
+				BailAjax($lng_failedfreeing,$q);
+			$row = mysql_fetch_array($res);
+
+			$pos = $row['pos'] + 1;
+			$par = 0;
 		} else {
+			// Note: This code is currently not in use and might be buggy
+			// It allows to create new pages inside existing pages
+			
+			$q="SELECT * FROM ".PAGES." WHERE idx=".$intopage;
+			$res = mysql_query($q) or
+				BailAjax($lng_pageinfo,$q);
+			$row = mysql_fetch_array($res);
+
 			$q = "SELECT idx FROM ".PAGES." WHERE parent_idx=".$row['idx']." LIMIT 1";
 			$res2=mysql_query($q) or
 				BailAjax($lng_failedgetting,$q);
 				
 			if(mysql_affected_rows()) {
-				$q = "UPDATE ".PAGES." SET position=position+1 WHERE parent_idx=".$row['idx'];
+				$q = "UPDATE ".PAGES." SET position=position+1 WHERE parent_idx=".$row['idx']." AND menu=".$row['menu'];
 				mysql_query($q) or
 					BailAjax($lng_failedfreeing,$q);
 			}
@@ -373,7 +375,7 @@ switch($_GET['a']) {
 		$_POST['info']=mysql_real_escape_string($_POST['info']);
 		$fname=mysql_real_escape_string($fname);
 				
-		$q = "INSERT INTO ".PAGES." (name, info, date, parent_idx, file, visibility, position, subpoint,nolink,content,menu) VALUES ('".$_POST['name']."','".$_POST['info']."',".time().",'".$par."','".$fname."','".$vis."','".$pos."','$subm','$nolink','','".mysql_real_escape_string($_POST['menu'])."')";
+		$q = "INSERT INTO ".PAGES." (name, info, date, parent_idx, file, visibility, position, subpoint,nolink,content,menu) VALUES ('".$_POST['name']."','".$_POST['info']."',".time().",'".$par."','".$fname."','".$vis."','".$pos."','$subm','$nolink','','".$menu."')";
 		mysql_query($q) or
 			BailAjax($lng_failedinserting,$q);
 		
@@ -683,7 +685,7 @@ function PrintLinksRec($parent, $menu, $first=0) {
 
 	if($first) {
 		echo '<div class="innertreeDiv">';
-		echo "<img alt=\"\" title=\"".$GLOBALS['lng_addpage']."\" class=\"adp\" src=\"".$defIcons['add']."\"> <a href=\"javascript:adminMenu.addPage(0,0,'$menu',$id)\">".$GLOBALS['lng_createnew']."</a>"; 
+		echo "<img alt=\"\" title=\"".$GLOBALS['lng_addpage']."\" class=\"adp\" src=\"".$defIcons['add']."\"> <a href=\"javascript:adminMenu.addPage(0,'$menu',$id)\">".$GLOBALS['lng_createnew']."</a>"; 
 	
 		if($menu==MENU_MAIN)
 			echo '<ul id="tree_major" class="menuTree">';

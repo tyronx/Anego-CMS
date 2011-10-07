@@ -15,7 +15,7 @@ function AdminMenuFunctions() {
 		);
 	}
 
-	this.addPage = function(page_id, intopage, menu, mainlink, submit) {
+	this.addPage = function(intopage, menu, mainlink, submit) {
 		if(submit) {
 			if(document.pagedata.name.value.length==0) {
 				alert(lng_entername);
@@ -43,7 +43,7 @@ function AdminMenuFunctions() {
 			var data = "name="+urlencode(document.pagedata.name.value)+"&info="+urlencode(document.pagedata.info.value)+"&vis="+vis+"&subm="+subm+"&nolink="+nolink;
 			if(document.pagedata.isfile.checked)
 				data += "&filename="+urlencode(document.pagedata.filename.value);
-			data += "&id="+page_id;
+			//data += "&id="+page_id;
 			if(intopage)
 				data+="&intopage="+intopage;
 			data += "&menu="+menu;
@@ -51,7 +51,7 @@ function AdminMenuFunctions() {
 			Core.postData(data,"admin.php?a=ap",closeAndPrint,RequestTimeout);
 
 		} else {
-			var str = '<form name="pagedata" accept-charset="UTF-8" onSubmit="return false">'+lng_pagename+':<br><input type="text" size="40" name="name"><br><br>'+lng_pageinfo+':<br><input type="text" size="40" name="info"><br><br><input type="checkbox" onclick="TogglePgFile(this)" name="isfile" value="1"> '+lng_link2file+'<br>';
+			var str = '<form name="pagedata" accept-charset="UTF-8" onSubmit="return false">'+lng_pagename+':<br><input type="text" size="40" name="name"><br><br>'+lng_pageinfo+':<br><input type="text" size="40" name="info"><br><br><input type="checkbox" onclick="adminMenu.togglePgFile(this)" name="isfile" value="1"> '+lng_link2file+'<br>';
 			str +='<span id="pglink" style="display:none; padding-left:10px">'+lng_filename+': <input type="text" name="filename"><br><br></span>';
 			str +='<input type="checkbox" name="menu" value="1" checked> '+lng_showinmenu+'<br>';
 			str += '<input type="checkbox" name="admin" value="1"> '+lng_notvisible+'<br>';
@@ -61,12 +61,12 @@ function AdminMenuFunctions() {
 			OpenDialog({
 				title:lng_addpage,
 				content:str,
-				ok_callback:function () { adminMenu.addPage(page_id,intopage,menu,0,1); }
+				ok_callback:function () { adminMenu.addPage(intopage,menu,0,1); }
 			});
 		}
 	}
 
-	/*function TogglePgFile(elem) {
+	this.togglePgFile = function(elem) {
 		if(elem.checked) {
 			document.getElementById('pglink').style.display='';
 		//	document.getElementById('dlgBox').style.height='310px';
@@ -76,7 +76,7 @@ function AdminMenuFunctions() {
 		}
 	}
 
-	function CheckImgUpload() {
+	/*function CheckImgUpload() {
 		var el = document.getElementById('iframe1');
 		var doc = el.contentDocument;
 		if (doc == undefined || doc == null)
@@ -158,17 +158,19 @@ function AdminMenuFunctions() {
 			fileDsp='';
 		}
 
+		var pageLink = 'index.php?p='+page_id;
+		if(anego.pageLoad == 'ajax') pageLink = '#pg'+page_id;
 		
 		var str = '<form name="pagedata" accept-charset="UTF-8" onSubmit="return false">'+lng_rename+':<br><input type="text" name="name" size="35" value="'+page_name.replace(/\"/g,"&quot;")+'">';
 		str += '<br><br>'+lng_pageinfo+':<br><input type="text" size="35" name="info" value="'+page_info.replace(/\"/g,"&quot;")+'">';
 		
-		str += '<br><br><input type="checkbox" onclick="TogglePgFile(this)" name="isfile" value="1"'+ch4+'> '+lng_link2file+'<br>';
+		str += '<br><br><input type="checkbox" onclick="adminMenu.togglePgFile(this)" name="isfile" value="1"'+ch4+'> '+lng_link2file+'<br>';
 		str +='<span id="pglink" style="'+fileDsp+'padding-left:10px">'+lng_filename+': <input type="text" name="filename" value="'+file+'"><br><br></span>';
 		
 		str +='<input type="checkbox" name="menu" value="1"'+ch1+'> '+lng_showinmenu+'<br>';
 		//str +='<input type="checkbox" name="subm" value="1"'+ch3+'> '+lng_ident+'<br>';
 		str += '<input type="checkbox" name="admin" value="1"'+ch2+'> '+lng_notvisible+'</form>';
-		str+='<div style="position:absolute; left:5px; bottom:5px; z-index:2;"><a href="index.php?p='+page_id+'">'+lng_topage+'</a></div>';
+		str+='<div style="position:absolute; left:5px; bottom:5px; z-index:2;"><a href="' + pageLink + '">'+lng_topage+'</a></div>';
 
 		OpenDialog({
 			title:lng_editpage,

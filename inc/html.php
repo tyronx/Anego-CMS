@@ -344,6 +344,10 @@ class Anego extends Smarty {
 	}
 	
 	function display($template, $cache_id = null, $compile_id = null) {
+		/******* Custom setup code *********/
+		if(file_exists("styles/" . $this->curStyle . "/custom.php"))
+			include("styles/" . $this->curStyle . "/custom.php");
+
 		define('DISPLAY_ATTEMPTED',1);
 		$this->prepare();
 		

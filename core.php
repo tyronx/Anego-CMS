@@ -291,10 +291,16 @@ function AdminBar($p) {
 	if(LOGINOK && $userRole>=Role::ProMod) {
 		if($p!=-1)
 			$anego->AddLink("<a href=\"javascript:Core.editPage()\" id=\"pageEditLink\">$lng_editpage</a>");
-		
-		$anego->AddLink("<a href=\"admin?a=pgad\" onclick=\"$(this).attr('href','#adm/pgad'); Core.loadPage('adm/pgad');\">$lng_adminpages</a>");
-		$anego->AddLink("<a href=\"admin?a=filad\" onclick=\"$(this).attr('href','#adm/filad'); Core.loadPage('adm/filad');\">$lng_adminfiles</a>");
-		if($userRole>=Role::Admin) $anego->AddLink("<a href=\"admin?a=setg\" onclick=\"$(this).attr('href','#adm/setg'); Core.loadPage('adm/setg');\">$lng_settings</a>");
+			
+		if($cfg['pageLoad'] == 'ajax') {
+			$anego->AddLink("<a href=\"admin?a=pgad\" onclick=\"$(this).attr('href','#adm/pgad'); Core.loadPage('adm/pgad');\">$lng_adminpages</a>");
+			$anego->AddLink("<a href=\"admin?a=filad\" onclick=\"$(this).attr('href','#adm/filad'); Core.loadPage('adm/filad');\">$lng_adminfiles</a>");
+			if($userRole>=Role::Admin) $anego->AddLink("<a href=\"admin?a=setg\" onclick=\"$(this).attr('href','#adm/setg'); Core.loadPage('adm/setg');\">$lng_settings</a>");
+		} else {
+			$anego->AddLink("<a href=\"admin?a=pgad\">$lng_adminpages</a>");
+			$anego->AddLink("<a href=\"admin?a=filad\">$lng_adminfiles</a>");
+			if($userRole>=Role::Admin) $anego->AddLink("<a href=\"admin?a=setg\">$lng_settings</a>");
+		}
 	}
 }
 
@@ -349,7 +355,7 @@ function PrintPage($p) {
 		}
 		
 		$anego->AddContent(FormatText($row['content_prepared']));
-		$anego->assign('pageID',$p);		
+		$anego->assign('pageID',$p);
 		if(!$anego->get_template_vars('pageTitle'))
 			$anego->assign('pageTitle',$row['name']);
 		$anego->display('index.tpl');
@@ -402,10 +408,4 @@ function pageEditJs($p) {
 		
 	return $js;
 }
-
-/******* Custom setup code *********/
-
-if(file_exists("styles/".STYLE."/custom.php"))
-	include("styles/".STYLE."/custom.php");
-
 ?>

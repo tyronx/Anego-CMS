@@ -1,4 +1,3 @@
-
 var fancyBoxSettings = {
 	'cyclic'		: false,
 	'overlayShow'	: false,
@@ -114,7 +113,8 @@ function CoreFunctions() {
 		/* Email defuscator tool */
 		$('.hiddenEmail').defuscate();
 		/* Links to pages on the same site that are made with tinymce/etc. need to be converted */
-		$('#content a').attr('href',function(idx,attr) { return attr.replace(/^pg(\d+)/g,'#pg$1'); } );
+		if(anego.pageLoad=='ajax')
+			$('#content a').attr('href',function(idx,attr) { return attr.replace(/^pg(\d+)/g,'#pg$1'); } );
 		/* Default zoomable picture links */
 		$('a.zoomable').fancybox(fancyBoxSettings);
 	}
@@ -536,10 +536,10 @@ function OpenDialog(settings) {
 	if(settings.height!=undefined) 
 		h = 'height: '+settings.height+'px; ';
 	
-	if(!document.getElementById("inactive"))
-		document.getElementsByTagName("body")[0].innerHTML += "<div id=\"inactive\" style=\"display:none\"></div>";
+	if($("#inactive").length == 0)
+		$('body').append("<div id=\"inactive\" style=\"display:none\"></div>");
 	
-	document.getElementById("inactive").style.display='';
+	$("#inactive").css('display','');
 	
 	var str = "<div id=\"horizon\"><div id=\"dlgBox\" class=\"adminstyles\" style=\""+w+h+" top:"+(window.innerHeight/3)+"px;\"><div id=\"dlgTitle\">"+settings.title+
 						"<div id=\"dlgXBtn\" class=\"dlgBtn\">X</div><div id=\"dlgMBtn\" class=\"dlgBtn\">_</div></div><hr class=\"dlgSep\">\n<div id=\"dlgContent\">"+settings.content+
@@ -551,7 +551,7 @@ function OpenDialog(settings) {
 	}
 	str += "</div></div></div></div>";
 						
-	document.getElementById("inactive").innerHTML = str;
+	$("#inactive").html(str);
 	dlgBox = $('#dlgBox');
 	/* settings.inactivate defines wether the user is still allowed to interact with the site or not (blocking or non blocking dialog) */
 	if(settings.blocking==false)

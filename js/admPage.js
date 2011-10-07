@@ -261,8 +261,8 @@ function DragDropElements(contentElements) {
 			
 			if(elements[$(element).attr('id')]==undefined || typeof elements[$(element).attr('id')].hideMiniToolbar=='undefined' || elements[$(element).attr('id')].hideMiniToolbar()!=true) {
 				miniToolbar.css('display','');
-				miniToolbar.css('left',Math.floor($(element).offset().left+$(element).outerWidth()-miniToolbar.outerWidth()));
-				miniToolbar.css('top', Math.floor($(element).offset().top));
+				// offset() needed here because other parent elements might have position:absolute etc.
+				miniToolbar.offset({ top: $(element).offset().top, left: $(element).offset().left + $(element).outerWidth() - miniToolbar.outerWidth()});
 			}
 			$(element).addClass('ceBorder');
 			curEl = element;
