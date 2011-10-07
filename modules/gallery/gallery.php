@@ -22,5 +22,13 @@ class gallery extends ContentElement {
 	function generateContent($id) {
 		return "not implemented yet";
 	}
+
+	public static function installModule() {
+		return Array(
+			'js'=>Array(
+				'pageEdit'=>'gallery.js'
+			)
+		);
+	}
 }
 ?>

@@ -277,7 +277,7 @@ class BlogManager {
 			global $lng, $cfg;
 			$text='';
 			
-			if(LOGINOK && !$this->readonly) $text='<div id="blogadminbar_'.$blog_id.'" align="right"><a href="#" onclick="blogfuncs.newEntry('.$blog_id.')">'.$lng['blog']['new_entry'].'</a></div>';
+			if(LOGINOK && !$this->readonly) $text='<div id="blogadminbar_'.$blog_id.'" align="right"><a href="#" onclick="blogfuncs.newEntry('.$blog_id.'); return false;">'.$lng['blog']['new_entry'].'</a></div>';
 			
 			$q='SELECT * FROM '.$this->blogTable.' WHERE blog_id='.$blog_id.' ORDER BY date DESC';
 			$res=mysql_query($q) or

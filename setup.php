@@ -160,7 +160,17 @@ div#padder {
 				
 				<li><b>Configure conf.inc.php</b><br>
 		<?php
-				$sql_link=@mysql_connect(HOST,SQLUSER,SQLPASS);
+				$err = '';
+				$icon = $good;
+				if(!file_exists('conf.inc.php')) {
+					$icon = $bad;
+					$err = 'conf.inc.php not found. You can use conf.sample.inc.php as template';
+				}
+				echo $icon.'Config file'.$err.'<br>';
+		
+				$sql_link=false;
+				if(file_exists('conf.inc.php'))
+					$sql_link=@mysql_connect(HOST,SQLUSER,SQLPASS);
 				
 				if(isset($_GET['a']) && $_GET['a']=='crdb') {
 					if(@mysql_query('CREATE DATABASE IF NOT EXISTS '.$_POST['dbname']))

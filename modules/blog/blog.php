@@ -35,6 +35,7 @@ class blog extends ContentElement {
 				var aw;
 				if(aw=GetAnswer(data)) {
 					$("#blogc_$id").html(aw);
+					Core.initPageContent();
 				}
 			});
 		});

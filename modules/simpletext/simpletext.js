@@ -100,7 +100,7 @@ simpletext = function(elid) {
 			plugins : "advimagescale,advlink,contextmenu,paste,inlinepopups,phpimage",
 			height : 300,
 			theme_advanced_buttons1 : "bold,italic,strikethrough,|,justifyleft,justifycenter,justifyright,justifyfull,|,formatselect,fontselect,fontsizeselect,|,forecolor,backcolor",
-			theme_advanced_buttons2 : "pastetext,|,bullist,numlist,|,outdent,indent,|,undo,redo,|,link,unlink,|,charmap,|,hr,removeformat,|,sub,sup,|,phpimage",
+			theme_advanced_buttons2 : "pastetext,|,bullist,numlist,|,outdent,indent,|,undo,redo,|,link,unlink,|,charmap,|,hr,removeformat,|,sub,sup,|,phpimage,|,code",
 			theme_advanced_buttons3 : "",
 			theme_advanced_toolbar_location : "top",
 			theme_advanced_toolbar_align : "left",

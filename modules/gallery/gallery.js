@@ -27,9 +27,6 @@ gallery = function(elid) {
 			container.html(oldHTML);
 			editing=false;
 		} else {
-			var buttons = '<button type="button" name="mew" id="btn_sendrte" style="min-width:150px">'+lng_savechanges+'</button> '+
-							'<button type="button" name="mew2" id="btn_cancelrte" style="min-width:150px">'+lng_cancelchanges+'</button>';
-			
 			container.removeClass('ceDraggable');
 			container.addClass('ceEditing');
 			editing=true;
@@ -38,34 +35,7 @@ gallery = function(elid) {
 			$.get('index.php',{a:'gcec', t:module_id,elid:element_id},function(data) {
 				if((aw=GetAnswer(data))!=null) {
 					oldHTML = aw;
-					
-					container.html('<textarea style="width:100%" rows="10" id="newElem'+element_id+'">'+aw.replace(/>/g,'&gt;').replace(/</g,'&lt;')+'</textarea>'+buttons);
-					
-					$("#btn_sendrte").click(function() {
-						var val=$("#newElem"+element_id).val();
-						container.addClass('ceDraggable');
-						container.removeClass('ceEditing');
-						container.html(val);
-						editing=false;
-						$.ajax({
-							type : 'POST',
-							url : 'index.php',
-							data: 'a=callce&t='+module_id+'&elid='+element_id+'&fn=save&html='+urlencode(val),
-							success: function(data) {
-								// alerts any errors that might have happened
-								GetAnswer(data);
-								hideMiniToolbarVar=false;
-							}					
-						});
-					});
-					$("#btn_cancelrte").click(function() {
-						container.addClass('ceDraggable');
-						container.removeClass('ceEditing');
-						container.html(oldHTML);
-						editing=false;
-						hideMiniToolbarVar=false;
-					});
-			
+					container.html('stuff');
 				}
 			});
 			
