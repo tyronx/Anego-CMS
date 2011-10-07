@@ -54,7 +54,6 @@ $anego->assign('language',$language);
 $anego->assign('lng_editpage',$lng_editpage);
 // Tells the loader to load all default javascript files
 $anego->AddJsModule('de');
-$anego->AddJsModule('am');
 $anego->AddJsModule('ad'.$language);
 //$anego->assign('lng_savechanges',$lng_savechanges);
 //$anego->assign('lng_cancelchanges',$lng_cancelchanges);
