@@ -656,7 +656,7 @@ function PrintLinks() {
 	PrintLinksRec(0, MENU_MAIN,true);
 	echo '</div>';
 
-	Legend();
+	//Legend();
 
 	if($cfg['minorMenu']) {
 		echo '<div class="treeDiv"><b>'.$GLOBALS['lng_minormenu'].'</b><br>';
