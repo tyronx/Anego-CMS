@@ -213,7 +213,7 @@ function AdminMenuFunctions() {
 			$('#content').html(aw);
 			
 			$.post('index.php?a=mainmenu','',function(data) {
-				document.getElementById("menu").innerHTML = data;
+				$("#menu").html(data);
 				$.post("index.php?a=minormenu",function(data) {
 					$("#minornav").html(data);
 					/* "Upgrade degraded links to ajax loading again */

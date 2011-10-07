@@ -247,7 +247,7 @@ function ExitError($msg,$ToLog="", $severity=0, $log_once=0, $no_header=0) {
 }
 
 /******* Page display *******/
-/* Determine which page to show */
+/* Determine which page to show - returns the current page to be shown */
 function CurrentPage() {
 	if(isset($_GET['p']) && intval($_GET['p'])>0) $p=intval($_GET['p']);
 	// No particular page? Show startpage
@@ -255,6 +255,7 @@ function CurrentPage() {
 	return $p;
 }
 
+/* Returns and defines constant HOMEPAGE, which is the first page to be shown when a visitor comes to the site */
 function HomePage() {
 	global $lng_failedsettings;
 	
