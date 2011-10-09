@@ -355,7 +355,7 @@ function PrintPage($p) {
 		}
 		
 		$anego->AddContent(FormatText($row['content_prepared']));
-		$anego->assign('pageID',$p);
+		$anego->assign('pageID',$p);		
 		if(!$anego->get_template_vars('pageTitle'))
 			$anego->assign('pageTitle',$row['name']);
 		$anego->display('index.tpl');

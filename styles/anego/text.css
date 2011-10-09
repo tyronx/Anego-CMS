@@ -2,7 +2,10 @@ body {
 	font-family: Arial;
 	font-size:11pt;
 	color:#000;
-	
+}
+
+li {
+	padding-top:4px;
 }
 
 /* Because tinymce loads after text.css, the body - font size gets overwritten */

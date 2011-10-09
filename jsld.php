@@ -6,6 +6,8 @@
  * - (implemented) then cache a range of required files
  * - define a production mode where we set an expire header so the browser doesn't even request the file 
  */
+ 
+// BIG TODO: Catch php errors,log them and notify the admin. Errors in this loader cause the browser to fail loading the page due to the gzip encoding, creating a untrackable problem
 
 include('inc/auth.php'); // Also includes config
 
