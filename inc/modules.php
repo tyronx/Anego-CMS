@@ -187,9 +187,11 @@ class PageManager {
 			// Load the file and get install settings
 			include_once($this->modulePath.$f.'/'.$f.'.php');
 			
-			// use SuperClosure.class.php here to serialize the anonymous function hooks
-			$install_config=$f::installModule();
-						
+			// Todo: use SuperClosure.class.php here to serialize the anonymous function hooks
+			//$install_config=$f::installModule(); // this syntax only works in php5.3 
+			// ...and eval() is always a potential security hole :/
+			eval('$install_config = '.$f.'::installModule();');
+			
 			include_once('lib/jsmin.php');
 			
 			// Todo: New module install system with anonymous functions for hooks as well as better js loading code over the js loader

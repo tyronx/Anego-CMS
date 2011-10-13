@@ -103,7 +103,10 @@ switch($ac) {
 
 		$ce = new $mid();
 
-		$funcName = $mid::$methodMap[$_POST['fn']];
+		// $funcName = $mid::$methodMap[$_POST['fn']]; // this syntax only works in php5.3 
+		// ...and eval() is always a potential security hole :/
+		eval('$methodMap= '.$mid.'::$methodMap;');
+		$funcName = $methodMap[$_POST['fn']];
 		
 		//$cn::$methodMap[$_POST['fn']])
 		if(!strlen($funcName)) exit("500\nFunction does not exist");
