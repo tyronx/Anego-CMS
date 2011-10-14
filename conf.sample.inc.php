@@ -33,7 +33,7 @@ define('STYLE','anego');
  * ger: German
  * auto: Autodetect language by browser/cookie (not fully implemented yet)
  */
-$language = 'end';
+$language = 'eng';
 
 /* Uncomment & edit this line, if your anego installation is in a subfolder */
 //$cfg['domain'].='anego/';
