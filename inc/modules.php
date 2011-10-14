@@ -3,15 +3,17 @@
 abstract class BasicModule { 
 }
 
-/* Implement this Interface if you want your plugin to be a draggable content element when editing pages */
+/* Implement this Interface if you want your module to be a draggable content element when editing pages 
+ * Also includes basic module behaviour. Overwrite where required.
+ */
 abstract class ContentElement extends BasicModule {
 	// Map of methods that your js-module requires
 	static $methodMap = Array('save'=>'saveElement');
 	
 	function databaseTable() { return 'undefined'; }
 	
-	/* Once the user drops a content element or edits an existing one, this function will be called.
-	 * Builds a content element and returns either the generated content or an interface to edit the element 
+	/* Once the user drops a content element, this function will be called.
+	 * Builds a content element and returns the generated content
 	 * parameter: id of the content element to be edited or -1 if a new element should be created
 	 * returns: String of the HTML content
 	 */
@@ -26,6 +28,7 @@ abstract class ContentElement extends BasicModule {
 		return Array("id"=>$id,"html"=>$this->generateContent($id));
 	}
 	
+	/* Called when the user presses Save when editing that content element */
 	function saveElement() {
 		$id=intval($_POST['elid']);
 		if(!$id) exit("500\nMissing id");
@@ -146,7 +149,7 @@ class PageManager {
 		return $ret;
 	}
 	
-
+	/* Rebuilds a page's HTML by calling each individual module generateContent() method and stitching that together */
 	function generatePage($page_id) {
 		$page_id=intval($page_id);
 		
@@ -180,6 +183,7 @@ class PageManager {
 		else $this->loadedModules = Array();			
 	}
 	
+	// Installs a module
 	function installModule($f) {
 		if(file_exists($this->modulePath.$f.'/'.$f.'.php')) {
 			$header = $this->parseHeader(file_get_contents($this->modulePath.$f.'/'.$f.'.php'));
@@ -217,6 +221,7 @@ class PageManager {
 		} else return false;
 	}
 	
+	// Uninstalls a module
 	function uninstallModule($f) {
 		if(!isset($this->loadedModules[$f])) return true;
 		
@@ -231,7 +236,7 @@ class PageManager {
 		return true;
 	}
 
-	// Finds all existing modules
+	// Populates the loadedModules array with all existing modules
 	function findModules() {
 		$d = opendir($this->modulePath);
 		while($f=readdir($d)) {	
@@ -239,7 +244,7 @@ class PageManager {
 				$header = $this->parseHeader(file_get_contents($this->modulePath.$f.'/'.$f.'.php'));
 				if(!isset($header['Plugin Name'])) continue;
 				
-				if(isset($this->loadedModules[$f])) $this->loadedModules[$f]['installed']=true;				
+				if(isset($this->loadedModules[$f])) $this->loadedModules[$f]['installed']=true;
 				else
 					$this->loadedModules[$f] = array('name'=>$header['Plugin Name'], 
 													 'image'=>@$header['Plugin Image'],
@@ -255,14 +260,14 @@ class PageManager {
 		}
 	}
 	
+	// Parses the Meta-Data that is contained in the comments at beginning of the module main php file
 	function parseHeader($file) {
 		if(preg_match("#/\*(.*)\*/#sU",$file,$cmt))
-			if(preg_match_all("#^\s*([\w\s]*):\s*(.*)$#m",$cmt[1],$pairs)>0)		
+			if(preg_match_all("#^\s*([\w\s]*):\s*(.*)$#m",$cmt[1],$pairs)>0)
 				return array_combine($pairs[1],$pairs[2]);
 		
 		return Array();
 	}
-
-
+	
 }
 ?>

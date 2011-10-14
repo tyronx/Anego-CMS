@@ -323,7 +323,7 @@ switch($_GET['a']) {
 		$subm = intval($_POST['subm']);
 		$nolink = intval($_POST['nolink']);
 		$vis = intval($_POST['vis']);
-		$intopage = intval($_POST['intopage']);
+		$intopage = isset($_POST['intopage']) ? intval($_POST['intopage']) : 0;
 		// Todo: For multi-menus check here the database for valid menu names!
 		$menu = in_array($_POST['menu'],array('MINOR','MAIN')) ? $_POST['menu'] : 'MAIN';
 		$pos = 0;

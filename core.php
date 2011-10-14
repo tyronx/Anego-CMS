@@ -116,23 +116,6 @@ if(isset($s['pagetitle']) && strlen($s['pagetitle'])) $lng_pagetitle = str_repla
 else $lng_pagetitle='Anego';
 
 $anego->assign('lng_pagetitle',$lng_pagetitle);
-
-// Todo someday: Cache these results somehow
-$defIcons = array(	'add'=>'styles/default/img/add.png',
-					'del'=>'styles/default/img/delBig.png',
-					'drag'=>'styles/default/img/drag.png',
-					'linkpic'=>'styles/default/img/linkPic.png',
-					'folder'=>'styles/default/img/folder.png',
-					'file'=>'styles/default/img/file.png',
-					'loading'=>'styles/default/img/progress_active.gif',
-					'edit'=>'styles/default/img/pencil.png',
-					'editB'=>'styles/default/img/pencilB.png',
-					'delB'=>'styles/default/img/del.png');
-foreach($defIcons as $idx=>$icon) 
-	if(file_exists($s=str_replace('default',STYLE,$icon)))
-		$defIcons[$idx]=$s;
-
-//$anego->AddJsPreload("\tloadingIcon='".$defIcons['loading']."';"); - replace with css
 $anego->assign('loginok',LOGINOK);
 $anego->assign('editablePage',LOGINOK && basename($_SERVER['SCRIPT_NAME'])=='index.php');
 
