@@ -3,7 +3,7 @@ function alohafuncs(element_id) {
 	
 	this.init = function() {
 		if(typeof GENTICS=="undefined"||!GENTICS) {
-			GENTICS_Aloha_base='modules/alohatext/aloha/';
+			GENTICS_Aloha_base='lib/aloha/';
 			
 			Core.loadJavascript(GENTICS_Aloha_base+"aloha-nojq.js");
 			Core.loadJavascript(GENTICS_Aloha_base+"plugins/com.gentics.aloha.plugins.Format/plugin.js");
