@@ -1,3 +1,4 @@
+// Todo: Make this configurable
 var fancyBoxSettings = {
 	'cyclic'		: false,
 	'overlayShow'	: false,

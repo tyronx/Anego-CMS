@@ -49,16 +49,18 @@ if($language=='ger') {
 	define("PAGE_ELEMENT",$cfg['tablePrefix']."pages_element_eng");
 }
 
+// Main HTML output handler
 $anego = new Anego(STYLE);
 $anego->assign('language',$language);
-$anego->assign('lng_editpage',$lng_editpage);
+if(strpos($_SERVER['HTTP_USER_AGENT'],'MSIE'))
+	$anego->assign('browser','ie');
+else $anego->assign('browser','non-ie');
+
 // Tells the loader to load all default javascript files
 $anego->AddJsModule('de');
+// Loads language related js files
 $anego->AddJsModule('ad'.$language);
-//$anego->assign('lng_savechanges',$lng_savechanges);
-//$anego->assign('lng_cancelchanges',$lng_cancelchanges);
-$anego->assign('lng_examples',$lng_examples);
-$anego->AddFooter('<div id="inactive" style="display:none"></div>');
+// Settings required by js files
 $anego->AddJsPreload("\tanego=new Object();");
 $anego->AddJsPreload("\tanego.language='$language';");
 $anego->AddJsPreload("\tanego.style='".STYLE."';");
@@ -66,12 +68,6 @@ $anego->AddJsPreload("\tanego.fancyURLs=".($cfg['fancyURLs']?'1':'0').";");
 $anego->AddJsPreload("\tanego.submenuStyle='".$cfg['submenuStyle']."';");
 $anego->AddJsPreload("\tanego.animatePageLoad=".$cfg['ajaxloadFadeTimer'].";");
 $anego->AddJsPreload("\tanego.pageLoad='".$cfg['pageLoad']."';");
-
-//$anego->AddJsPreload("\tlanguage='".$language."';");
-
-if(strpos($_SERVER['HTTP_USER_AGENT'],'MSIE'))
-	$anego->assign('browser','ie');
-else $anego->assign('browser','non-ie');
 
 /***** Init database, etc. *****/ 
 
@@ -99,7 +95,7 @@ $lng=Array();
 /**** More setup code for the design ****/
 
 $s=array();
-// Todo: Reduces to the needed settings (dont retrieve all)
+// Todo: Reduce to the needed settings (dont retrieve all)
 $q="SELECT * FROM ".SETTINGS;
 $res = mysql_query($q) or
 	BailSQLn($lng_genericerror,$q); 
@@ -121,29 +117,35 @@ $anego->assign('editablePage',LOGINOK && basename($_SERVER['SCRIPT_NAME'])=='ind
 
 /**** Error handling ****/
 
-function LogInfo($file, $text) {
+// Todo: You can use this but info.log needs to be set up then in setup.php
+/*function LogInfo($file, $text) {
 	$fp=fopen('var/info.log','a');
 	fwrite($fp,$file.' '.date('d.m.Y H:i:s')."\t".$text."\n");
 	fclose($fp);
-}
+}*/
 
 function Bail($msg,$no_header=0) {
 	ExitError($msg,"",0,0,$no_header);
 }
+// Bail after unsuccessfull SQL Query without header (only used when connecting to DB failed)
 function BailSQLn($msg,$q,$log_once=0) {
 	ExitError($msg,mysql_error()."\r\nQuery: '$q'",2,$log_once,true);
 }
+// Bail after unsuccessfull SQL Query with header
 function BailSQL($msg,$q,$log_once=0) {
 	ExitError($msg,mysql_error()."\r\nQuery: '$q'",2,$log_once);
 }
+// Normal Bail for non-Ajax Request
 function BailErr($msg,$log="",$log_once=0) {
 	ExitError($msg,$log,2,$log_once);
 }
+// Normal Bail for Ajax Request
 function BailAjax($msg,$query='') {
 	logError($msg,$query);
 	exit("500\n$msg");
 }
 
+// Only writes extensive error messages to log file
 function logError($msg, $query = '') {
 	global $lng_exiterror;
 	
@@ -155,7 +157,7 @@ function logError($msg, $query = '') {
 	$fp = fopen('var/error.log','a');
 	fwrite($fp,"ID: n/a\n");
 	fwrite($fp,"Time: ".time()." (".@date("H:i d.m.Y").")\n");
-	fwrite($fp,"Error: BailAjax(".str_replace("\n\n","\n",$msg).")\n");
+	fwrite($fp,"Error: logError(".str_replace("\n\n","\n",$msg).")\n");
 	if(strlen($log)) fwrite($fp,"Log: ".str_replace("\n\n","\n",$log)."\n");
 	fwrite($fp,'$_GET: '.serialize($_GET)."\n");
 	fwrite($fp,'$_POST: '.serialize($_POST)."\n");
@@ -164,6 +166,7 @@ function logError($msg, $query = '') {
 	fclose($fp);
 }
 
+// Writes error to log file and displays a generic error through smarty 
 // $severity:
 // 0 ... Print error, dont' log
 // 1 ... Print error, simple log msg
@@ -345,6 +348,7 @@ function PrintPage($p) {
 	}
 }
 
+// Returns required module-js files per page
 function pageLoadJs($p) {
 	global $language;
 	
@@ -374,6 +378,7 @@ function pageLoadJs($p) {
 	return $js;
 }
 
+// Returns required module-js files per page when editing
 function pageEditJs($p) {
 	if(file_exists('var/installed_modules'))
 		$modules = unserialize(file_get_contents('var/installed_modules'));

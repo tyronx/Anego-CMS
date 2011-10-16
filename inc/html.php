@@ -22,7 +22,7 @@ define('ADD_GALLERY',6);
 /* Is used for the outdated gallery style using bbcode and for file management 
  * Creates a navigate-able list of files in a given folder (folders can be clicked to browse them)
 */
-// Todo: Rewrite the whole file manager and throw away all this gallery code 
+// Todo: Rewrite the whole file manager as class and throw away all this gallery code 
 function Gallery($root="",$dtype=DTYPE_NORMAL, $rows=-1, $cols=-1, $width=-1, $height=-1) {
 	global $site, $_SERVER, $c_uidx, $cfg;
 	
