@@ -56,6 +56,20 @@ if(strpos($_SERVER['HTTP_USER_AGENT'],'MSIE'))
 	$anego->assign('browser','ie');
 else $anego->assign('browser','non-ie');
 
+// Todo: Some of these icons are not needed anymore
+$defIcons = array(
+	'add'=>'styles/default/img/add.png',
+	'del'=>'styles/default/img/delBig.png',
+	'drag'=>'styles/default/img/drag.png',
+	'linkpic'=>'styles/default/img/linkPic.png',
+	'folder'=>'styles/default/img/folder.png',
+	'file'=>'styles/default/img/file.png',
+	'loading'=>'styles/default/img/progress_active.gif',
+	'edit'=>'styles/default/img/pencil.png',
+	'editB'=>'styles/default/img/pencilB.png',
+	'delB'=>'styles/default/img/del.png'
+);
+
 // Tells the loader to load all default javascript files
 $anego->AddJsModule('de');
 // Loads language related js files
