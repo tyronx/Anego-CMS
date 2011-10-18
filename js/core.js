@@ -206,7 +206,9 @@ function CoreFunctions() {
 				break;
 				
 			case 'pg':
-				$('#pageEditLink').parent().css('display','');
+				if($('#pageEditLink').length == 0)
+					$('ul.adminnav').prepend('<li><a href="javascript:Core.editPage()" id="pageEditLink">' + lngMain.edit_page + '</a></li>');
+				else $('#pageEditLink').parent().css('display','');
 				this.selectPage(newpage);
 				
 				get = {a:'p',p:newpage.id};

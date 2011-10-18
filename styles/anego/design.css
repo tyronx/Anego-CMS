@@ -52,7 +52,7 @@ body {
 	border-bottom-left-radius: 12px;
 	-moz-border-radius-bottomright: 12px;
 	border-bottom-right-radius: 12px;
-	background-color:#EAEAEA;
+	background-color:#EBEBE9;
 	text-align:center;
 }
 div#name {
@@ -90,7 +90,7 @@ div#name {
 .mainnav > li {
 	padding:2px;
 	margin-left:5px;
-	background-color:#C4C4C4;
+	background-color:#C5C6C2;
 	padding-left:10px;
 	padding-right:10px;
 	text-align:center;
@@ -139,10 +139,10 @@ ul#minornav a { border:0px; }
 
 /* Bg color is set if the class is navSelected */
 .mainnav > li.navSelected { 
-	background-color:#E8E8E8;
+	background-color:#DDDDDB;
 	text-shadow: 1px 1px 0 #FFFFFF;
 	border:1px solid #aaa;
-	border-bottom-color:#E8E8E8;
+	border-bottom-color:#DDDDDB;
 }
 
 
@@ -251,8 +251,12 @@ ul.nav a:hover {
 
 #minormenu {
 	position:absolute;
-	right:-9px;
-	bottom:-23px;
+	left:10px;
+	bottom:23px;
+}
+
+#minormenu a {
+	color:gray;
 }
 
 ul#minornav {
@@ -325,4 +329,8 @@ div.box {
 
 .menuTree a, #jquery-lightbox a, .adminstyles a {
 	border:0;
+}
+
+.clearfloat {
+	clear:both;
 }

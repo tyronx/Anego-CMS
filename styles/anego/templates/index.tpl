@@ -21,18 +21,15 @@
 			
 			<div id="centerBox">
 				<div id="maincontent" class="shadow round">
-					<!-- Todo: What is this table for? -->
-					<table border="0" width="100%" cellspacing="0" cellpadding="0">
-						<tr>
-							<td id="notused"></td>
-							<td id="contents"><div id="content">{$content}</div></td>
-						</tr>
-					</table>
+					<div id="contents">
+						<div id="content">{$content}</div>
+						<div class="clearfloat"></div>
+					</div>
 				</div>
 				
 				<div id="footer">Powered by Anego CMS.</div>
+				<div id="minormenu"><ul class="mnav" id="minornav">{$minormenu}</ul></div>
 			</div>
-			<!--<div id="minormenu"><ul class="mnav" id="minornav">{$minormenu}</ul></div>-->
 		</div>
 	{$footer}
 </body>

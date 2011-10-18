@@ -57,7 +57,8 @@ function DragDropElements(contentElements) {
 	
 	this.init = function() {
 		// Make sure #content is big enough to put something into
-		$('#content').css('min-height','40px');
+		if(parseInt($('#content').css('min-height')) < 40 || parseInt($('#content').css('height') < 40))
+			$('#content').css('min-height','40px');
 		
 		/* Parse content element modules and execute its js */
 		for(var i=0; i<contentElements.length; i++) {

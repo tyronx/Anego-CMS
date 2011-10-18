@@ -637,7 +637,7 @@ class Anego extends Smarty {
 			foreach($this->admin_links as $link)
 				echo '<li>'.$link.'</li>';
 		?>
-		<li class="adminitem"><a href="admin.php?a=lo"><?=$GLOBALS['lng_logout']?></a></li>
+		<li><a href="admin.php?a=lo"><?=$GLOBALS['lng_logout']?></a></li>
 		</ul>
 		<?		
 		$str = ob_get_contents();

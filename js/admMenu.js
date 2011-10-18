@@ -170,7 +170,7 @@ function AdminMenuFunctions() {
 		str +='<input type="checkbox" name="menu" value="1"'+ch1+'> '+lng_showinmenu+'<br>';
 		//str +='<input type="checkbox" name="subm" value="1"'+ch3+'> '+lng_ident+'<br>';
 		str += '<input type="checkbox" name="admin" value="1"'+ch2+'> '+lng_notvisible+'</form>';
-		str+='<div style="position:absolute; left:5px; bottom:5px; z-index:2;"><a href="' + pageLink + '">'+lng_topage+'</a></div>';
+		str+='<div style="position:absolute; left:5px; bottom:5px; z-index:2;"><a href="' + pageLink + '" onclick="CloseDialog()">'+lng_topage+'</a></div>';
 
 		OpenDialog({
 			title:lng_editpage,

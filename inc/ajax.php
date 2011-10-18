@@ -3,7 +3,8 @@ if(isset($_GET['a']))
 	$ac = $_GET['a'];
 else $ac = $_POST['a'];
 
-if(in_array($ac,Array('gce','cce','edce','callce','delce','mce','gcec'))) {
+// Initialize PageManager where needed
+if(in_array($ac,Array('rp','gce','cce','edce','callce','delce','mce','gcec'))) {
 	include('inc/modules.php');
 	$pmg = new PageManager();
 }
@@ -12,7 +13,14 @@ switch($ac) {
 	// Helper to check if url_rewrite is enabled
 	case 'rw':
 		exit('yes');
-		
+	
+	// Rebuild page contents
+	case 'rp':
+		$page = intval($_GET['page']);
+		$pmg->generatePage($page);
+		exit("200\nok");
+		break;
+	
 	// Get content elements
 	case 'gce':
 		if(!LOGINOK) exit("300\nYou need to log on first.");
@@ -206,8 +214,10 @@ switch($ac) {
 	
 	// Print minor menu
 	case 'minormenu':
-		$anego->assign('minormenu',$anego->MinorMenu());
-		$anego->display_element('menu.tpl');
+		// Minor menu doesn't have a template :(
+		echo $anego->MinorMenu();
+		//$anego->assign('minormenu',$anego->MinorMenu());
+		//$anego->display_element('menu.tpl');
 		exit();
 	
 	// ajax page loading

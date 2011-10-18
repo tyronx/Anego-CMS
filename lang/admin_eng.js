@@ -1,12 +1,12 @@
 if(typeof lngMain == 'undefined') {
 	lngMain = {
-		edit_page: 'Edit pages',
+		edit_page: 'Edit page',
 		doneedit_page: 'Finished editing',
 		configure: 'Configure',
 		configuration: 'Configuration'
 	};
 	
-	// Todo: refactor this into above property list
+	// Todo: refactor all this into above property list
 	lng_uploading = "Uploading...";
 	lng_completed = "completed!";
 	lng_failed = 'failed.';
