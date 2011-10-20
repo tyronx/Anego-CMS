@@ -33,13 +33,19 @@ $cfg['galInsertCols'] = 4;
 /* How many image rows for the insert gallery dialog*/
 $cfg['galInsertRows'] = 4;
 
-
-
 /* Gallery thumbnail image width */
 $cfg['galThumbnailWidth'] = 160;
 
 /* Gallery thumbnail image height */
 $cfg['galThumbnailHeight'] = 120;
+
+
+/******** Directory to your uploaded files with trailing slash ********/
+define("FILESROOT",'files/');
+
+/**** Smarty path ****/
+define("SMARTYPATH",'lib/Smarty-2.6/');
+
 
 /* How show submenus be displayed, default is visible
  * visible: always visible

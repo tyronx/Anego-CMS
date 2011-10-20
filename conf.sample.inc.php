@@ -1,19 +1,6 @@
 <?
-/******** User accounts ********/
-
-$cfg['tablePrefix'] = 'anego_';
-
-// generate user accounts with setup.php
-// Insert only lower case names here
-$user_accounts = Array(
-	'someuser' => 'somehash',
-	'someotheruser' => 'someotherhash',
-);
-
-$user_roles = Array(
-	'someuser' => Role::Admin,
-	'someotheruser' => Role::ProMod
-);
+/******** Anego Website Style ********/
+define('STYLE','anego');
 
 /******** MySQL Database Connection Info ********/
 // Host
@@ -25,8 +12,21 @@ define ("SQLPASS","password");
 // Databasename
 define ("SQLDB","database");
 
-/******** Anego Website Style ********/
-define('STYLE','anego');
+/******** User accounts ********/
+
+/* Example Syntax of user accounts, generate these with the setup.php script 
+ * Use only lower case names! 
+ *
+ * $user_accounts = Array(
+ *   'someuser' => 'somehash',
+ *   'someotheruser' => 'someotherhash',
+ * );
+
+ * $user_roles = Array(
+ *  'someuser' => Role::Admin,
+ *  'someotheruser' => Role::ProMod
+ * );
+ */
 
 /* Global Language setting (defaults to english)
  * eng: English
@@ -38,13 +38,6 @@ $language = 'eng';
 /* Uncomment & edit this line, if your anego installation is in a subfolder */
 //$cfg['domain'].='anego/';
 
-/******** Directory to your uploaded files ********/
-define("FILESROOT",'files/');
-
-/**** Smarty path ****/
-define("SMARTYPATH",'lib/Smarty-2.6/');
-
 // Do not edit this
 define("CONFIG_LOADED",true);
-
 ?>
