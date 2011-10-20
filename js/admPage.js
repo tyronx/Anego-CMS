@@ -25,7 +25,12 @@ Core.endEdit = function(ignorePage) {
 		});
 }
 
-
+/* Initializes the Page Editor 
+ * Handles Drag&Drop insertion, Moving and Deleting of elements and makes all 
+ * the necassary calls to the content element objects
+ * Parameter is the return value of PageManager->contentElementModules() (page content and array of loaded modules),
+ * thus the page is basically being reconstructed on the client side (in DragDropElements.preparePage()).
+ */
 function DragDropElements(contentElements) {
 	/* Element class prefixes */
 	var prefix = 'draggable';
@@ -44,7 +49,7 @@ function DragDropElements(contentElements) {
 	/* Mini toolbar stuff */
 	var imgEdit = $('<img src="styles/default/img/cleardot.gif" class="imgEdit icon">');
 	var imgBin = $('<img src="styles/default/img/cleardot.gif" class="imgBin icon">');
-	var miniToolbar=$('<div style="display:none;" class="miniToolbar"></div>');
+	var miniToolbar = $('<div style="display:none;" class="miniToolbar"></div>');
 	
 	// identifies wether the item currently being dragged is a placed content element or a content element template
 	var movingCE = 0;
@@ -62,9 +67,7 @@ function DragDropElements(contentElements) {
 		
 		/* Parse content element modules and execute its js */
 		for(var i=0; i<contentElements.length; i++) {
-			out += '<div style="float:left; margin-left:7px; margin-right:7px; text-align:center;"><div id="draggable'+i+'" class="ceDraggable ceTemplate"><img src="'+contentElements[i]['image']+'" alt=""></div>'+contentElements[i]['name']+'</div>';		
-			//eval(contentElements[i]['jscode']);
-			//eval(contentElements[i][1]+".init('"+contentElements[i][0]+"','"+contentElements[i][1]+"','"+contentElements[i][2]+"')");
+			out += '<div style="float:left; margin-left:7px; margin-right:7px; text-align:center;"><div id="draggable'+i+'" class="ceDraggable ceTemplate"><img src="'+contentElements[i]['image']+'" alt=""></div>'+contentElements[i]['name']+'</div>';	
 		}
 		out +="</div>";
 		
@@ -178,7 +181,7 @@ function DragDropElements(contentElements) {
 					bindEvents(curEl);
 					var ret=splitID($(curEl).attr('id'));
 					
-					$.get('index.php?a=mce&t='+ret.module_id+'&elid='+ret.elem_id+'&newpos='+mPos,
+					$.get('index.php?a=mce&mid='+ret.module_id+'&elid='+ret.elem_id+'&newpos='+mPos,
 						function(data) {
 							if(aw=GetAnswer(data)) {
 								// ok
@@ -201,15 +204,19 @@ function DragDropElements(contentElements) {
 			if($('#insertMarker').length>0) {
 				// content element template "index"
 				var num = parseInt(curEl.attr('id').substr(prefix2.length));
-				var el;
-				var mPos = markerPosition();
+				var $container = $('<div class="contentElement ceDraggable"><img src="styles/default/img/progress_active.gif"></div>');
+				var markerPos = markerPosition();
 				
-				$('#insertMarker').replaceWith(el=$('<div class="contentElement ceDraggable"><img src="styles/default/img/progress_active.gif"></div>'));
+				$('#insertMarker').replaceWith($container);
 				// Call to module
 				var obj;
-				eval("obj=new "+contentElements[num]['mid']+"('');");
-				obj.createElement(Core.curPg.id,el,mPos,function(elmid) { elements[elmid]=obj; });
-				bindEvents(el);
+				eval("obj = new "+contentElements[num]['mid']+"(" + Core.curPg.id + ");");
+				obj.createElement(
+					$container,
+					markerPos,
+					function(elmid) { elements[elmid]=obj; }
+				);
+				bindEvents($container);
 			}
 			
 			$(curEl).remove();
@@ -221,13 +228,15 @@ function DragDropElements(contentElements) {
 	
 	
 	this.preparePage = function() {
-		/* Instantiate all element objects */
+		/* Instantiate all element objects in the page */
 		$('.contentElement').each(function(index) {
-			var elInfo=splitID($(this).attr('id'));
-			for(var i=0; i<contentElements.length; i++)
-				if(contentElements[i]['mid']==elInfo.module_id) {
-						eval("elements['"+$(this).attr('id')+"'] = new "+contentElements[i]['mid']+"('"+elInfo.elem_id+"'); ");
-						break;
+			// Module Type and id is stored in html-element id
+			var elInfo = splitID($(this).attr('id'));
+
+			for(var i = 0; i < contentElements.length; i++)
+				if(contentElements[i]['mid'] == elInfo.module_id) {
+					eval("elements['"+$(this).attr('id')+"'] = new "+contentElements[i]['mid']+"(" + Core.curPg.id + ", '" + elInfo.elem_id + "'); ");
+					break;
 				}
 			//if(!found) alert("some content elements could not be loaded [insert proper error handling here (= don't make those elements editable + mark as such)]");
 		});

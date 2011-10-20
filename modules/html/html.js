@@ -1,16 +1,15 @@
 /* Huge todo: When ajax call to create/delete element fails: undo everthing */
 
-html = function(elid) {
+html = function(page_id, element_id) {
 	var module_id = 'html'
-	var element_id=elid;
-	var container=$("#"+module_id+"_"+elid);
-	var editing=false;
-	var oldHTML='';
+	var container = $("#" + module_id + "_" + element_id);
+	var editing = false;
+	var oldHTML = '';
 	var myself = this;
-	var hideMiniToolbarVar = false;	
+	var hideMiniToolbarVar = false;
 	
-	this.createElement = function(page_id, cnt, position, callback) {
-		$.get('index.php?a=cce&t='+module_id+'&page_id='+page_id+'&pos='+position, function(data) {
+	this.createElement = function(cnt, position, callback) {
+		$.get('index.php?a=cce&mid='+module_id+'&page_id='+page_id+'&pos='+position, function(data) {
 			var aw;
 			if(aw=GetAnswer(data))
 				var data = jQuery.parseJSON(aw);
@@ -59,7 +58,15 @@ html = function(elid) {
 						$.ajax({
 							type : 'POST',
 							url : 'index.php',
-							data: 'a=callce&t='+module_id+'&elid='+element_id+'&fn=save&html='+urlencode(val),
+							data: { 
+								a: 'callce',
+								mid: module_id,
+								elid: element_id,
+								pid: page_id,
+								fn: 'save',
+								recache: true,
+								'params[]': [val]	// Function parameters
+							},
 							success: function(data) {
 								// alerts any errors that might have happened
 								GetAnswer(data);
@@ -83,12 +90,16 @@ html = function(elid) {
 	
 	/* Return true if delection was successful */
 	this.deleteElement = function (callback) {
-		$.get('index.php?a=delce&t='+module_id+'&id='+element_id,
-			function(data) {
-				if(aw=GetAnswer(data)) {
-					callback();
-				}
-			});
+		$.get('index.php', {
+			a: 'delce',
+			pid: page_id,
+			mid: module_id,
+			elid: element_id
+		}, function(data) {
+			if(aw=GetAnswer(data)) {
+				callback();
+			}
+		});
 	}
 	
 }

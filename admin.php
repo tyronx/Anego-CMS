@@ -269,7 +269,7 @@ switch($_GET['a']) {
 		include('inc/modules.php');
 		$pmg = new PageManager();
 		$pmg->findModules();
-		exit("200\n".json_encode($pmg->modules()));
+		exit("200\n".json_encode($pmg->getModules()));
 		break;
 		
 	/* Install module */

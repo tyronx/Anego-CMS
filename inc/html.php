@@ -372,7 +372,6 @@ class Anego extends Smarty {
 		$this->assign('mainmenu',$this->MainMenu());
 		$this->assign('menuadmin',$this->MenuAdmin());
 		$this->assign('minormenu',$this->MinorMenu());
-		//$this->debugging = true;
 		
 		parent::display($template, $cache_id,$compile_id);
 	}
@@ -389,6 +388,7 @@ class Anego extends Smarty {
 		parent::display($template);	
 	}
 	
+	// Puts together all required header stuff
 	function prepare() {
 		// general header
 		if(count($this->header_general))
@@ -404,7 +404,7 @@ class Anego extends Smarty {
 		if(count($this->header_jspreload))
 			foreach($this->header_jspreload as $script)
 				$js.="$script\n";
-				
+		
 		$jsfiles = "";
 		if(count($this->header_prependjs))
 			foreach($this->header_prependjs as $path)
@@ -422,9 +422,8 @@ class Anego extends Smarty {
 		
 		if(file_exists('styles/'.$this->curStyle.'/custom.js'))
 			$jsfiles .= "\t<script type=\"text/javascript\" src=\"styles/".$this->curStyle."/custom.js\"></script>\n";
-				
 		
-		//$this->assign('js_preload',);
+		
 		$this->assign('header',$css."\t".'<script type="text/javascript">'."\n".$js."\t".'</script>'."\r\n".$jsfiles.$header);
 		// footer
 		$ft = "";
@@ -437,7 +436,6 @@ class Anego extends Smarty {
 		//	$this->assign('adminlinks',$this->admin_links);
 		
 		$this->assign('content',$this->content);
-		//$this->debugging = true;
 	}
 	
 	
@@ -621,7 +619,7 @@ class Anego extends Smarty {
 		$str = ob_get_contents();
 		ob_end_clean();
 		
-		return $str;		
+		return $str;
 	}
 	
 	function MenuAdmin() {

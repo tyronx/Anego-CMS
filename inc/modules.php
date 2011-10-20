@@ -7,8 +7,18 @@ abstract class BasicModule {
  * Also includes basic module behaviour. Overwrite where required.
  */
 abstract class ContentElement extends BasicModule {
+	var $pageId;
+	var $moduleId;
+	var $elementId;
 	// Map of methods that your js-module requires
 	static $methodMap = Array('save'=>'saveElement');
+	
+	// Class Constructor
+	function __construct($moduleId, $pageId, $elementId = 0) {
+		$this->moduleId = $moduleId;
+		$this->pageId = $pageId;
+		$this->elementId = $elementId;
+	}
 	
 	function databaseTable() { return 'undefined'; }
 	
@@ -17,53 +27,54 @@ abstract class ContentElement extends BasicModule {
 	 * parameter: id of the content element to be edited or -1 if a new element should be created
 	 * returns: String of the HTML content
 	 */
-	public function createElement($pageId, $position) { // does not take use of pageID/position
+	// does not make use of pageID/position. This information is stored in the anego_page_element table
+	public function createElement($position) {
 		global $cfg;
-		$q="INSERT INTO ".$this->databaseTable()." (value) VALUES ('')";
-		$res=mysql_query($q) or
-			BailAjax("Failed inserting element",$q);
-			
-		$id=mysql_insert_id();
 		
-		return Array("id"=>$id,"html"=>$this->generateContent($id));
+		$q = "INSERT INTO " . $this->databaseTable() . " (value) VALUES ('')";
+		$res = mysql_query($q) or
+			BailAjax("Failed inserting element", $q);
+
+		$this->elementId = mysql_insert_id();
+		
+		return Array("id" => $this->elementId, "html" => $this->generateContent($this->elementId));
 	}
 	
 	/* Called when the user presses Save when editing that content element */
-	function saveElement() {
-		$id=intval($_POST['elid']);
-		if(!$id) exit("500\nMissing id");
-				
-		if(get_magic_quotes_gpc ())
-			$_POST['html']=stripslashes($_POST['html']);
-				
-		$q="UPDATE ".$this->databaseTable()." SET value='".mysql_real_escape_string($_POST['html'])."' WHERE idx=$id";
-		mysql_query($q) or
-			BailAjax("Failed saving element ",mysql_error());
+	public function saveElement($html) {
+		if (! $this->elementId) return "300\nMissing element id";
 		
-		echo "200\nok";
-		return true;
-	}		
+		if (get_magic_quotes_gpc())
+			$html = stripslashes($html);
+				
+		$q = "UPDATE " . $this->databaseTable() . " SET value='" . mysql_real_escape_string($html) . "' WHERE idx=" . $this->elementId;
+		mysql_query($q) or
+			BailAjax("Failed saving element ", mysql_error());
+		
+		return "200\nok";
+	}
 	
 	/* Should generate the HTML content when called.
 	 * parameter: id of the content element to be generated	
 	 * returns: String of the HTML content
 	 * $elementId is cleaned via intval() so you don't have to worry about SQL injection 
 	 */
-	public function generateContent($elementId) {
+	public function generateContent() {
 		global $cfg;
-		$q = "SELECT value FROM ".$this->databaseTable()." WHERE idx=$elementId";
-		$res=mysql_query($q) or
-			BailAjax("Failed deleting element",$q);
-		list($str)=mysql_fetch_array($res);
+		$q = "SELECT value FROM ".$this->databaseTable()." WHERE idx=" . $this->elementId;
+		$res = mysql_query($q) or
+			BailAjax("Failed deleting element", $q);
+		list($str) = mysql_fetch_array($res);
+
 		return $str;
 	}
 	
 	/* $elementId is cleaned via intval() so you don't have to worry about SQL injection */
-	public function deleteElement($elementId) {
+	public function deleteElement() {
 		global $cfg;
-		$q = "DELETE FROM ".$this->databaseTable()." WHERE idx=$elementId";
+		$q = "DELETE FROM ".$this->databaseTable()." WHERE idx=" . $this->elementId;
 		mysql_query($q) or
-			BailAjax("Failed deleting element",$q);
+			BailAjax("Failed deleting element", $q);
 		return true;
 	}
 	
@@ -80,6 +91,8 @@ class PageManager {
 	
 	/* Array of loaded and/or existing modules */
 	/* Structure:
+	$mid = Module ID (string) - name of the directory and .php file
+	
 	$this->loadedModules[$mid] = array('name'=>$header['Plugin Name'], 
 									 'image'=>$header['Plugin Image'],
 									 'type'=>$header['Plugin Type'],
@@ -89,14 +102,16 @@ class PageManager {
 									 'author'=>$header['Author'],
 									 'cnfig'=>plugin configuration from installModule(),
 									 'installed'=>true|false);
+
 	*/
-	private $loadedModules;
+	private $loadedModules = false;
 		
 	function PageManager() {
 		$this->loadModules();
 	}
 	
-	function modules() {
+	// Returns array of loaded modules (false when modules aren't loaded)
+	function getModules() {
 		return $this->loadedModules;
 	}
 	
@@ -107,28 +122,34 @@ class PageManager {
 	}
 	
 	
-	/* Retrieves general information about the content element modules as well as information of the meaning of the individual content elements
-	   that are on the page of given id */
+	/* Retrieves general information about the content element modules as well as information of 
+	   the meaning of the individual content elements that are on the page of given id */
 	function contentElementModules($page_id) {
 		global $cfg;
 		
-		$page_id=intval($page_id);
 		//if(!$this->modulesPopulated) return '500'."\n".'Coding error, modules array not initialised yet';
-		$ret=array('modules'=>array());
 		
-		foreach($this->loadedModules as $mID=>$module) {
-			if(trim($module['type'])=='ContentElement')
-				$ret['modules'][] = array('mid'=>$mID,
-										  'name'=>$module['name'],
-										  'image'=>$this->modulePath.$mID.'/'.$module['image']
-										 );
+		$page_id = intval($page_id);
+		
+		$ret = array('modules' => array());
+		foreach($this->loadedModules as $mID => $module) {
+			if(trim($module['type']) == 'ContentElement')
+				$ret['modules'][] = array(
+					'mid' => $mID,
+					'name' => $module['name'],
+					'image' => $this->modulePath . $mID . '/' . $module['image']
+				);
 		}
 
+		// Todo: It might be a better idea to return a structured array of content element modules 
+		// from anego_pages_element instead of extracting the content elements from div ids 
+		
 		// Send the source too since its not much more overhead
-		$q="SELECT content_prepared, name  FROM ".PAGES." WHERE idx=$page_id";
-		$res=mysql_query($q) or
+		$q = "SELECT content_prepared, name  FROM ".PAGES." WHERE idx=$page_id";
+		$res = mysql_query($q) or
 			BailAjax("Failed getting page content for editing",$q);
-		$row=mysql_fetch_array($res);
+		$row = mysql_fetch_array($res);
+		
 		if(isset($row['content_prepared'][0])) // faster than strlen()
 			$ret['content'] = $row['content_prepared'];
 		else 
@@ -162,25 +183,17 @@ class PageManager {
 			$mid=$row['module_id'];
 			if(!isset($this->loadedModules[$mid])) BailAjax("Cannot recreate page as there is a module missing!");
 			
-			include_once($this->modulePath.$mid.'/'.$mid.'.php');
+			include_once($this->modulePath . $mid . '/' . $mid . '.php');
 			
-			// Yay, PHP5.3 goodness <3
-			$ce = new $mid(); //eval("return new ".$mid."();");
-			$txt.= '<div id="'.$mid.'_'.$row['element_id'].'" class="contentElement ceDraggable">'.$ce->generateContent($row['element_id'],$page_id).'</div>';
+			$ce = new $mid($page_id, $row['element_id']);
+			$txt.= '<div id="' . $mid.'_' . $row['element_id'] . '" class="contentElement ceDraggable">' . $ce->generateContent() . '</div>';
 		}
 		
-		$q="UPDATE ".PAGES." SET content_prepared='".mysql_real_escape_string($txt)."' WHERE idx=$page_id";
+		$q="UPDATE ".PAGES." SET content_prepared='" . mysql_real_escape_string($txt) . "' WHERE idx=$page_id";
 		$res=mysql_query($q) or
 			BailAjax("Failed generating page",$q);
 			
 		return $txt;
-	}
-
-	// Gets all installed modules - code duplicated in ajax.php when reading pages as well as the javascript loader
-	function loadModules() {
-		if(file_exists('var/installed_modules'))
-			$this->loadedModules = unserialize(file_get_contents('var/installed_modules'));
-		else $this->loadedModules = Array();			
 	}
 	
 	// Installs a module
@@ -235,8 +248,16 @@ class PageManager {
 		
 		return true;
 	}
+	
+	// Gets all installed modules - code duplicated in ajax.php when reading pages as well as the javascript loader
+	function loadModules() {
+		if(file_exists('var/installed_modules'))
+			$this->loadedModules = unserialize(file_get_contents('var/installed_modules'));
+		else $this->loadedModules = Array();			
+	}
 
 	// Populates the loadedModules array with all existing modules
+	// This includes non-installed modules as well. (a installed flag is being set appropietly)
 	function findModules() {
 		$d = opendir($this->modulePath);
 		while($f=readdir($d)) {	

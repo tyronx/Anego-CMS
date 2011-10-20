@@ -15,11 +15,16 @@ class seperator extends ContentElement {
 	
 	function databaseTable() { return $GLOBALS['cfg']['tablePrefix'].'pages_seperator'; }
 		
-	function editElement($id) {
+	function __construct($pageId, $elementId = 0) {
+		// Module id is equivalent to classname
+		parent::__construct(get_class($this), $pageId, $elementId);
+	}
+
+	function editElement() {
 		return true;
 	}
 	
-	function generateContent($id) {
+	function generateContent() {
 		return "<hr>";
 	}
 

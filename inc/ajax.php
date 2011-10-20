@@ -21,16 +21,16 @@ switch($ac) {
 		exit("200\nok");
 		break;
 	
-	// Get content elements
+	// Get content elements. This is data required once the user presses "Edit page"
 	case 'gce':
 		if(!LOGINOK) exit("300\nYou need to log on first.");
 		
 		$p = intval($_GET['fgx']);
 		
-		// Delievers ce modules, page content and page elements
-		$json=$pmg->contentElementModules($p);
+		// Delievers ce modules, page content and page elements of this page
+		$json = $pmg->contentElementModules($p);
 		// required js files
-		$json['js']=pageEditJs($p);
+		$json['js'] = pageEditJs($p);
 		
 		exit("200\n".json_encode($json));
 	
@@ -38,7 +38,7 @@ switch($ac) {
 	case 'cce':
 		if(!LOGINOK) exit("300\nYou need to log on first.");
 		
-		$mid = trim($_GET['t']);
+		$mid = trim($_GET['mid']);
 		$page = intval($_GET['page_id']);
 		$position = intval($_GET['pos']);
 		
@@ -47,16 +47,16 @@ switch($ac) {
 		if(!preg_match("#[a-zA-Z0-9_-]+#",$mid))
 			exit("300\nInvalid module id");
 		
-		$m = $pmg->modules();
+		$m = $pmg->getModules();
 		if(!isset($m[$mid]))
 			exit("300\nCan't find module of type '".$mid."'");
 		
 		include_once('modules/'.$mid.'/'.$mid.'.php');
 
 		// Yay, PHP5.3 goodness <3
-		$ce = new $mid(); //eval("return new ".$mid."();");
+		$ce = new $mid($page); //eval("return new ".$mid."();");
 		
-		if($json = $ce->createElement($page, $position)) {
+		if($json = $ce->createElement($position)) {
 			/*$res=mysql_query("SELECT MAX(position) FROM ".PAGE_ELEMENT." WHERE page_id=$page");
 			list($maxPos) = mysql_fetch_row($res);*/
 			
@@ -72,19 +72,21 @@ switch($ac) {
 			exit("200\n".json_encode($json));
 		}
 		exit("500\nContent Element creation failed");
-		
+	
+	// Call generateContent() of a module - e.g used by html element to retrieve all the content (<script> tags are stripped when using $('sdf').html())
 	case 'gcec':
 		if(!LOGINOK) exit("300\nYou need to log on first.");
 		
 		$mid = trim($_GET['t']);
 		$elid = intval($_GET['elid']);
+		$pid = intval($_GET['pid']);
 		
 		if(!preg_match("#[a-zA-Z0-9_-]+#",$mid))
 			exit("300\nInvalid module id");
 		
 		include_once('modules/'.$mid.'/'.$mid.'.php');
 		
-		$ce = new $mid();
+		$ce = new $mid($pid, $elid);
 		
 		echo "200\n";
 		echo $ce->generateContent($elid);
@@ -92,44 +94,52 @@ switch($ac) {
 		
 		break;
 		
-	// Call Content element function
+	// Call Content element function. Parameters:
+	// mid: module id (e.g. 'blog')
+	// elid: element id
+	// fn: function to call
+	// params[]: function parameters, every parameter is treated as a string
+	// (optional) recache: wether or not the content has changed. If yes, the page cache will be refreshed
 	case 'callce':
 		if(!LOGINOK) exit("300\nYou need to log on first.");
 		
-		
-		$mid = trim(@$_POST['t']);
+		$mid = trim(@$_POST['mid']);
 		$elid = intval(@$_POST['elid']);
+		$pid = intval(@$_POST['pid']);
+		
+		if(!$elid) exit("300\nInvalid element id");
 
 		if(preg_match("#[^a-zA-Z0-9_-]+#",$mid))
 			exit("300\nInvalid module id");
 		
-		$m = $pmg->modules();
-		if(!isset($m[$mid]))
+		$m = $pmg->getModules();
+		
+		if(! isset($m[$mid]))
 			exit("300\nCan't find module of type '".($mid)."'");
 		
 		include_once('modules/'.$mid.'/'.$mid.'.php');
 
-		$ce = new $mid();
+		$ce = new $mid($pid, $elid);
 
 		// $funcName = $mid::$methodMap[$_POST['fn']]; // this syntax only works in php5.3 
 		// ...and eval() is always a potential security hole :/
 		eval('$methodMap= '.$mid.'::$methodMap;');
-		$funcName = $methodMap[$_POST['fn']];
+		$method_name = $methodMap[$_POST['fn']];
 		
-		//$cn::$methodMap[$_POST['fn']])
-		if(!strlen($funcName)) exit("500\nFunction does not exist");
+		if(!strlen($method_name)) exit("500\nFunction does not exist");
 		
-		if(eval("return \$ce->".$funcName."();")) { // $ce->editElement($elid)
-			$q = "SELECT page_id FROM ".PAGE_ELEMENT." WHERE element_id=$elid AND module_id='$mid'";
-			$res=mysql_query($q) or 
-				BailAjax("Failed getting page id",$q);
-			list($page_id) = mysql_fetch_array($res);
-			
-			$pmg->generatePage($page_id);
-			//exit("200\n".$ret);
+		if(isset($_POST['params']) && !is_array($_POST['params'])) exit("500\nCoding Error: Parameters in wrong format (must be array)");
+		
+		$params = isset($_POST['params']) ? $_POST['params'] : array();
+		
+		// Dynamically call method
+		$response = call_user_func_array(array($ce, $method_name), $params);
+		
+		if(isset($_POST['recache']) && $_POST['recache']) {
+			$pmg->generatePage($pid);
 		}
-			
-		exit(); //"500\nContent Element edit failed"
+
+		exit($response);
 	
 	// Move a placed content element from one position to another
 	// Step 1: SQL Query to cut out element (all elements below: pos--)
@@ -137,9 +147,11 @@ switch($ac) {
 	case 'mce':
 		if(!LOGINOK) exit("You need to log on first.");
 	
-		$mid = trim($_GET['t']);
+		$mid = trim($_GET['mid']);
 		$elid = intval($_GET['elid']);
 		$newpos = intval($_GET['newpos']);
+		
+		if(!$elid) exit("300\nInvalid element id");
 
 		if(preg_match("#[^a-zA-Z0-9_-]+#",$mid))
 			exit("300\nInvalid module id");
@@ -172,19 +184,22 @@ switch($ac) {
 	case 'delce':
 		if(!LOGINOK) exit("You need to log on first.");
 		
-		$mid = trim($_GET['t']);
-		$elid = intval($_GET['id']);
+		$mid = trim($_GET['mid']);
+		$elid = intval($_GET['elid']);
+		$pid = intval($_GET['pid']);
+		
+		if(!$elid) exit("300\nInvalid element id");
 		
 		if(preg_match("#[^a-zA-Z0-9_-]+#",$mid))
 			exit("300\nInvalid module id");
 		
-		$m = $pmg->modules();
+		$m = $pmg->getModules();
 		if(!isset($m[$mid]))
 			exit("300\nCan't find module of type '".$mid."'");
 			
 		include_once('modules/'.$mid.'/'.$mid.'.php');
 					
-		$ce = new $mid();
+		$ce = new $mid($pid);
 		if($ce->deleteElement($elid)) {
 			$q = "SELECT page_id, position FROM ".PAGE_ELEMENT." WHERE element_id=$elid AND module_id='$mid'";
 			$res=mysql_query($q) or 

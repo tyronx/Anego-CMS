@@ -275,8 +275,8 @@ function CoreFunctions() {
 		return true;
 	}
 	
+	/* Load javascript and css files, if the data object contains data.js or data.css */
 	this.loadJSONResult = function(data) {
-		/* Load javascript and css files */
 		if(typeof data.js != 'undefined') {
 			if(typeof data.js == 'object')
 				for(var i=0; i<data.js.length; i++) 
@@ -356,8 +356,11 @@ function CoreFunctions() {
 			return;
 		}
 		
-		anego.editmode=true;
-		if(typeof DragDropElements == "undefined") this.loadJavascript('ld.ap.ad'+anego.language);
+		anego.editmode = true;
+		
+		if(typeof DragDropElements == "undefined") 
+			this.loadJavascript('ld.ap.ad'+anego.language);
+		
 		$(document).ready(function() {
 			$('#pageEditLink').html(lngMain.doneedit_page);
 			$('#pageEditLink').attr('href','javascript:Core.endEdit()');

@@ -12,36 +12,43 @@ License: GPL2
 */
 class blog extends ContentElement {
 	function databaseTable() { return $GLOBALS['cfg']['tablePrefix'].'elements_blog'; }
-	
+
+	function __construct($pageId, $elementId = 0) {
+		// Module id is equivalent to classname
+		parent::__construct(get_class($this), $pageId, $elementId);
+	}
+
 	/* Generates some javascript loading code which in return loads the blog through ajax, 
 	   degrades properly to a text link
 	*/
-	function generateContent($id) {
+	function generateContent() {
 		global $cfg,$language;
 		
 		include('modules/blog/'.$language.'.php');
 		
 		if($cfg['fancyURLs']) {
-			$noscript = '<h1><a href="mdblog-v'.$id.'">'.$lng['blog']['gotomyblog'].'</a></h1>';
+			$noscript = '<h1><a href="mdblog-v' . $this->elementId . '">' . $lng['blog']['gotomyblog'] . '</a></h1>';
 		} else {
 			// Todo: Build something that allows no-fancy-urls no-javascript-browser/crawlers to open the blog
 			$noscript = '';
 		}
+		
+		$elemId = $this->elementId;
 	
 		return <<<EOT
 		<script type="text/javascript">
 		$(function() {
-			$.get("modules/blog/",{a:'g',id:$id,editmode:(typeof anego.editmode == 'boolean' && anego.editmode==true)},function(data) {
+			$.get("modules/blog/",{a:'g',id:$elemId,editmode:(typeof anego.editmode == 'boolean' && anego.editmode==true)},function(data) {
 				var aw;
 				if(aw=GetAnswer(data)) {
-					$("#blogc_$id").html(aw);
+					$("#blogc_$elemId").html(aw);
 					Core.initPageContent();
 				}
 			});
 		});
 		</script>
 		<noscript>$noscript</noscript>
-		<div id="blogc_$id"></div>
+		<div id="blogc_$elemId"></div>
 EOT;
 	}
 	

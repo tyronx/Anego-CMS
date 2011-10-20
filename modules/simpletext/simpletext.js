@@ -1,16 +1,16 @@
 /* Huge todo: When ajax call to create/delete element fails: undo everthing */
 
-simpletext = function(elid) {
+simpletext = function(page_id, element_id) {
 	var module_id = 'simpletext'
-	var element_id=elid;
-	var container=$("#"+module_id+"_"+elid);
+
+	var container=$("#" + module_id + "_" + element_id);
 	var editing=false;
 	var oldHTML='';
 	var myself = this;
 	var hideMiniToolbarVar = false;	
 	
-	this.createElement = function(page_id, cnt, position, callback) {
-		$.get('index.php?a=cce&t='+module_id+'&page_id='+page_id+'&pos='+position, function(data) {
+	this.createElement = function(cnt, position, callback) {
+		$.get('index.php?a=cce&mid='+module_id+'&page_id='+page_id+'&pos='+position, function(data) {
 			var aw;
 			if(aw=GetAnswer(data))
 				var data = jQuery.parseJSON(aw);
@@ -29,27 +29,27 @@ simpletext = function(elid) {
 
 		
 	this.editElement = function() {
-		if(editing) {
-			$('#newElem'+element_id).tinymce().hide();
+		if (editing) {
+			$('#newElem' + element_id).tinymce().hide();
 			container.addClass('ceDraggable');
 			container.removeClass('ceEditing');
 			container.html(oldHTML);
-			editing=false;
-			hideMiniToolbarVar=false;
+			editing = false;
+			hideMiniToolbarVar = false;
 		} else {
-			hideMiniToolbarVar=true;
-			var buttons = '<button type="button" name="mew" id="btn_sendrte" style="min-width:150px">'+lng_savechanges+'</button> '+
-							'<button type="button" name="mew2" id="btn_cancelrte" style="min-width:150px">'+lng_cancelchanges+'</button>';
+			hideMiniToolbarVar = true;
+			var buttons = '<button type="button" name="mew" id="btn_sendrte" style="min-width:150px">' + lng_savechanges + '</button> '+
+							'<button type="button" name="mew2" id="btn_cancelrte" style="min-width:150px">' + lng_cancelchanges + '</button>';
 						
-			oldHTML=container.html();
-			container.html('<textarea style="width:100%" id="newElem'+element_id+'">'+container.html()+'</textarea>'+buttons);
+			oldHTML = container.html();
+			container.html('<textarea style="width:100%" id="newElem' + element_id + '">' + container.html() + '</textarea>' + buttons);
 			container.removeClass('ceDraggable');
 			container.addClass('ceEditing');
-			this.tinyfy("newElem"+element_id);
-			editing=true;
+			this.tinyfy("newElem" + element_id);
+			editing = true;
 			
 			$("#btn_sendrte").click(function() {
-				var val=$("#newElem"+element_id).tinymce().getContent();
+				var val = $("#newElem"+element_id).tinymce().getContent();
 				$('#newElem'+element_id).tinymce().hide();
 				container.addClass('ceDraggable');
 				container.removeClass('ceEditing');
@@ -58,7 +58,15 @@ simpletext = function(elid) {
 				$.ajax({
 					type : 'POST',
 					url : 'index.php',
-					data: 'a=callce&t='+module_id+'&elid='+element_id+'&fn=save&html='+urlencode(val),
+					data: { 
+						a: 'callce',
+						mid: module_id,
+						elid: element_id,
+						pid: page_id,
+						fn: 'save',
+						recache: true,
+						'params[]': [val]	// Function parameters
+					},
 					success: function(data) {
 						//var aw;
 						// alerts any errors that might have happened
@@ -80,12 +88,16 @@ simpletext = function(elid) {
 	
 	/* Return true if delection was successful */
 	this.deleteElement = function (callback) {
-		$.get('index.php?a=delce&t='+module_id+'&id='+element_id,
-			function(data) {
-				if(aw=GetAnswer(data)) {
-					callback();
-				}
-			});
+		$.get('index.php', {
+			a: 'delce',
+			pid: page_id,
+			mid: module_id,
+			elid: element_id
+		}, function(data) {
+			if(aw=GetAnswer(data)) {
+				callback();
+			}
+		});
 	}
 	
 	this.tinyfy = function(el_id) {
@@ -114,7 +126,7 @@ simpletext = function(elid) {
 			button_tile_map : true,
 			content_css : "styles/"+anego.style+"/text.css", /* style var defined by Anego */
 			external_link_list_url : "modules/simpletext/linkList.js.php",
-			convert_urls : false,
+			convert_urls : false
 		});
 	}
 }

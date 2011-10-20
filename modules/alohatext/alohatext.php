@@ -13,10 +13,15 @@ License: GPL2
 
 class alohatext extends ContentElement {
 	function databaseTable() { return $GLOBALS['cfg']['tablePrefix'].'pages_aloha'; }
-	
-	function generateContent($elementId) {
+
+	function __construct($pageId, $elementId = 0) {
+		// Module id is equivalent to classname
+		parent::__construct(get_class($this), $pageId, $elementId);
+	}
+
+	function generateContent() {
 		global $cfg;
-		$q = "SELECT value FROM ".$this->databaseTable()." WHERE idx=$elementId";
+		$q = "SELECT value FROM ".$this->databaseTable()." WHERE idx=".$this->elementId;
 		$res=mysql_query($q) or
 			BailAjax("Failed deleting element",$q);
 		list($str)=mysql_fetch_array($res);
@@ -24,12 +29,13 @@ class alohatext extends ContentElement {
 		if(strlen($str)==0) $str="Type your text here";
 		
 		$ck=$cfg['cookieName'];
+		$elemId = $this->elementId;
 	
 		return <<<EOT
 		<script type="text/javascript">
 		if(jQuery.cookie('$ck')!=null && (typeof anego.editmode=='undefined' || anego.editmode==false) && anego.noInit!=true) {
-			alohaObj$elementId = new alohafuncs($elementId);
-			alohaObj$elementId.init();
+			alohaObj$elemId = new alohafuncs($elemId);
+			alohaObj$elemId.init();
 		}
 		</script>
 		<div class="alohaContent">$str</div>
