@@ -1004,8 +1004,12 @@ jQuery.cookie = function (key, value, options) {
   };
 })();
 
-// ContentElement base class
-/* Todo: When ajax call to create/delete element fails: undo everthing */
+
+/* ContentElement base class
+ * This class takes over element creation, deleting and basic editing handling.
+ * You should however implement onStartEdit at least for your module.
+ * Todo: When ajax call to create/delete element fails: undo everthing 
+ */
 var ContentElement = Class.extend({
 	init: function(module_id, page_id, element_id) {
 		this.module_id = module_id;
@@ -1020,14 +1024,15 @@ var ContentElement = Class.extend({
 		// init call for children classes, dont use original init.
 		if(this.onInit) this.onInit();
 	},
-	createElement: function(container, poisition, callback) {
+	
+	createElement: function(container, position, callback) {
 		var self = this;
 		
 		$.get('index.php', {
 			a: 'cce',
 			mid: this.module_id,
 			page_id: this.page_id,
-			pos: this.position
+			pos: position
 		}, function(data) {
 			if(aw = GetAnswer(data)) {
 				var data = jQuery.parseJSON(aw);
@@ -1042,6 +1047,7 @@ var ContentElement = Class.extend({
 			}
 		});
 	},
+	
 	startEdit: function(newlyCreated) {
 		if(this.onStartEdit(newlyCreated)) {
 			this.editing = true;
@@ -1050,6 +1056,7 @@ var ContentElement = Class.extend({
 			this.hideMiniToolbar = true;
 		}
 	},
+	
 	endEdit: function() {
 		if(this.onEndEdit()) {
 			$('#'+this.containerId).addClass('ceDraggable');
