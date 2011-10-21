@@ -1,7 +1,7 @@
 <?
 /*
 Plugin Name: HTML
-Plugin Image: html.png
+Plugin Image: plainhtml.png
 Plugin URI: http://www.anego.at
 Plugin Type: ContentElement
 Description: Plain textarea for html/javascript content
@@ -10,7 +10,7 @@ Author: Tyron Madlener
 Author URI: http://www.tyron.at
 License: GPL2
 */
-class html extends ContentElement {
+class plainhtml extends ContentElement {
 	function databaseTable() { return $GLOBALS['cfg']['tablePrefix'].'pages_richtext'; }
 	
 	function __construct($pageId, $elementId = 0) {
@@ -21,7 +21,7 @@ class html extends ContentElement {
 	public static function installModule() {
 		return Array(
 			'js'=>Array(
-				'pageEdit'=>'html.js'
+				'pageEdit'=>'plainhtml.js'
 			)
 		);
 	}

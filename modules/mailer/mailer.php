@@ -47,7 +47,7 @@ Request:
 	
 	$q="SELECT * FROM ".SETTINGS." WHERE name LIKE 'mailer_%'";
 	$res=mysql_query($q)
-		or BailAjax('Cannot get settings :/',$q);
+		or BailErr('Cannot get settings :/',$q);
 		
 	while($row=mysql_fetch_array($res))
 		$config[$row['name']]=$row['value'];
@@ -81,7 +81,7 @@ Request:
 				"('mailer_hrlimit', '".intval($_POST['hrlimit'])."')";
 			
 			mysql_query($q) or
-				BailAjax('Couldn\'t save settings',$q);
+				BailErr('Couldn\'t save settings',$q);
 				
 			echo "200\n";
 			

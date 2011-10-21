@@ -1,111 +1,60 @@
-/* Huge todo: When ajax call to create/delete element fails: undo everthing */
-
-simpletext = function(page_id, element_id) {
-	var module_id = 'simpletext'
-
-	var container=$("#" + module_id + "_" + element_id);
-	var editing=false;
-	var oldHTML='';
-	var myself = this;
-	var hideMiniToolbarVar = false;	
-	
-	this.createElement = function(cnt, position, callback) {
-		$.get('index.php?a=cce&mid='+module_id+'&page_id='+page_id+'&pos='+position, function(data) {
-			var aw;
-			if(aw=GetAnswer(data))
-				var data = jQuery.parseJSON(aw);
-				cnt.html(data.html);
-				cnt.attr('id',module_id+"_"+data.id);
-				container = cnt;
-				element_id=data.id;
-				callback(module_id+"_"+data.id);
-				myself.editElement();
-			});
-	}
-	
-	this.hideMiniToolbar = function() {
-		return hideMiniToolbarVar;
-	}
-
+simpletext = ContentElement.extend({
+	onStartEdit: function() {
+		var self = this;
+		var $container = $('#'+self.containerId);
 		
-	this.editElement = function() {
-		if (editing) {
-			$('#newElem' + element_id).tinymce().hide();
-			container.addClass('ceDraggable');
-			container.removeClass('ceEditing');
-			container.html(oldHTML);
-			editing = false;
-			hideMiniToolbarVar = false;
-		} else {
-			hideMiniToolbarVar = true;
-			var buttons = '<button type="button" name="mew" id="btn_sendrte" style="min-width:150px">' + lng_savechanges + '</button> '+
-							'<button type="button" name="mew2" id="btn_cancelrte" style="min-width:150px">' + lng_cancelchanges + '</button>';
-						
-			oldHTML = container.html();
-			container.html('<textarea style="width:100%" id="newElem' + element_id + '">' + container.html() + '</textarea>' + buttons);
-			container.removeClass('ceDraggable');
-			container.addClass('ceEditing');
-			this.tinyfy("newElem" + element_id);
-			editing = true;
+		this.editorId = "tm" + this.module_id + "_" + this.element_id;
+		
+		var buttons = '<button type="button" name="mew" class="btn_sendrte" style="min-width:150px">' + lng_savechanges + '</button> '+
+					'<button type="button" name="mew2" class="btn_cancelrte" style="min-width:150px">' + lng_cancelchanges + '</button>';
+		
+		self.html = $container.html();
+		$container.html('<textarea style="width:100%" id="' + self.editorId + '">' + self.html + '</textarea>' + buttons);
+		self.tinyfy();
+		
+		$container.find('.btn_sendrte').click(function() {
+			self.html = $('#' + self.editorId).tinymce().getContent();
+			self.endEdit();
 			
-			$("#btn_sendrte").click(function() {
-				var val = $("#newElem"+element_id).tinymce().getContent();
-				$('#newElem'+element_id).tinymce().hide();
-				container.addClass('ceDraggable');
-				container.removeClass('ceEditing');
-				container.html(val);
-				editing=false;
-				$.ajax({
-					type : 'POST',
-					url : 'index.php',
-					data: { 
-						a: 'callce',
-						mid: module_id,
-						elid: element_id,
-						pid: page_id,
-						fn: 'save',
-						recache: true,
-						'params[]': [val]	// Function parameters
-					},
-					success: function(data) {
-						//var aw;
-						// alerts any errors that might have happened
-						GetAnswer(data);
-						hideMiniToolbarVar=false;
-					}					
-				});
+			$.ajax({
+				type : 'POST',
+				url : 'index.php',
+				data: { 
+					a: 'callce',
+					mid: self.module_id,
+					elid: self.element_id,
+					pid: self.page_id,
+					fn: 'save',
+					recache: true,
+					'params[]': [self.html]  // Function parameters
+				},
+				success: function(data) {
+					// alerts any errors that might have happened
+					GetAnswer(data);
+				}
 			});
-			$("#btn_cancelrte").click(function() {
-				$('#newElem'+element_id).tinymce().hide();
-				container.addClass('ceDraggable');
-				container.removeClass('ceEditing');
-				container.html(oldHTML);
-				editing=false;
-				hideMiniToolbarVar=false;
-			});
-		}
-	}
-	
-	/* Return true if delection was successful */
-	this.deleteElement = function (callback) {
-		$.get('index.php', {
-			a: 'delce',
-			pid: page_id,
-			mid: module_id,
-			elid: element_id
-		}, function(data) {
-			if(aw=GetAnswer(data)) {
-				callback();
-			}
 		});
-	}
+		
+		$container.find('.btn_cancelrte').click(function() {
+			self.endEdit();
+		});
+		
+		return true;
+	},
 	
-	this.tinyfy = function(el_id) {
+	onEndEdit: function() {
+		$('#' + this.editorId).tinymce().hide();
+		$('#' + this.containerId).html(this.html);
+		
+		return true;
+	},
+	
+	tinyfy: function() {
 		var mcelang='en';
 		if(anego.language=='ger') /* language var defined by Anego */
 			mcelang='de';
 			
-		$('#'+el_id).tinymce({
+		$('#' + this.editorId).tinymce({
 			script_url : 'lib/tiny_mce/tiny_mce_gzip.php',
 			mode : 'none',
 			theme : "advanced",	
@@ -129,4 +78,4 @@ simpletext = function(page_id, element_id) {
 			convert_urls : false
 		});
 	}
-}
+});

@@ -1,16 +1,16 @@
 <?
 /*
-Plugin Name: Seperator
-Plugin Image: seperator.png
+Plugin Name: Separator
+Plugin Image: separator.png
 Plugin URI: http://www.anego.at
 Plugin Type: ContentElement
-Description: Simple seperator content element
+Description: Simple separator content element
 Version: 0.1
 Author: Tyron Madlener
 Author URI: http://www.tyron.at
 License: GPL2
 */
-class seperator extends ContentElement {
+class separator extends ContentElement {
 	// basic content element _ standard horizontal line
 	
 	function databaseTable() { return $GLOBALS['cfg']['tablePrefix'].'pages_seperator'; }
@@ -31,7 +31,7 @@ class seperator extends ContentElement {
 	public static function installModule() {
 		return Array(
 			'js'=>Array(
-				'pageEdit'=>'seperator.js'
+				'pageEdit'=>'separator.js'
 			)
 		);
 	}

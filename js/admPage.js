@@ -83,22 +83,33 @@ function DragDropElements(contentElements) {
 		/* Create element mini toolbar & bind events */	
 		miniToolbar.append(imgEdit);
 		imgEdit.click(function() {
-			if(elements[$(curEl).attr('id')]!=undefined) {
-				elements[$(curEl).attr('id')].editElement();
-				if(typeof elements[$(curEl).attr('id')].hideMiniToolbar != 'undefined' && elements[$(curEl).attr('id')].hideMiniToolbar())
+			var targetElem = elements[$(curEl).attr('id')];
+			
+			if(targetElem != undefined) {
+				if(! targetElem.editing) {
+					targetElem.startEdit();
+				} else {
+					targetElem.endEdit()
+				}
+				
+				if(targetElem.getHideMiniToolbar())
 					miniToolbar.css('display','none');
+			} else {
+				alert("Module of this Element not found, please install the module '"+splitID($(curEl).attr('id')).module_id+"'");
 			}
-			else alert("Module of this Element not found, please install the module '"+splitID($(curEl).attr('id')).module_id+"'");
 		});
 		miniToolbar.append(imgBin);
 		imgBin.click(function() {
 			var res=confirm("Really delete?");
 			if(res) {
 				var element2Delete = curEl;
-				var fn = function() { $(element2Delete).remove(); miniToolbar.css('display','none'); };
+				var deleteCompleteFn = function() { 
+					$(element2Delete).remove();
+					miniToolbar.css('display','none'); 
+				};
 				
-				if(elements[$(curEl).attr('id')]!=undefined)
-					elements[$(curEl).attr('id')].deleteElement(fn);
+				if(elements[$(curEl).attr('id')] != undefined)
+					elements[$(curEl).attr('id')].deleteElement(deleteCompleteFn);
 				else alert("Module of this Element not found, please install the module '"+splitID($(curEl).attr('id')).module_id+"'");
 			}
 		});
@@ -210,7 +221,7 @@ function DragDropElements(contentElements) {
 				$('#insertMarker').replaceWith($container);
 				// Call to module
 				var obj;
-				eval("obj = new "+contentElements[num]['mid']+"(" + Core.curPg.id + ");");
+				eval("obj = new "+contentElements[num]['mid']+"('" + contentElements[num]['mid'] + "', " + Core.curPg.id + ");");
 				obj.createElement(
 					$container,
 					markerPos,
@@ -232,12 +243,15 @@ function DragDropElements(contentElements) {
 		$('.contentElement').each(function(index) {
 			// Module Type and id is stored in html-element id
 			var elInfo = splitID($(this).attr('id'));
-
-			for(var i = 0; i < contentElements.length; i++)
-				if(contentElements[i]['mid'] == elInfo.module_id) {
-					eval("elements['"+$(this).attr('id')+"'] = new "+contentElements[i]['mid']+"(" + Core.curPg.id + ", '" + elInfo.elem_id + "'); ");
+			var module_id;
+			
+			for(var i = 0; i < contentElements.length; i++) {
+				module_id = contentElements[i]['mid'];
+				if(module_id == elInfo.module_id) {
+					eval("elements['" + $(this).attr('id') + "'] = new " + module_id + "('" + module_id + "', " + Core.curPg.id + ", '" + elInfo.elem_id + "'); ");
 					break;
 				}
+			}
 			//if(!found) alert("some content elements could not be loaded [insert proper error handling here (= don't make those elements editable + mark as such)]");
 		});
 		
@@ -269,7 +283,7 @@ function DragDropElements(contentElements) {
 		} else  {
 			if(curEl != element) { miniToolbar.css('display','none'); $(curEl).removeClass('ceBorder'); }
 			
-			if(elements[$(element).attr('id')]==undefined || typeof elements[$(element).attr('id')].hideMiniToolbar=='undefined' || elements[$(element).attr('id')].hideMiniToolbar()!=true) {
+			if(elements[$(element).attr('id')] == undefined || elements[$(element).attr('id')].getHideMiniToolbar() != true) {
 				miniToolbar.css('display','');
 				// offset() needed here because other parent elements might have position:absolute etc.
 				miniToolbar.offset({ top: $(element).offset().top, left: $(element).offset().left + $(element).outerWidth() - miniToolbar.outerWidth()});
