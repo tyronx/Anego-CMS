@@ -1,8 +1,8 @@
 <?
 /* For standalone include */
 if(!defined('CONFIG_LOADED')) {
-	include("default.conf.php");
-	include("conf.inc.php");
+	include_once("default.conf.php");
+	include_once("conf.inc.php");
 }
 
 define("LOGINOK",LoggedOn());

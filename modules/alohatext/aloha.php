@@ -13,7 +13,7 @@ if($_POST['a']=='save') {
 	
 	$q='UPDATE '.$cfg['tablePrefix']."pages_aloha SET value='".mysql_real_escape_string($_POST['content'])."' WHERE idx=$id";
 	mysql_query($q) or
-		BailAjax("Failed saving element ",mysql_error());
+		BailErr("Failed saving element ",$q);
 		
 	// affected_rows returns 0 if new value == old value :(
 	//if(!mysql_affected_rows()) exit("300\nCouldn't save content, aloha element not found. Has it been deleted?");
@@ -21,7 +21,7 @@ if($_POST['a']=='save') {
 	// Regenerate the page
 	$q = 'SELECT page_id FROM '.PAGE_ELEMENT.' WHERE element_id='.$id.' AND module_id=\'alohatext\'';
 	$res=mysql_query($q) or
-		BailAjax("Failed regenerating page",mysql_error());
+		BailErr("Failed regenerating page",$q);
 	list($pageId)=mysql_fetch_row($res);
 	include_once('inc/modules.php');
 	$pmg = new PageManager();		

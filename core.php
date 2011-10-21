@@ -1,14 +1,15 @@
 <?
 header('Content-type: text/html; charset=utf-8');
 define("CORE_LOADED",true);
+define('IS_AJAX', isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest');
 
-include("default.conf.php");
-include("conf.inc.php");
-include("inc/auth.php");
+require "default.conf.php";
+require "conf.inc.php";
+require "inc/auth.php";
 
-include("inc/functions.php");
-include("lang/$language.php");
-include("inc/html.php");
+require "inc/functions.php";
+require "lang/$language.php";
+require "inc/html.php";
 
 
 /**** Basic Checks ****/
@@ -93,6 +94,8 @@ define("VIS_INMENU",2);
 define('MENU_MAIN','MAIN');
 define('MENU_MINOR','MINOR');
 
+
+/**** Init MySQL ****/
 if(!function_exists('mysql_connect')) Bail($lng_nomysql);
 
 /**** Init MySQL ****/
@@ -103,8 +106,6 @@ if(!@mysql_select_db(SQLDB)) {
 	$sql_link=0;
 	BailErr($lng_dberror,mysql_error(),true);
 }
-
-$lng=Array();
 
 /**** More setup code for the design ****/
 
@@ -151,12 +152,11 @@ function BailSQL($msg,$q,$log_once=0) {
 }
 // Normal Bail for non-Ajax Request
 function BailErr($msg,$log="",$log_once=0) {
+	if(IS_AJAX) {
+		logError($msg,$query);
+		exit("500\n$msg");
+	}
 	ExitError($msg,$log,2,$log_once);
-}
-// Normal Bail for Ajax Request
-function BailAjax($msg,$query='') {
-	logError($msg,$query);
-	exit("500\n$msg");
 }
 
 // Only writes extensive error messages to log file
@@ -354,8 +354,8 @@ function PrintPage($p) {
 			$row['content_prepared'] = $pmg->generatePage($p);
 		}
 		
-		$anego->AddContent(FormatText($row['content_prepared']));
-		$anego->assign('pageID',$p);		
+		$anego->AddContent($row['content_prepared']);
+		$anego->assign('pageID',$p);
 		if(!$anego->get_template_vars('pageTitle'))
 			$anego->assign('pageTitle',$row['name']);
 		$anego->display('index.tpl');
@@ -373,7 +373,7 @@ function pageLoadJs($p) {
 	// Optimize: Save this information in PAGES so we can eliminate this query
 	$q = 'SELECT module_id FROM '.PAGE_ELEMENT.' WHERE page_id='.$p.' GROUP BY module_id';
 	$res = mysql_query($q) or
-		BailAjax("Failed getting page data for page $p<br>",$q);
+		BailErr("Failed getting page data for page $p<br>",$q);
 	
 	$js = Array();
 	$modjs=Array();

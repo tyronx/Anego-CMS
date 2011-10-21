@@ -119,7 +119,7 @@ switch($_GET['a']) {
 	case 'pgad':
 		/* Ajax call */
 		if(isset($_GET['noheader'])) {
-			if(UserRole() < Role::ProMod) BailAjax($lng_missing_rights);
+			if(UserRole() < Role::ProMod) BailErr($lng_missing_rights);
 			
 			$json = Array();
 			$json['title'] = 'Anego - Admin';
@@ -151,7 +151,7 @@ switch($_GET['a']) {
 		
 		/* Ajax call */
 		if(isset($_GET['noheader'])) {
-			if(UserRole() < Role::ProMod) BailAjax($lng_missing_rights);
+			if(UserRole() < Role::ProMod) BailErr($lng_missing_rights);
 			
 			$json = Array();
 			$json['title']='Anego - Admin';
@@ -175,7 +175,7 @@ switch($_GET['a']) {
 	/* Admin settings */
 	case 'setg':
 		if(isset($_GET['noheader']))
-			if(UserRole() < Role::Admin) BailAjax($lng_missing_rights);
+			if(UserRole() < Role::Admin) BailErr($lng_missing_rights);
 		else 
 			if(UserRole() < Role::Admin) Bail($lng_missing_rights);
 			
@@ -256,8 +256,6 @@ switch($_GET['a']) {
 		$anego->AddJsModule('jui');
 		$anego->display('index.tpl');
 		break;
-		
-
 
 
 	/****** AJAX Callback handlers ******/
@@ -334,7 +332,7 @@ switch($_GET['a']) {
 			// Add page to the bottom of the root tree
 			$q = "SELECT MAX(position) as pos FROM ".PAGES." WHERE parent_idx=0 AND menu='".$menu."'";
 			$res = mysql_query($q) or
-				BailAjax($lng_failedfreeing,$q);
+				BailErr($lng_failedfreeing,$q);
 			$row = mysql_fetch_array($res);
 
 			$pos = $row['pos'] + 1;
@@ -345,17 +343,17 @@ switch($_GET['a']) {
 			
 			$q="SELECT * FROM ".PAGES." WHERE idx=".$intopage;
 			$res = mysql_query($q) or
-				BailAjax($lng_pageinfo,$q);
+				BailErr($lng_pageinfo,$q);
 			$row = mysql_fetch_array($res);
 
 			$q = "SELECT idx FROM ".PAGES." WHERE parent_idx=".$row['idx']." LIMIT 1";
 			$res2=mysql_query($q) or
-				BailAjax($lng_failedgetting,$q);
+				BailErr($lng_failedgetting,$q);
 				
 			if(mysql_affected_rows()) {
 				$q = "UPDATE ".PAGES." SET position=position+1 WHERE parent_idx=".$row['idx']." AND menu=".$row['menu'];
 				mysql_query($q) or
-					BailAjax($lng_failedfreeing,$q);
+					BailErr($lng_failedfreeing,$q);
 			}
 			$pos = 0;
 			$par = $row['idx'];
@@ -377,14 +375,14 @@ switch($_GET['a']) {
 				
 		$q = "INSERT INTO ".PAGES." (name, info, date, parent_idx, file, visibility, position, subpoint,nolink,content,menu) VALUES ('".$_POST['name']."','".$_POST['info']."',".time().",'".$par."','".$fname."','".$vis."','".$pos."','$subm','$nolink','','".$menu."')";
 		mysql_query($q) or
-			BailAjax($lng_failedinserting,$q);
+			BailErr($lng_failedinserting,$q);
 		
 		echo "200\n".PrintLinks();
 		
 		break;
 	
 	case 'movenode':
-		if(UserRole() < Role::ProMod) BailAjax($lng_missing_rights);
+		if(UserRole() < Role::ProMod) BailErr($lng_missing_rights);
 		
 		if(!preg_match("/^node(\d+)$/",$_GET['movingNode'],$match)) exit("400\nProgramming error: wrong dropped node");
 		$movingNodeId = $match[1];
@@ -394,35 +392,35 @@ switch($_GET['a']) {
 		
 		$q = "SELECT idx,name,position,parent_idx,menu FROM ".PAGES." WHERE idx=$movingNodeId";
 		$res=mysql_query($q) or
-			BailAjax($lng_failedmoving,$q);
+			BailErr($lng_failedmoving,$q);
 		$movingNode = mysql_fetch_array($res);
 			
 		$q = "SELECT idx,name,position,parent_idx,menu FROM ".PAGES." WHERE idx=$targetNodeId";
 		$res=mysql_query($q) or
-			BailAjax($lng_failedmoving,$q);
+			BailErr($lng_failedmoving,$q);
 		$targetNode = mysql_fetch_array($res);
 			
 			
 		/* Start the move */
 		mysql_query("START TRANSACTION") or 
-			BailAjax('Couldn\'t start transaction',"START TRANSACTION");
+			BailErr('Couldn\'t start transaction',"START TRANSACTION");
 		
 		// Free the space from old place
 		$q="UPDATE ".PAGES." SET position=position-1 WHERE position>".$movingNode['position']." AND parent_idx=".$movingNode['parent_idx']." AND menu='".$movingNode['menu']."'";
 		if(!($res=mysql_query($q)))
-			{ @mysql_query("ROLLBACK"); BailAjax($lng_failedmoving,$q); }
+			{ @mysql_query("ROLLBACK"); BailErr($lng_failedmoving,$q); }
 		
 		switch($_GET['position']) {
 			case 'before':
 				// Make space in new place
 				$q="UPDATE ".PAGES." SET position=position+1 WHERE position>=".$targetNode['position']." AND parent_idx=".$targetNode['parent_idx']." AND menu='".$targetNode['menu']."'";
 				if(!($res=mysql_query($q)))
-					{ @mysql_query("ROLLBACK"); BailAjax($lng_failedmoving,$q); }
+					{ @mysql_query("ROLLBACK"); BailErr($lng_failedmoving,$q); }
 				
 				// Move the node
 				$q="UPDATE ".PAGES." SET parent_idx=".$targetNode['parent_idx'].", position=".$targetNode['position'].", menu='".$targetNode['menu']."' WHERE idx=".$movingNode['idx'];
 				if(!($res=mysql_query($q)))
-					{ @mysql_query("ROLLBACK"); BailAjax($lng_failedmoving,$q); }
+					{ @mysql_query("ROLLBACK"); BailErr($lng_failedmoving,$q); }
 				
 				break;
 				
@@ -430,12 +428,12 @@ switch($_GET['a']) {
 				// Make space in new place
 				$q="UPDATE ".PAGES." SET position=position+1 WHERE position>".$targetNode['position']." AND parent_idx=".$targetNode['parent_idx']." AND menu='".$targetNode['menu']."'";
 				if(!($res=mysql_query($q)))
-					{ @mysql_query("ROLLBACK"); BailAjax($lng_failedmoving,$q); }
+					{ @mysql_query("ROLLBACK"); BailErr($lng_failedmoving,$q); }
 				
 				// Move the node
 				$q="UPDATE ".PAGES." SET parent_idx=".$targetNode['parent_idx'].", position=".$targetNode['position']."+1, menu='".$targetNode['menu']."' WHERE idx=".$movingNode['idx'];
 				if(!($res=mysql_query($q)))
-					{ @mysql_query("ROLLBACK"); BailAjax($lng_failedmoving,$q); }
+					{ @mysql_query("ROLLBACK"); BailErr($lng_failedmoving,$q); }
 					
 				break;
 				
@@ -443,28 +441,28 @@ switch($_GET['a']) {
 				// 'inside' always moves to the bottom of the target parent
 				$q='SELECT MAX(position) FROM '.PAGES.' WHERE parent_idx='.$targetNode['idx']." AND menu='".$targetNode['menu']."'";;
 				if(!($res=mysql_query($q)))
-					{ @mysql_query("ROLLBACK"); BailAjax($lng_failedmoving,$q); }
+					{ @mysql_query("ROLLBACK"); BailErr($lng_failedmoving,$q); }
 				list($newPos)=mysql_fetch_row($res);
 				$newPos++;
 				
 				// Move the node
 				$q="UPDATE ".PAGES." SET parent_idx=".$targetNode['idx'].", position=".$newPos.", menu='".$targetNode['menu']."' WHERE idx=".$movingNode['idx'];
 				if(!($res=mysql_query($q)))
-					{ @mysql_query("ROLLBACK"); BailAjax($lng_failedmoving,$q); }
+					{ @mysql_query("ROLLBACK"); BailErr($lng_failedmoving,$q); }
 			
 				break;
 				
 			case 'bottom':
 				$q='SELECT MAX(position) FROM '.PAGES.' WHERE parent_idx=0 AND menu=\''.$movingNode['menu'].'\'';
 				if(!($res=mysql_query($q)))
-					{ @mysql_query("ROLLBACK"); BailAjax($lng_failedmoving,$q); }
+					{ @mysql_query("ROLLBACK"); BailErr($lng_failedmoving,$q); }
 				list($newPos)=mysql_fetch_row($res);
 				$newPos++;
 				
 				// Move the node
 				$q="UPDATE ".PAGES." SET parent_idx=0, position=".$newPos." WHERE idx=".$movingNode['idx'];
 				if(!($res=mysql_query($q)))
-					{ @mysql_query("ROLLBACK"); BailAjax($lng_failedmoving,$q); }
+					{ @mysql_query("ROLLBACK"); BailErr($lng_failedmoving,$q); }
 				
 				break;
 				
@@ -473,7 +471,7 @@ switch($_GET['a']) {
 		}
 		
 		if(!mysql_query("COMMIT"))
-			BailAjax("500\nCouldn't commit change","COMMIT");
+			BailErr("500\nCouldn't commit change","COMMIT");
 
 		echo "200\n".PrintLinks();
 		exit();
@@ -501,7 +499,7 @@ switch($_GET['a']) {
 			
 		$q = "UPDATE ".PAGES." SET name='".mysql_real_escape_string($_POST['name'])."', info='".mysql_real_escape_string($_POST['info'])."',file='".mysql_real_escape_string($_POST['filename'])."', visibility='".$vis."', subpoint='".$subm."' WHERE idx='$id'";
 		mysql_query($q) or
-			BailAjax($lng_failedrenaming,$q);
+			BailErr($lng_failedrenaming,$q);
 			
 		//$res=mysql_query("SELECT name FROM ".PAGES." WHERE idx='$id'");
 		//list($name)=mysql_fetch_array($res);
@@ -519,7 +517,7 @@ switch($_GET['a']) {
 		
 		$q = "DELETE FROM ".PAGES." WHERE idx=$id";
 		mysql_query($q) or
-			BailAjax($lng_faileddeleting,$q);
+			BailErr($lng_faileddeleting,$q);
 			
 		DeleteChildPages($id);
 		
@@ -752,15 +750,6 @@ function DeleteChildPages($id) {
 	$q="DELETE FROM ".PAGES." WHERE idx=$id";
 	mysql_query($q) or
 		BailSQLn($GLOBALS['lng_faileddeleting']." $id",$q);
-}
-
-function InvalidFormat($file) {
-	$ext=substr(strtolower(strrchr($file,".")),1);
-
-	if(in_array($ext,$GLOBALS['cfg']['ForbiddenFiles']))
-			return 1;
-			
-	return 0;
 }
 
 function deltree($path) {

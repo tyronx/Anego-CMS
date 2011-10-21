@@ -454,7 +454,7 @@ function CoreFunctions() {
 			return results[1];
 	}
 
-	/* ajax post request, similar to $.post, but allows multiple simultaneous requests */
+	/* ajax post request, similar to $.post, but allows multiple simultaneous requests. Should only be used when its feature is really needed */
 	this.postData = function(data, url, callback,timeoutcallback) {
 		var req = createXHR();
 		var xmlHttpTimeout;
@@ -476,6 +476,7 @@ function CoreFunctions() {
 			req.onreadystatechange = xhrCallback;	
 			req.open("POST", url, true);
 			req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+			req.setRequestHeader("X-Requested-With", "XMLHttpRequest");
 			req.send(data);
 		
 			// Timeout to abort in 5 seconds

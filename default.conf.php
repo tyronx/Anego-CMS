@@ -6,7 +6,9 @@ $cfg['hash_salt']="Vw_0Q3Z,e;y_!xyGo+tI";
 $cfg['tablePrefix'] = 'anego_';
 
 /* Forbidden files for uploading in the manage file section */
-$cfg['ForbiddenFiles'] = array("php","html","htm","cgi","pl","xhtml","js","exe","htaccess");
+$cfg['ForbiddenFiles'] = array("php","html","htm","cgi","pl","xhtml","js","exe","htaccess",'pif','com');
+/* Allowed picture formats */
+$cfg['allowedPictureFiles'] = array('jpg','png','gif');
 
 /* Cookie duration in hours */
 $cfg['cookieTime'] = 10*24;

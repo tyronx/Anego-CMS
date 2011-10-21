@@ -98,7 +98,7 @@ class BlogManager {
 				
 				$q = "UPDATE ".$this->blogTable." SET comments=comments+1 WHERE idx=$id";
 				mysql_query($q) or
-					BailAJAX($lng['blog']['cmtaddfail'],$q);
+					BailErr($lng['blog']['cmtaddfail'],$q);
 					
 				if(!mysql_affected_rows()) exit("400\n".$lng['blog']['cmtaddfailmore']);
 				
@@ -106,13 +106,13 @@ class BlogManager {
 					
 				$q = "INSERT INTO ".$this->cmtTable." (element_id,user,date,comment) VALUES ($id,'".mysql_real_escape_string(htmlentities($_POST['name']))."','".time()."','".mysql_real_escape_string(htmlentities($_POST['comment']))."')";
 				mysql_query($q) or
-					BailAJAX($lng['blog']['cmtaddfail'],$q);
+					BailErr($lng['blog']['cmtaddfail'],$q);
 					
 				$cmt_id=mysql_insert_id();
 				
 				$q = "SELECT comments FROM ".$this->blogTable." WHERE idx=$id";
 				$res=mysql_query($q) or
-					BailAJAX($lng['blog']['cmtcntreadfail'],$q);
+					BailErr($lng['blog']['cmtcntreadfail'],$q);
 				list($cmts) = mysql_fetch_array($res);
 				$c=$cmts;
 				if($cmts==0) $c='0';
@@ -137,17 +137,17 @@ class BlogManager {
 				
 				$q = 'DELETE FROM '.$this->cmtTable.' WHERE idx='.$cmt_id.' AND element_id='.$blog_id;
 				mysql_query($q) or
-					BailAJAX($lng['blog']['cmtdelfail'],$q);
+					BailErr($lng['blog']['cmtdelfail'],$q);
 					
 				if(!mysql_affected_rows()) exit("400\n".$lng['blog']['nothingtodelete']);
 					
 				$q = "UPDATE ".$this->blogTable." SET comments=comments-1 WHERE idx=$blog_id";
 				mysql_query($q) or
-					BailAJAX($lng['blog']['cmtdelfail'],$q);
+					BailErr($lng['blog']['cmtdelfail'],$q);
 					
 				$q = "SELECT comments FROM ".$this->blogTable." WHERE idx=$blog_id";
 				$res=mysql_query($q) or
-					BailAJAX($lng['blog']['cmtdelfail'],$q);
+					BailErr($lng['blog']['cmtdelfail'],$q);
 				list($cmts) = mysql_fetch_array($res);
 				$c=$cmts;
 				if($cmts==0) $c='0';				
@@ -172,7 +172,7 @@ class BlogManager {
 				
 				$q="INSERT INTO ".$this->blogTable." (blog_id,user_id,date,title,entry,comments) VALUES ($id,0,".time().",'".mysql_real_escape_string($_POST['title'])."','".mysql_real_escape_string($_POST['content'])."',0)";
 				mysql_query($q) or
-					BailAJAX($lng['blog']['blogaddfail'],$q);
+					BailErr($lng['blog']['blogaddfail'],$q);
 				
 				$t=$this->blogEntry(mysql_insert_id());
 				echo "200\n";
@@ -192,7 +192,7 @@ class BlogManager {
 				
 				$q="UPDATE ".$this->blogTable." SET title='".mysql_real_escape_string($_POST['title'])."', entry='".mysql_real_escape_string($_POST['content'])."' WHERE idx=$id";
 				mysql_query($q) or
-					BailAJAX($lng['blog']['blogeditfail'],$q);
+					BailErr($lng['blog']['blogeditfail'],$q);
 					
 				echo "200\nok";				
 				break;
@@ -204,7 +204,7 @@ class BlogManager {
 				
 				$q="DELETE FROM ".$this->blogTable." WHERE idx=$id";
 				mysql_query($q) or
-					BailAJAX($lng['blog']['blogdelfail'],$q);
+					BailErr($lng['blog']['blogdelfail'],$q);
 				echo "200\nok";
 				break;
 				
@@ -218,7 +218,7 @@ class BlogManager {
 		$text='';
 		$q='SELECT * FROM '.$this->blogTable.' WHERE idx='.$entry_id;
 		$res=mysql_query($q) or
-			BailAjax($lng['blog']['bloggetfail'],$q);
+			BailErr($lng['blog']['bloggetfail'],$q);
 			
 		if(!mysql_affected_rows()) return $lng['blog']['nosuchblog'];
 				
@@ -258,7 +258,7 @@ class BlogManager {
 		
 		$q = "SELECT * FROM ".$this->cmtTable." WHERE element_id=$entry_id";
 		$res=mysql_query($q) or
-			BailAJAX($lng['blog']['cmtreadfail'],$q);
+			BailErr($lng['blog']['cmtreadfail'],$q);
 			
 		if(!mysql_affected_rows()) return '<div class="commentSection"></div>';
 			
@@ -281,7 +281,7 @@ class BlogManager {
 			
 			$q='SELECT * FROM '.$this->blogTable.' WHERE blog_id='.$blog_id.' ORDER BY date DESC';
 			$res=mysql_query($q) or
-				BailAjax($lng['blog']['bloggetfail'],$q);
+				BailErr($lng['blog']['bloggetfail'],$q);
 				
 				
 			if(!mysql_affected_rows()) return $text.'<i>'.$lng['blog']['noblogentries'].'</i>';

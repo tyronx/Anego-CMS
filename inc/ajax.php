@@ -159,23 +159,23 @@ switch($ac) {
 		// Get old position and page id
 		$q = "SELECT page_id,position FROM ".PAGE_ELEMENT." WHERE element_id=$elid AND module_id='$mid'";
 		$res=mysql_query($q) or
-			BailAjax("Failed getting page",$q);
+			BailErr("Failed getting page",$q);
 		list($page_id,$oldpos) = mysql_fetch_array($res);
 		
 		// Cut it out
 		$q = "UPDATE ".PAGE_ELEMENT." SET position=position-1 WHERE page_id=$page_id AND position>$oldpos";
 		mysql_query($q) or
-			BailAjax("Failed cutting out element",$q);
+			BailErr("Failed cutting out element",$q);
 
 		// Re-Insert (make space)
 		$q = "UPDATE ".PAGE_ELEMENT." SET position=position+1 WHERE page_id=$page_id AND position>=$newpos";
 		mysql_query($q) or
-			BailAjax("Failed making space for element",$q);
+			BailErr("Failed making space for element",$q);
 
 		// Finally set the new position on the element
 		$q = "UPDATE ".PAGE_ELEMENT." SET position=$newpos WHERE element_id=$elid AND module_id='$mid'";
 		mysql_query($q) or
-			BailAjax("Failed setting element position",$q);
+			BailErr("Failed setting element position",$q);
 
 		$pmg->generatePage($page_id);
 
@@ -203,17 +203,17 @@ switch($ac) {
 		if($ce->deleteElement($elid)) {
 			$q = "SELECT page_id, position FROM ".PAGE_ELEMENT." WHERE element_id=$elid AND module_id='$mid'";
 			$res=mysql_query($q) or 
-				BailAjax("Failed getting page id",$q);
+				BailErr("Failed getting page id",$q);
 			list($page_id, $elpos) = mysql_fetch_array($res);
 
 
 			$q = "DELETE FROM ".PAGE_ELEMENT." WHERE element_id=$elid AND module_id='$mid'";
 			$res=mysql_query($q) or
-				BailAjax("Failed deleting content element table",$q);
+				BailErr("Failed deleting content element table",$q);
 				
 			$q = "UPDATE ".PAGE_ELEMENT." SET position=position-1 WHERE page_id=$page_id AND position>$elpos";
 			$res=mysql_query($q) or
-				BailAjax("Failed decreasing position",$q);
+				BailErr("Failed decreasing position",$q);
 			
 			$pmg->generatePage($page_id);
 			
@@ -271,7 +271,7 @@ switch($ac) {
 		$lng_pagetitle = str_replace(array('&lt;','&gt;'),array('<','>'),$lng_pagetitle);
 		
 		$json['title'] = $lng_pagetitle." - ".$row['name'];
-		$json['content'] = FormatText($row['content_prepared']);
+		$json['content'] = $row['content_prepared'];
 		
 		echo "200\n".json_encode($json)."\r\n";
 		

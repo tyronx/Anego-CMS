@@ -33,7 +33,7 @@ abstract class ContentElement extends BasicModule {
 		
 		$q = "INSERT INTO " . $this->databaseTable() . " (value) VALUES ('')";
 		$res = mysql_query($q) or
-			BailAjax("Failed inserting element", $q);
+			BailErr("Failed inserting element", $q);
 
 		$this->elementId = mysql_insert_id();
 		
@@ -49,7 +49,7 @@ abstract class ContentElement extends BasicModule {
 				
 		$q = "UPDATE " . $this->databaseTable() . " SET value='" . mysql_real_escape_string($html) . "' WHERE idx=" . $this->elementId;
 		mysql_query($q) or
-			BailAjax("Failed saving element ", mysql_error());
+			BailErr("Failed saving element ", mysql_error());
 		
 		return "200\nok";
 	}
@@ -63,7 +63,7 @@ abstract class ContentElement extends BasicModule {
 		global $cfg;
 		$q = "SELECT value FROM ".$this->databaseTable()." WHERE idx=" . $this->elementId;
 		$res = mysql_query($q) or
-			BailAjax("Failed deleting element", $q);
+			BailErr("Failed deleting element", $q);
 		list($str) = mysql_fetch_array($res);
 
 		return $str;
@@ -74,7 +74,7 @@ abstract class ContentElement extends BasicModule {
 		global $cfg;
 		$q = "DELETE FROM ".$this->databaseTable()." WHERE idx=" . $this->elementId;
 		mysql_query($q) or
-			BailAjax("Failed deleting element", $q);
+			BailErr("Failed deleting element", $q);
 		return true;
 	}
 	
@@ -147,7 +147,7 @@ class PageManager {
 		// Send the source too since its not much more overhead
 		$q = "SELECT content_prepared, name  FROM ".PAGES." WHERE idx=$page_id";
 		$res = mysql_query($q) or
-			BailAjax("Failed getting page content for editing",$q);
+			BailErr("Failed getting page content for editing",$q);
 		$row = mysql_fetch_array($res);
 		
 		if(isset($row['content_prepared'][0])) // faster than strlen()
@@ -161,7 +161,7 @@ class PageManager {
 		// Does not look like this is needed, so commenting it out
 		/*$q="SELECT * FROM ".PAGE_ELEMENT." WHERE page_id=$page_id";
 		$res=mysql_query($q) or
-			BailAjax("Failed getting page content for editing",$q);
+			BailErr("Failed getting page content for editing",$q);
 			
 		while($row=mysql_fetch_array($res))
 			$ret['elements'][] = array('pos'=>$row['position'],'module'=>$row['module_id'],'element_id'=>$row['element_id']);
@@ -176,12 +176,12 @@ class PageManager {
 		
 		$q="SELECT * FROM ".PAGE_ELEMENT." WHERE page_id=$page_id ORDER BY position";
 		$res=mysql_query($q) or
-			BailAjax("Failed getting page elements for page generation",$q);
+			BailErr("Failed getting page elements for page generation",$q);
 		
 		$txt = '';
 		while($row=mysql_fetch_array($res)) {
 			$mid=$row['module_id'];
-			if(!isset($this->loadedModules[$mid])) BailAjax("Cannot recreate page as there is a module missing!");
+			if(!isset($this->loadedModules[$mid])) BailErr("Cannot recreate page as there is a module missing!");
 			
 			include_once($this->modulePath . $mid . '/' . $mid . '.php');
 			
@@ -191,7 +191,7 @@ class PageManager {
 		
 		$q="UPDATE ".PAGES." SET content_prepared='" . mysql_real_escape_string($txt) . "' WHERE idx=$page_id";
 		$res=mysql_query($q) or
-			BailAjax("Failed generating page",$q);
+			BailErr("Failed generating page",$q);
 			
 		return $txt;
 	}

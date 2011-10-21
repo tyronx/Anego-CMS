@@ -23,7 +23,7 @@ class alohatext extends ContentElement {
 		global $cfg;
 		$q = "SELECT value FROM ".$this->databaseTable()." WHERE idx=".$this->elementId;
 		$res=mysql_query($q) or
-			BailAjax("Failed deleting element",$q);
+			BailErr("Failed deleting element",$q);
 		list($str)=mysql_fetch_array($res);
 		
 		if(strlen($str)==0) $str="Type your text here";

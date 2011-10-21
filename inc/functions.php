@@ -1,122 +1,22 @@
-<?
-function FormatText(&$str) {
-	global $anego; 
-	
-	$str = preg_replace("/\[gallery ([^\]]*)\]/ie","MakeGal('\\1')",$str);
-	$str = preg_replace("/<title name=\"([^\"]*)\">/ie","\$anego->Box('\\1')",$str);
-	return $str;
+﻿<?
+/*** General File upload checks - requires config included ***/
+
+function InvalidFormat($file) {
+	$ext=substr(strtolower(strrchr($file,".")),1);
+
+	if(in_array($ext,$GLOBALS['cfg']['ForbiddenFiles']))
+			return 1;
+			
+	return 0;
 }
 
-function MakeGal($str) {
-	$str = stripslashes($str);
-	
-	$fo = array('path'=>'','rows'=>$GLOBALS['cfg']['galPublicRows'],'cols'=>$GLOBALS['cfg']['galPublicCols'],'width'=>$GLOBALS['cfg']['galThumbnailWidth'],'height'=>$GLOBALS['cfg']['galThumbnailHeight'],'showdirs'=>0);
-	//echo "<pre>";
-	//print_r($fo);
-	
-	$opts = explode(" ",$str);
-	foreach($opts as $opt) {
-		$nameval = explode('=',$opt,2);
-		if(!array_key_exists($nameval[0],$fo))
-			return sprintf($lng_unkown_opt,$nameval[0]);
-			
-		if(preg_match("/('|\")([^\\1]*)(\\1)/",$nameval[1],$matches))
-			$fo[$nameval[0]] = $matches[2];
-		else return sprintf($lng_invalidsynt,$opt);
-		
-	}
-	
-	if($fo['showdirs']) $t=DTYPE_IMGANDFOLDERS;
-	else $t=DTYPE_NORMAL;
-	
-	return Gallery($fo['path'],$t,$fo['rows'],$fo['cols'],$fo['width'],$fo['height']);
-}
+function validPictureFormat($file) {
+	if(in_array(
+		substr(strtolower(strrchr($file, ".")), 1),
+		$GLOBALS['cfg']['allowedPictureFiles']
+	)) return 1;
 
-function ParsePars($str) {
-	$regexp = '/([a-zA-Z0-9]+)[\s]{0,1}=[\s]{0,1}(\'|"|)((?:(?:\\2)|(?(3)[^\']|[^"]))*)(?:\2)/U';
-	preg_match_all($regexp,$str,$matches,PREG_SET_ORDER);
-	
-	$pars=array();
-	foreach($matches as $value)
-		$pars[$value[1]]=$value[3];
-	 
-	return $pars;
-}
-
-function AdjustImages($text, $pid) {
-	preg_match_all("/<\s*img\s*([^>]*)\s*\/?>/i",$text,$matches);
-	
-	foreach($matches[1] as $idx=>$p) {
-		$pars=ParsePars($p);
-		$text_wdt=$pars['width'];
-		$text_hgt=$pars['height'];
-		if($pars['style']) {
-			if(preg_match("/width:\s*(\d+)\s*px/",$pars['style'],$matches))
-				$text_wdt=$matches[1];
-			if(preg_match("/height:\s*(\d+)\s*px/",$pars['style'],$matches))
-				$text_hgt=$matches[1];				
-		}
-		$proportions = false;
-		if($text_wdt==0 || $text_hgt==0) $proportions=true;
-		
-		list($width, $height) = getimagesize($pars['src']);
-		
-		//exit("400\n$text_wdt/$text_hgt vs. $width/$height\n\nprop: $proportions");
-
-		if($width != $text_wdt || $height != $text_hgt) {
-			$filename = basename($pars['src']);
-			$ret=false;
-			
-			if(!file_exists('var/'.$pid))
-				mkdir('var/'.$pid);
-				
-			if(file_exists("var/$pid/$filename")) {
-				list($wid, $heig) = @getimagesize("var/$pid/$filename");
-				//exit("400\n$wid/$heig vs. $text_wdt/$text_hgt");
-				if($wid!=$text_wdt || $heig != $text_hgt) $ret=CopyResized($pars['src'], $text_wdt, $text_hgt,$proportions,'file','',"var/$pid/$filename");
-			} else $ret=CopyResized($pars['src'], $text_wdt, $text_hgt,$proportions,'file','',"var/$pid/$filename");
-			
-			// Something failed with copy resized
-			if(!$ret) continue;
-			
-			$pars['src']="var/$pid/$filename";
-			
-			// nice but not needed actually
-			/*if($pars['style']) {
-				$cnt1=$cnt2=0;
-				preg_replace("#width:\d+px;?#",'width:'.$text_wdt.'px;',$pars['style'],-1,$cnt1);
-				if(!$cnt1) {
-					if($pars['style'][strlen($pars['style'])-1]!=';') $pars['style'].=';';
-					$pars['style'].=' width:'.$text_wdt.'px;';
-				}
-				preg_replace("#height:\d+px;?#",'height:'.$text_hgt.'px;',$pars['style'],-1,$cnt2);
-				if(!$cnt2) {
-					if($pars['style'][strlen($pars['style'])-1]!=';') $pars['style'].=';';
-					$pars['style'].=' height:'.$text_hgt.'px;';
-				}
-			} else {
-				$pars['style'].='width: '.$text_wdt.'px; height: '.$text_hgt.'px;';
-			}*/
-			
-			$newpars='';
-			foreach($pars as $name=>$value) {
-				$newpars .= ' '.$name.'="'.$value.'"';
-			}
-			//exit("400\nnewpars is $newpars\n\nbefore: $text\n\nafter:".str_replace($p,$newpars,$text));
-		
-			$text=str_replace($p,$newpars,$text);
-		}
-	}
-	
-	return $text;
-}
-
-function ThumbOf($file) {
-	$filename = basename($file);
-	if(preg_match('#(?U)(.*)(?-U)(\.\w+)$#',$filename,$splitname))
-		return dirname($file).'/'.$splitname[1].'_thumb'.$splitname[2];
-		
-	return $file;
+	return 0;
 }
 
 function hex2rgb($hex) {
@@ -131,6 +31,34 @@ function BoundBy($val,$min,$max) {
   if($val<$min) return $min;
   if($val>$max) return $max;
   return $val;
+}
+
+// Take a filename and replaces a number of chars that might cause trouble in urls
+function prettyName($name) {
+	$lr = array(
+		"A" => array("À","Á","Â","Ã","Ä","Å","Ā","Ă"),
+		"a" => array("à","á","â","ã","ä","ā","ă","ą"),
+		"E" => array("È","É","Ê","Ë","Ē","Ĕ","Ė","Ę","Ě"),
+		"e" => array("è","é","ê","ë","ē","ĕ","ė","ę","ě"),
+		"I" => array("Ī","Ĭ","İ","Î","Ï","Ì","Í"),
+		"i" => array("ì","í","î","ï","ĩ","ī","ĭ"),
+		"S" => array("Ş","Ŝ","Ś","Š"),
+		"s" => array("ß","ś","ŝ","ş","š"),
+		"O" => array("Ò","Ó","Ô","Õ","Ö","Ō","Ŏ","Ő"),
+		"o" => array("ò","ó","ô","õ","ö","ō","ŏ","ő"),
+		"U" => array("Ù","Ú","Û","Ü","Ũ","Ū","Ŭ","Ů","Ű"),
+		"u" => array("ų","ű","ů","ŭ","ū","ũ","ù","ú","û","ü"),
+		"C" => array("Ć","Ĉ","Ċ","Č"),
+		"c" => array("ć","ĉ","ċ","č"),
+		"_" => array(" ")
+	);
+	foreach($lr as $replace=>$letters) {
+		$name = str_replace($letters,$replace,$name);
+	}
+	$len = strlen($name);
+	for($i=0; $i<$len; $i++)
+		$name[$i]=preg_replace("#[^a-zA-Z0-9_\-\.]+#","",$name[$i]);
+	return $name;
 }
 
 function CopyResized($file, $width = 0, $height = 0, $proportional = true, $output = 'file',$ext='_thumb',$newfile='') {
@@ -244,7 +172,7 @@ function CopyResized($file, $width = 0, $height = 0, $proportional = true, $outp
 			break;
 			
 		case IMAGETYPE_JPEG:
-			imagejpeg($image_resized, $output);
+			imagejpeg($image_resized, $output, 95);
 			break;
 			
 		case IMAGETYPE_PNG:

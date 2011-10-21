@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS `anego_comments_blog` (
   `date` int(11) NOT NULL,
   `comment` text NOT NULL,
   PRIMARY KEY (`idx`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS `anego_elements_blog` (
   `value` longtext NOT NULL,
   `style` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`idx`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=6 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -68,7 +68,7 @@ CREATE TABLE IF NOT EXISTS `anego_pages_aloha` (
   `value` longtext NOT NULL,
   `style` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`idx`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=3 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -126,7 +126,7 @@ CREATE TABLE IF NOT EXISTS `anego_pages_eng` (
   `hoverImg` varchar(255) DEFAULT NULL,
   `activeImg` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`idx`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=61 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -142,7 +142,7 @@ CREATE TABLE IF NOT EXISTS `anego_pages_forms` (
   `style` varchar(255) NOT NULL,
   PRIMARY KEY (`idx`),
   KEY `page_id` (`page_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -150,12 +150,14 @@ CREATE TABLE IF NOT EXISTS `anego_pages_forms` (
 -- Table structure for table `anego_pages_gallery`
 --
 
-CREATE TABLE IF NOT EXISTS `anego_pages_gallery` (
+CREATE TABLE IF NOT EXISTS `test_pages_gallery` (
   `idx` int(11) NOT NULL AUTO_INCREMENT,
   `value` longtext NOT NULL,
   `style` varchar(255) NOT NULL,
+  `preview_width` smallint(6) NOT NULL,
+  `preview_height` smallint(6) NOT NULL,
   PRIMARY KEY (`idx`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -170,7 +172,7 @@ CREATE TABLE IF NOT EXISTS `anego_pages_gallerypicture` (
   `position` int(11) NOT NULL,
   `filename` varchar(250) NOT NULL,
   PRIMARY KEY (`idx`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -198,7 +200,7 @@ CREATE TABLE IF NOT EXISTS `anego_pages_ger` (
   `hoverImg` varchar(255) DEFAULT NULL,
   `activeImg` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`idx`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=102 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -211,7 +213,7 @@ CREATE TABLE IF NOT EXISTS `anego_pages_picture` (
   `value` longtext NOT NULL,
   `style` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`idx`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=2 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -224,7 +226,7 @@ CREATE TABLE IF NOT EXISTS `anego_pages_richtext` (
   `value` longtext NOT NULL,
   `style` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`idx`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=18 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -237,7 +239,7 @@ CREATE TABLE IF NOT EXISTS `anego_pages_seperator` (
   `value` longtext NOT NULL,
   `style` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`idx`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=17 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
