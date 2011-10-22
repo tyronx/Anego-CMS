@@ -115,15 +115,24 @@ $q="SELECT * FROM ".SETTINGS;
 $res = mysql_query($q) or
 	BailSQLn($lng_genericerror,$q); 
 while($row = mysql_fetch_array($res))
-	$s[$row['name']] = $row['value'];
-	
-if(!isset($s['menu_scroll'])) $s['menu_scroll']='0';
+	$settings[$row['name']] = $row['value'];
+
+function getSetting($name) {
+	return $settings[$name];
+}
+function setSetting($name, $value) {
+	$q = 'REPLACE INTO '.SETTINGS.' (name,value) VALUES (\'' . $name . '\', \'' . $value . '\')';
+	mysql_query($q) or
+		BailErr('Failed applying setings', $q);
+}
+
+if(!isset($settings['menu_scroll'])) $settings['menu_scroll']='0';
 
 $anego->AddJsPreload("\tanego.homepage=".HomePage().';');
-$anego->AddJsPreload("\tanego.menu_scroll=".$s['menu_scroll'].";");
-if(isset($s['keywords']) && strlen($s['keywords'])) $anego->AddHeadHeader("\t".'<meta name="keywords" content="'.htmlentities(utf8_decode($s['keywords'])).'">');
-if(isset($s['description']) && strlen($s['description'])) $anego->AddHeadHeader("\t".'<meta name="description" content="'.htmlentities(utf8_decode(str_replace("\n",' ',$s['description']))).'">');
-if(isset($s['pagetitle']) && strlen($s['pagetitle'])) $lng_pagetitle = str_replace(array('<','>'),array('&lt;','&gt;'),$s['pagetitle']);
+$anego->AddJsPreload("\tanego.menu_scroll=".$settings['menu_scroll'].";");
+if(isset($settings['keywords']) && strlen($settings['keywords'])) $anego->AddHeadHeader("\t".'<meta name="keywords" content="'.htmlentities(utf8_decode($settings['keywords'])).'">');
+if(isset($settings['description']) && strlen($settings['description'])) $anego->AddHeadHeader("\t".'<meta name="description" content="'.htmlentities(utf8_decode(str_replace("\n",' ',$settings['description']))).'">');
+if(isset($settings['pagetitle']) && strlen($settings['pagetitle'])) $lng_pagetitle = str_replace(array('<','>'),array('&lt;','&gt;'),$settings['pagetitle']);
 else $lng_pagetitle='Anego';
 
 $anego->assign('lng_pagetitle',$lng_pagetitle);

@@ -12,17 +12,11 @@ chdir($cfg['homePath']);
 require 'inc/auth.php';
 // Image resizing tools
 require 'inc/functions.php';
+// Some language strings
+require 'inc/'.$language.'.php';
 
 if(!LoggedOn())
 	exit("300\nYou are not logged on. Please log in as admin to upload a picture");
-
-$lng_err_file_tobig = 'Can\'t upload File. Size exceeds server limits!';
-$lng_err_file_cantwrite = 'Cannot write file to temporary files folder. No free space left?';
-$lng_err_file_cantwrite2 = 'Cannot write file to disk. Forgot to set writting permissions?';
-$lng_err_file_fail = 'A unexpected error occurend while uploading. Error number %s';
-$lng_upload = 'Upload successful!';
-$lng_format = 'Image not recognized as such. Please upload only png, jpg, gif images.';
-$lng_contain = 'File/Folder Names may only contain letters, numbers, dot (.) dash (-) and underscore (_)';
 
 /* Editing a picture requires the original size picture */
 if(isset($_POST['getoriginal'])) {

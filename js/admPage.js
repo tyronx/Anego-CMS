@@ -108,6 +108,7 @@ function DragDropElements(contentElements) {
 					miniToolbar.css('display','none'); 
 				};
 				
+				// Todo: If module doesn't exist, instantiate a ContentElement class and delete it that way
 				if(elements[$(curEl).attr('id')] != undefined)
 					elements[$(curEl).attr('id')].deleteElement(deleteCompleteFn);
 				else alert("Module of this Element not found, please install the module '"+splitID($(curEl).attr('id')).module_id+"'");

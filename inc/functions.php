@@ -70,8 +70,10 @@ function CopyResized($file, $width = 0, $height = 0, $proportional = true, $outp
 
  
 	$info = getimagesize($file);
-	//exit("400\n$file");
-	if($info[2]!=IMAGETYPE_GIF && $info[2]!=IMAGETYPE_JPEG && $info[2]!=IMAGETYPE_PNG) return false;
+
+	if( $info[2] != IMAGETYPE_GIF && 
+		$info[2] != IMAGETYPE_JPEG && 
+		$info[2] != IMAGETYPE_PNG) return false;
 	
 	$image = '';
  

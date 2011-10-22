@@ -20,10 +20,6 @@ class separator extends ContentElement {
 		parent::__construct(get_class($this), $pageId, $elementId);
 	}
 
-	function editElement() {
-		return true;
-	}
-	
 	function generateContent() {
 		return "<hr>";
 	}
