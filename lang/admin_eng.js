@@ -53,6 +53,7 @@ if(typeof lngMain == 'undefined') {
 	lng_savechanges = "Save changes";
 	lng_save = 'Save';
 	lng_cancelchanges = "Cancel";
+	lng_close = 'Close';
 
 	lng_imagelinks = 'Image links...';
 	lng_defImg = '<abbr title="The image that should be shown instead of the text link">Default image</abbr>';

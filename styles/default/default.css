@@ -350,18 +350,7 @@ div#inactive {
 	/*background-image:url(img/bg_inactive.png);*/
 }
 
-div#horizon {
-	position: absolute;
-	top: 50%;
-	left: 0px;
-	width: 100%;
-	height: 1px;
-	overflow: visible;
-	visibility: visible;
-	display: block;
-}
-
-div#dlgBox {
+div.dlgBox {
 	background-color: #F6F8FE;
 	text-align:left;
 	position: fixed;
@@ -376,16 +365,24 @@ div#dlgBox {
 	font-size:14px;	
 }
 
-div#dlgContent {
+div.dlgBox .loadingIcon {
+	display: none;
+	vertical-align: middle;
+	margin-right: 5px; 
+	margin-bottom: 2px;
+}
+
+div.dlgBox div.dlgContent {
 	padding:2px;
 }
 
-div#dlgTitle, div#dlgTitle span {
+div.dlgBox div.dlgTitle, div.dlgBox div.dlgTitle span {
 	background-color: #07273D;
 	cursor:move;
 	color:white;
 }
-div#dlgTitle {
+
+div.dlgBox div.dlgTitle {
 	-moz-border-radius-topleft: 5px;
 	border-top-left-radius: 5px;
 	-moz-border-radius-topright: 5px;
@@ -398,7 +395,7 @@ div#dlgTitle {
 	font-size:15px;
 }
 
-.dlgBtn {
+div.dlgBox .dlgBtn {
 	float:right;
 	-moz-border-radius: 6px;
 	border-radius: 6px;
@@ -412,20 +409,31 @@ div#dlgTitle {
 	font-size:12px;
 }
 
-.dlgBtn:hover {
+div.dlgBox .dlgBtn:hover {
 	border:1px solid #ccc;
 	background-color:#0a3959;
 	padding:0px;
 }
 
 /* Button container of the dialog */
-div#dlgBtnContainer {
+div.dlgBox div.dlgBtnContainer {
 	position:relative; 
 	bottom:3px; 
 	right:0;
 	text-align:right;
 	padding-top:15px;
 	clear:both;
+}
+
+
+div.dlgBox hr.dlgSep {
+	height:0px; 
+	border-top:1px solid black; 
+	background:none repeat scroll 0 0 black;
+	margin:0px;
+	padding:0px;
+	width:100%;
+	margin-bottom:10px;
 }
 
 .adminstyles input, .adminstyles textarea, .adminstyles select {
@@ -462,21 +470,18 @@ div#dlgBtnContainer {
 	border-color:#AAA;
 }
 
-div#editpage {
-	position:relative;
-	right:3px;
-	top:0px;
-	text-align:right;
+/**** Menu editing ****/
+
+.renamePageDlgContent div.toPage {
+	position:absolute;
+	left:5px;
+	bottom:5px;
+	z-index:2;
 }
 
-hr.dlgSep {
-	height:0px; 
-	border-top:1px solid black; 
-	background:none repeat scroll 0 0 black;
-	margin:0px;
-	padding:0px;
-	width:100%;
-	margin-bottom:10px;
+.renamePageDlgContent .pglink, .addPageDlgContent .pglink {
+	padding-left: 10px;
+	display: none;
 }
 
 /* 'Manage files' Table style */
@@ -487,6 +492,9 @@ table.gal td { border: 1px solid #DDD; padding:5px; text-align:center; vertical-
 table.gal img { vertical-align:middle; padding:0px; }
 table.gal a { text-decoration: none; border:0; }
 
+div.gallery div.pic {
+	float:left;
+}
 
 
 /********* Lightbox *********/

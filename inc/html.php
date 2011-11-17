@@ -140,7 +140,7 @@ function Gallery($root="",$dtype=DTYPE_NORMAL, $rows=-1, $cols=-1, $width=-1, $h
 		$vars['base_url']=$base_url;
 		$vars['path']=$path;
 		
-		$galnumber = rand(0,1000);
+		//$galnumber = rand(0,1000);
 		
 		/* Display items */
 		foreach($files as $file) {
@@ -163,8 +163,8 @@ function Gallery($root="",$dtype=DTYPE_NORMAL, $rows=-1, $cols=-1, $width=-1, $h
 						case DTYPE_INSERTIMG: // no break; here
 						case DTYPE_INSERTGAL:
 						case DTYPE_IMGANDFOLDERS:
-						case DTYPE_NORMAL: DisplayItem(FOLDER,$vars,$galnumber); break;
-						case DTYPE_ADMIN:  DisplayItem(ADMIN_FOLDER,$vars,$galnumber); break;
+						case DTYPE_NORMAL: DisplayItem(FOLDER,$vars); break;
+						case DTYPE_ADMIN:  DisplayItem(ADMIN_FOLDER,$vars); break;
 						//case DTYPE_INSERTGAL: DisplayItem(ADD_GALLERY,$vars); break;
 					}
 
@@ -183,9 +183,9 @@ function Gallery($root="",$dtype=DTYPE_NORMAL, $rows=-1, $cols=-1, $width=-1, $h
 					switch($dtype) {
 						case DTYPE_INSERTGAL: // no break; here
 						case DTYPE_IMGANDFOLDERS:
-						case DTYPE_NORMAL: DisplayItem(IMAGE,$vars,$galnumber); break;
-						case DTYPE_INSERTIMG: DisplayItem(ADD_IMAGE,$vars,$galnumber); break;
-						case DTYPE_ADMIN:  DisplayItem(ADMIN_IMAGE,$vars,$galnumber); break;
+						case DTYPE_NORMAL: DisplayItem(IMAGE,$vars); break;
+						case DTYPE_INSERTIMG: DisplayItem(ADD_IMAGE,$vars); break;
+						case DTYPE_ADMIN:  DisplayItem(ADMIN_IMAGE,$vars); break;
 					}
 					
 				}
@@ -224,7 +224,7 @@ function Gallery($root="",$dtype=DTYPE_NORMAL, $rows=-1, $cols=-1, $width=-1, $h
 }
 
 // Displays a single file within a "gallery"
-function DisplayItem($type, $vars,$galnumber) {
+function DisplayItem($type, $vars) {
 	/* Wondering about the weird identation of the HTML code? 
 	 * Its just to keep the resulting html code more or less tidy 
 	 */
@@ -234,7 +234,7 @@ function DisplayItem($type, $vars,$galnumber) {
 		case IMAGE: 
 				?>
 				<td style="width:<?=$vars['width']?>px; height:<?=$vars['height']?>px;">
-					<a href="<?=$vars['path'].'/'.$vars['file']?>" title="<?=$vars['file']?>" rel="lytebox[<?=$galnumber?>]"><img border="0" title="<?=$vars['file']?>"  src="<?=ThumbOf($vars['path'].'/'.$vars['file'])?>" alt=""></a>
+					<a href="<?=$vars['path'].'/'.$vars['file']?>" title="<?=$vars['file']?>" rel="lightbox"><img border="0" title="<?=$vars['file']?>"  src="<?=ThumbOf($vars['path'].'/'.$vars['file'])?>" alt=""></a>
 				</td>
 		<?
 		break;
@@ -254,7 +254,7 @@ function DisplayItem($type, $vars,$galnumber) {
 					<span class="galleryEdit"><a href="javascript:RenameFile('<?=$vars['path'].'/'.$vars['file']?>','<?=$_GET['fgx']?>')"><img src="styles/default/img/cleardot.gif" class="smallIcon smallimgPencil" alt="Rename" title="Rename"></a> <a href="javascript:DelFile('<?=$vars['path'].'/'.$vars['file']?>','<?=$_GET['fgx']?>')"><img src="styles/default/img/cleardot.gif" class="smallIcon smallimgBin" alt="Delete" title="Delete"></a></span>
 <?
 			if($vars['ending'] == "png" || $vars['ending'] == "gif" || $vars['ending'] == "jpg") { 
-				?><a href="<?=$vars['path'].'/'.$vars['file']?>" title="<?=$vars['file']?>" rel="lytebox[<?=$galnumber?>]"><img border="0" title="<?=$vars['file']?>" src="<?=ThumbOf($vars['path'].'/'.$vars['file'])?>"></a><? 
+				?><a href="<?=$vars['path'].'/'.$vars['file']?>" title="<?=$vars['file']?>" rel="lightbox"><img border="0" title="<?=$vars['file']?>" src="<?=ThumbOf($vars['path'].'/'.$vars['file'])?>"></a><? 
 			} else {
 			?><a href="<?=$vars['path'].'/'.$vars['file']?>"><img border="0" title="Non-picture file" style="margin-top:<?=round(($vars['height']-64-15)/2)?>px;" src="<?=$defIcons['file']?>"><br><?=$vars['file']?></a>
 <? } ?>
@@ -643,4 +643,3 @@ class Anego extends Smarty {
 		return $str;		
 	}
 }
-?>

@@ -43,6 +43,7 @@ $lng_movepage = "Move page a position higher";
 $lng_movepage2 = "Move page a position lower";
 $lng_failedpages = "Failed getting child pages for deletion";
 $lng_nomysql = 'No PHP MySQL Support on this Server. Please install it.';
+$lng_wrongProvider = 'Wrong data(-base) provider, file not found in inc/dbi.';
 $lng_dberror = "Our Database is not reachable. Please try again later!";
 $lng_exiterror = "<br>There was an error, I'm sorry I couldnt execute your request. The respsonsible php script told me: %s<br><br>A detailed error message has been logged.";
 $lng_editpage = "Edit page";
@@ -104,6 +105,3 @@ $lng_err_file_cantwrite2 = 'Cannot write file to disk. Forgot to set writting pe
 $lng_err_file_fail = 'A unexpected error occurend while uploading. Error number %s';
 
 $lng_missing_rights = 'No permission to access this page, sorry.';
-
-
-?>

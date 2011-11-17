@@ -104,5 +104,3 @@ class Role {
 	const User = 4;
 	const Nothing = 0;
 }
-
-?>

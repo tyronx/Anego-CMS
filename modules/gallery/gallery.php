@@ -26,6 +26,7 @@ class gallery extends ContentElement {
 	);
 	
 	function databaseTable() { return $GLOBALS['cfg']['tablePrefix'].'pages_gallery'; }
+	function picTable() { return $GLOBALS['cfg']['tablePrefix'].'pages_gallerypicture'; }
 	
 	function __construct($pageId, $elementId = 0) {
 		$this->path = FILESROOT.'gallery/' . $elementId . '/';
@@ -35,16 +36,58 @@ class gallery extends ContentElement {
 	}
 	
 	function generateContent() {
-		if( !is_dir($this->path))
+		if ( !is_dir($this->path)) {
 			return "Gallery not set up yet.";
-		else {
-			return "gallery display of some sort";
+		} else {
+			$str = '<div class="gallery">';
+			$pics = $this->pictures();
+			while($pic = mysql_fetch_array($pics)) {
+				$preview = preg_replace("/(\.\w+)$/i", "_r\\1", $pic['filename']);
+				$str .= '<div class="pic">';
+				$str .= '<a rel="gallery'. $this->elementId .'" href="' . $this->path . $pic['filename'] . '" title="' . $pic['shortdescription'] . '"><img src="' . $this->path . $preview . '" alt="' . $pic['description'] . '"></a>';
+				$str .= '</div>';
+			}
+			$elemId = $this->elementId;
+			
+			return <<<EOF
+			$str
+			</div>
+			<script type="text/javascript">
+			$(document).ready(function() {
+				Core.lightbox('div.gallery a[rel=gallery$elemId]');
+			});
+			</script>
+			<div class="bothclear"></div>
+EOF;
 		}
 	}
 	
 	// Returns a JSON-Array of pictures
 	function loadPictures() {
+		$files = array(
+			'path' => $this->path,
+			'original' => array(),
+			'preview' => array(),
+			'titles' => array()
+		);
 		
+		$r = $this->pictures();
+		while($row = mysql_fetch_array($r)) {
+			$files['original'][] = $row['filename'];
+			$files['preview'][] = preg_replace('/(\.\w+)$/i', "_r\\1", $row['filename']);
+			$files['titles'][] = $row['description'];
+		}
+		
+		return "200\n".json_encode($files);
+	}
+	
+	function pictures() {
+		$q = 'SELECT * FROM ' . $this->picTable() . ' WHERE gallery_id=' . $this->elementId . ' ORDER BY position';
+		$res = mysql_query($q) or BailErr('Couldn\'t read images from db', $q);
+		return $res;
+	}
+	
+	function picturesinFolder() {
 		$files = array(
 			'path' => $this->path,
 			'original' => array(),
@@ -63,8 +106,6 @@ class gallery extends ContentElement {
 				}
 			}
 		}
-		
-		return "200\n".json_encode($files);
 	}
 	
 	function uploadPictures() {
@@ -99,6 +140,14 @@ class gallery extends ContentElement {
 					$result['status'] = "200\nok";
 					$result['original'] = $cfg['domain'] . $this->path . $newName;
 					$this->createPreviewImage($result, $newName);
+					
+					$q= 'UPDATE ' . $this->picTable() . ' SET position = position+1 WHERE gallery_id=' . $this->elementId;
+					$res = mysql_query($q) or BailErr('Couldn\'t move images in db', $q);
+					
+					$q = 'INSERT INTO ' . $this->picTable() . ' (gallery_id, position, filename) VALUES ';
+					$q.= "('" . $this->elementId . "','0', '" . $newName . "')";
+					$res = mysql_query($q) or BailErr('Couldn\'t insert image into db', $q);
+					
 				} else $result['status'] = "503\n".$lng_err_file_cantwrite2;
 			} else {
 				$result['status'] = "300\n" . $lng_format; 

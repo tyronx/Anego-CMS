@@ -158,6 +158,7 @@ switch($_GET['a']) {
 			$json['js']='ld.af';
 			$json['content']='<script type="text/javascript">anego.maxmb='.$max_filesize.';</script>';
 			$json['content'].="\n".$content;
+			$json['content'].='<script type="text/javascript">$(document).ready(function() { Core.lightbox(\'a[rel=lightbox]\'); }); </script>';
 			
 			exit("200\n".json_encode($json));
 		}
@@ -783,4 +784,3 @@ function in_mb($val) {
 
 	return $ret;
 }
-?>

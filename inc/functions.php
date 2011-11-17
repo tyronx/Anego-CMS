@@ -1,4 +1,4 @@
-﻿<?
+<?
 /*** General File upload checks - requires config included ***/
 
 function InvalidFormat($file) {
@@ -17,6 +17,15 @@ function validPictureFormat($file) {
 	)) return 1;
 
 	return 0;
+}
+
+// used by file managemnet still
+function ThumbOf($file) {
+	$filename = basename($file);
+	if(preg_match('#(?U)(.*)(?-U)(\.\w+)$#',$filename,$splitname))
+		return dirname($file).'/'.$splitname[1].'_thumb'.$splitname[2];
+
+	return $file;
 }
 
 function hex2rgb($hex) {
@@ -248,5 +257,3 @@ function Simplify($dirs, $idx) {
 
   return $dirs;
 }
-
-?>

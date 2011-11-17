@@ -1,14 +1,15 @@
 gallery = ContentElement.extend({
-	template: '<div class="preview">'+
+	imgTemplate: '<div class="pic">'+
 				'<span class="imageHolder">'+
-					'<img />'+
+					'<a href="#">'+
+					'<img /></a>'+
 					'<span class="uploaded"></span>'+
 				'</span>'+
 				'<div class="progressHolder">'+
 					'<div class="progress"></div>'+
 				'</div>'+
 			'</div>',
-
+	
 	onStartEdit: function() {
 		var self = this;
 		var $container = $('#' + self.containerId);
@@ -21,23 +22,27 @@ gallery = ContentElement.extend({
 		/* Loaded contents from server because .html() strips <script> tags */
 		// Done by custom-ce call 
 		$.post('index.php',{
-			a:'callce',
-			fn:'lp',
+			a: 'callce',
+			fn: 'lp',
 			mid: self.module_id,
 			pid: self.page_id,
 			elid: self.element_id
 		},function(data) {
-			if((aw=GetAnswer(data))!=null) {
+			if ((aw = GetAnswer(data)) != null) {
 				var images = $.parseJSON(aw);
-				var $imageGrid = $('<div class="pictureGrid"></div>');
+				var $galleryEditor = $('<div class="galleryEditor"></div>');
+				var $imageGrid = $('<div class="gallery pictureGrid"></div>');
+				
 				
 				$container.html('<div style="text-align:left;"><a class="GalAddFilesLink" href="#">Add files</a> | <a class="GalSettingsLink" href="#">Settings</a></div>');
-				$container.append($imageGrid);
+				$container.append($galleryEditor);
 				
 				$container.find('.GalAddFilesLink').click(self.addFiles);
 				$container.find('.GalSettingsLink').click(self.settings);
+
+				$galleryEditor.append($imageGrid);
 				
-				var $button = $('<button type="button" name="mew" class="btn_cancelrte" style="min-width:150px">' + lng_cancelchanges + '</button>');
+				var $button = $('<button type="button" name="mew" class="btn_cancelrte" style="min-width:150px">' + lng_close + '</button>');
 				
 				$container.append($button);
 				$button.click(function() {
@@ -46,10 +51,27 @@ gallery = ContentElement.extend({
 				
 				var $image;
 				$.each(images.preview, function(index, value) {
-					$image = $(self.template), 
+					$image = $(self.imgTemplate);
 					$('img', $image).attr('src',images.path + '/' + value);
+					$('a', $image).click(function() {
+						var str = '<p>Short description (for <a href="http://en.wikipedia.org/wiki/Search_engine_optimization">SEO</a>)<br>' +
+							'<input type="text" name="shortdesc"></p><p>Long description<br><input type="text" name="longdesc"></p>';
+						
+						OpenDialog({
+							title: 'Image settings',
+							content: str,
+							buttons: BTN_SAVECANCEL,
+							ok_callback: function() {
+								//self.saveSettings(
+							}
+						});
+						return true;
+					});
+					
 					$imageGrid.append($image);
 				});
+				
+				$galleryEditor.append('<div class="bothclear"></div>');
 			}
 		});
 		
@@ -142,6 +164,18 @@ gallery = ContentElement.extend({
 	},
 	
 	onEndEdit: function() {
+		var self = this;
+		
+		$.post('index.php',{
+			a: 'gcec',
+			mid: self.module_id,
+			pid: self.page_id,
+			elid: self.element_id
+		}, function(data) {
+			var aw;
+			if(aw = GetAnswer(data)) 
+				$('#' + self.containerId).html(aw);
+		});
 		return true;
 	},
 	

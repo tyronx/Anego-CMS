@@ -55,9 +55,12 @@ if(typeof anego.pageJS != 'undefined') { // && !Core.pageInfo(window.location.ha
 
 
 $(document).ready(function() {
-	if(anego.editmode) Core.initPageContentEdit();
-	else Core.initPageContent();
-	if(anego.pageLoad=='ajax')
+	if (anego.editmode) {
+		Core.initPageContentEdit();
+	} else {
+		Core.initPageContent();
+	}
+	if (anego.pageLoad == 'ajax')
 		Core.ajaxifyMenu();
 });
 
@@ -70,11 +73,14 @@ function CoreFunctions() {
 	var that = this;
 	var dragdrop = null;
 	// Keeps a list of loaded js files (and ignores any loads that are done twice)
-	var loadedJsFiles=Array();
+	var loadedJsFiles = Array();
 	
 	var loadHooks = Array();
 	// anego.curPg is fullpath string, Core.curPg is splitted object containing usfull infos about the current page
 	var curPg;
+	
+	this.openDialogs = Array();
+	this.dialogId = 1;
 	
 	/* Pages are identified by a type followed by an identifier and may then nest infinitely seperated by slashes
 	  e.g. pg34, pgad, blog23, blog23/item123/screenshot1/8
@@ -351,15 +357,15 @@ function CoreFunctions() {
 		if(!page) page = Core.curPg.id;
 		
 		/* Dragdrop initialized -> only reinitalize for the contents */
-		if(this.dragdrop!=null) {
-			this.dragdrop.preparePage();
+		if(Core.dragdrop != null) {
+			Core.dragdrop.preparePage();
 			return;
 		}
 		
 		anego.editmode = true;
 		
 		if(typeof DragDropElements == "undefined") 
-			this.loadJavascript('ld.ap.ad'+anego.language);
+			Core.loadJavascript('ld.ap.ad'+anego.language);
 		
 		$(document).ready(function() {
 			$('#pageEditLink').html(lngMain.doneedit_page);
@@ -372,13 +378,13 @@ function CoreFunctions() {
 						data = jQuery.parseJSON(aw);
 						Core.loadJSONResult(data);
 						$('#content').html(data.content);
-						this.dragdrop=new DragDropElements(data.modules);
-						this.dragdrop.init();
+						Core.dragdrop=new DragDropElements(data.modules);
+						Core.dragdrop.init();
 					}
 				});
 			} else {
-				this.dragdrop=new DragDropElements(data.modules);
-				this.dragdrop.init();
+				Core.dragdrop = new DragDropElements(data.modules);
+				Core.dragdrop.init();
 			}
 		});
 	}
@@ -453,6 +459,10 @@ function CoreFunctions() {
 		else
 			return results[1];
 	}
+	
+	this.lightbox = function(selector) {
+		$(selector).fancybox(fancyBoxSettings);
+	}
 
 	/* ajax post request, similar to $.post, but allows multiple simultaneous requests. Should only be used when its feature is really needed */
 	this.postData = function(data, url, callback,timeoutcallback) {
@@ -518,7 +528,7 @@ var BTN_NONE = 5;
 
 /* Opens a dialog. Possible settings:
 	title:			The dialog title
-	content:		The actual html content of the dialog
+	content:		The actual html content of the dialog, this may be a jquery object 
 	left:			x coordinate of the window
 	top:			y coordinate of the window, if x&y not defined it will be centered and the position will be remembered in a cookie
 	width:			dialog width in pixel (default: autosize)
@@ -531,174 +541,244 @@ var BTN_NONE = 5;
 */
 /* Todo: Refactor this into a jquery plugin. But more importanly, allow multiple dialogs! */
 function OpenDialog(settings) {
-	var dlgBox=null;
 	var w='',h='';
-/*function OpenDialog(title, content, width, height, callback, btntype, close_callback) {*/
-	var btn1=lng_ok, btn2=lng_cancel;
-	switch(settings.buttons) {
+	
+	/*** Button set up ***/
+	var btn1 = lng_ok, btn2 = lng_cancel;
+	
+	switch (settings.buttons) {
 		case BTN_YESNO: 
-						btn1=lng_yes;
-						btn2=lng_no;
-						break;
+			btn1=lng_yes;
+			btn2=lng_no;
+			break;
 		
 		case BTN_SAVECANCEL: 
-						btn1=lng_save;
-						break;
-	
+			btn1=lng_save;
+			break;
+
 		case BTN_CLOSE:
-						btn2=lng_close;
-						break;	
+			btn2=lng_close;
+			break;	
 	}
 	
-	if(settings.collapse==undefined) settings.collapse = false;
+	var buttons = '';
+	if (settings.buttons != BTN_NONE) {
+		if (settings.buttons != BTN_CLOSE)	
+			buttons += '<input type="button" class="dlgOK" value="' + btn1 + '"> ';
+		buttons += '<input type="button" class="dlgCancel" value="' + btn2 + '">';
+	}
 	
-	if(settings.width!=undefined) 
-		w = 'width: '+settings.width+'px; ';
-	if(settings.height!=undefined) 
-		h = 'height: '+settings.height+'px; ';
+	/*** Other dialog behavior ***/
+	if (settings.collapse == undefined) settings.collapse = false;
 	
-	if($("#inactive").length == 0)
-		$('body').append("<div id=\"inactive\" style=\"display:none\"></div>");
+	if (settings.width != undefined) 
+		w = 'width: ' + settings.width + 'px; ';
+	if (settings.height != undefined) 
+		h = 'height: ' + settings.height + 'px; ';
+	
+	if ($("#inactive").length == 0)
+		$('body').append('<div id="inactive" style="display:none"></div>');
 	
 	$("#inactive").css('display','');
+
+	/*** Dialog HTML ***/
+	var str = 
+		'<div class="dlgBox" class="adminstyles" style="' + w + h + '">' +
+			'<div class="dlgTitle">' + 
+				settings.title + 
+				'<div class="dlgXBtn dlgBtn">X</div>' + 
+				'<div class="dlgMBtn dlgBtn">_</div>' + 
+			'</div>' + 
+			'<hr class="dlgSep">' +
+			'<div class="dlgContent">' + 
+				/* Content goes here */
+				'<div class="dlgBtnContainer adminstyles">' +
+					'<img src="styles/default/img/cleardot.gif" class="loadingIcon"> ' +
+					buttons +
+				'</div>' +
+			'</div>' +
+		'</div>';
+
+	var $dlgBox = $(str);
 	
-	var str = "<div id=\"horizon\"><div id=\"dlgBox\" class=\"adminstyles\" style=\""+w+h+" top:"+(window.innerHeight/3)+"px;\"><div id=\"dlgTitle\">"+settings.title+
-						"<div id=\"dlgXBtn\" class=\"dlgBtn\">X</div><div id=\"dlgMBtn\" class=\"dlgBtn\">_</div></div><hr class=\"dlgSep\">\n<div id=\"dlgContent\">"+settings.content+
-						'<div id="dlgBtnContainer"><img src="styles/default/img/cleardot.gif" class="loadingIcon" id="im_pr" style="display:none; vertical-align:middle; margin-right:5px;  margin-bottom:2px;"> ';
-	if(settings.buttons!=BTN_NONE) {
-		if(settings.buttons!=BTN_CLOSE)	
-			str += "<input type=\"button\" id=\"dlgOK\" value=\""+btn1+"\"> ";
-		str += "<input type=\"button\" id=\"dlgCancel\" value=\""+btn2+"\">";
-	}
-	str += "</div></div></div></div>";
-						
-	$("#inactive").html(str);
-	dlgBox = $('#dlgBox');
-	/* settings.inactivate defines wether the user is still allowed to interact with the site or not (blocking or non blocking dialog) */
-	if(settings.blocking==false)
+	$('.dlgContent', $dlgBox).prepend(settings.content);
+	$("#inactive").append($dlgBox);
+	
+	/* settings.blocking defines wether the user is still 
+	 * allowed to interact with the site or not (blocking or non blocking dialog) 
+	 */
+	if (settings.blocking) {
+		$('#inactive').css('position','absolute');
+	} else {
 		$('#inactive').css('position','static');
-	else $('#inactive').css('position','absolute');
+	}
 	
 	/* Get previously saved position if it is set and no custom position supplied, but limit to viewable area  */
-	if(settings.top==undefined && settings.left==undefined) {
-		if(localStorage.getItem("anego_dlg_"+settings.title+"_left")!=null) {
-			settings.left=BoundBy(localStorage.getItem("anego_dlg_"+settings.title+"_left"),0,f_clientWidth()-$('#dlgBox').width());
-			settings.top =BoundBy(localStorage.getItem("anego_dlg_"+settings.title+"_top"),0,f_clientHeight()-$('#dlgBox').height());
+	if (settings.top == undefined && settings.left == undefined) {
+		if (localStorage.getItem("anego_dlg_" + settings.title + "_left") != null) {
+			settings.left = BoundBy(localStorage.getItem("anego_dlg_" + settings.title + "_left"), 0, f_clientWidth() - $('#dlgBox').width());
+			settings.top  = BoundBy(localStorage.getItem("anego_dlg_" + settings.title + "_top"), 0, f_clientHeight() - $('#dlgBox').height());
 		}
 	}
-	/* Position element if any coordinate is set */
-	if(settings.top!=undefined || settings.left!=undefined) {
-		if(settings.top==undefined) settings.top=0;
-		if(settings.left==undefined) settings.left=0;				
-		
-		dlgBox.css('top',settings.top);
-		dlgBox.css('left',settings.left);
-	} 
 	
-	/* Button callbacks */
-	$('#dlgOK').click(settings.ok_callback);
-	$('#dlgCancel').click(function() {
-		CloseDialog();
-		if(settings.close_callback!=undefined)
-			settings.close_callback();
-	});
-	$('#dlgXBtn').click(function() {
-		CloseDialog();
-		if(settings.close_callback!=undefined)
-			settings.close_callback();
-	});
-	$('#dlgMBtn').click(function() {
-		settings.collapse = !settings.collapse;
-		if(settings.collapse) {
-			$('#dlgMBtn').html('□');
-			collapse();
-		} else {
-			$('#dlgMBtn').html('_');
-			expand();
+	/* Position element if any coordinate is set */
+	if (settings.top != undefined || settings.left != undefined) {
+		if (settings.top == undefined) settings.top = 0;
+		if (settings.left == undefined) settings.left = 0;
+		
+		$dlgBox.css('top', settings.top);
+		$dlgBox.css('left', settings.left);
+	} else {
+		$dlgBox.css('top', (window.innerHeight/3) + 'px');
+		$dlgBox.css('left', (window.innerWidth/2 - $dlgBox.width()) + 'px');
+	}
+	
+	$dlgBox.closeDialog = function() {
+		if(Core.openDialogs.length == 0)
+			document.onkeydown = null;
+		
+		for(var i=0; i < Core.openDialogs.length; i++) {
+			if(Core.openDialogs[i].dialogId = this.dialogId)
+				Core.openDialogs.splice(i,1);
 		}
-	});
-
-	if(settings.buttons!=BTN_NONE)
-		document.getElementsByTagName("input")[0].focus();
+		this.remove();
+	}
+	$dlgBox.waitResponse = function() {
+		$('input[type=button]', $dlgBox).attr('disabled','disabled');
+		$('.dlgBtnContainer .loadingIcon').show();
+	}
+	$dlgBox.endWait = function() {
+		$('input[type=button]', $dlgBox).removeAttr('disabled');
+		$('.dlgBtnContainer .loadingIcon').hide();
+	}
+	
+	$dlgBox.dialogSettings = settings;
+	$dlgBox.dialogId = Core.dialogId++;
+	$dlgBox.ok_callback = settings.ok_callback;
+	$dlgBox.close_callback = settings.close_callback;
+	
+	Core.openDialogs.push($dlgBox);
 
 	SetupEvents();
 	
-	var boxColor=dlgBox.css('backgroundColor'), headerColor=$('#dlgTitle').css('backgroundColor');
-	var expand = function() {
-		if(settings.height == undefined)
-			dlgBox.css('height','auto');
-		else dlgBox.css('height',settings.height+'px');
-		
-		$('#dlgTitle').css('backgroundColor',headerColor);
-		dlgBox.css('backgroundColor',boxColor);
-		$('#dlgContent').show();
-		$('#dlgBox .dlgSep').show();
-	}
-	var collapse = function() {
-		dlgBox.css('height','21px');
-		dlgBox.css('backgroundColor',headerColor);
-		$('#dlgTitle').css('backgroundColor','transparent');
-		$('#dlgContent').hide();
-		$('#dlgBox .dlgSep').hide();
-	}
+	return $dlgBox;
 	
-	/* Autocollapse feature */
-	if(settings.autocollapse) {
-		dlgBox.mouseover(collapse);
-		dlgBox.mouseout(expand);
-	}
-	
-	document.onkeydown = function(event) {
-		// escape: 27
-		// enter: 13
-		if(!event) event = window.event;
-		
-		if(event.keyCode==27 || (settings.buttons==BTN_CLOSE && event.keyCode==13)) {
-			CloseDialog();
-			if(settings.close_callback!=undefined)
-				settings.close_callback();
-			
-		} else
-			if(event.keyCode==13) {				
-				settings.ok_callback();
-			}
-	};
-	
-	/* Drag and Drop functionality */
+	/* All events related to the dialog */
 	function SetupEvents() {
 		var dx=0, dy=0;
 		var mouseDown = 0;
 		
-		$('#dlgTitle').mousedown(function(event) {
+		/* Dialog collapse expand */
+		var expand = function() {
+			if(settings.height == undefined) {
+				$dlgBox.css('height', 'auto');
+			} else {
+				$dlgBox.css('height', settings.height + 'px');
+			}
+			
+			$dlgBox.css('backgroundColor', boxColor);
+			$('.dlgTitle', $dlgBox).css('backgroundColor', headerColor);
+			$('.dlgContent', $dlgBox).show();
+			$('.dlgSep', $dlgBox).show();
+		};
+		
+		var collapse = function() {
+			$dlgBox.css('height', '21px');
+			$dlgBox.css('backgroundColor', headerColor);
+			$('.dlgTitle', $dlgBox).css('backgroundColor','transparent');
+			$('.dlgContent', $dlgBox).hide();
+			$('.dlgSep', $dlgBox).hide();
+		};
+
+		/* Button callbacks */
+		if($dlgBox.ok_callback) {
+			$('.dlgOK', $dlgBox).click(function() {
+				$dlgBox.ok_callback();
+			});
+		}
+
+		$('.dlgCancel', $dlgBox).click(function() {
+			$dlgBox.closeDialog();
+			if($dlgBox.close_callback != undefined)
+				$dlgBox.close_callback();
+		});
+
+		$('.dlgXBtn', $dlgBox).click(function() {
+			$dlgBox.closeDialog();
+			if($dlgBox.close_callback != undefined)
+				$dlgBox.close_callback();
+		});
+		$('.dlgMBtn', $dlgBox).click(function() {
+			settings.collapse = !settings.collapse;
+			if(settings.collapse) {
+				$('.dlgMBtn', $dlgBox).html('□');
+				collapse();
+			} else {
+				$('.dlgMBtn', $dlgBox).html('_');
+				expand();
+			}
+		});
+
+		/* Drag and Drop functionality */
+		
+		$('.dlgTitle', $dlgBox).mousedown(function(event) {
 			mouseDown = 1;
-			dlgBox.css('margin','0');
-			/*dx = event.pageX - dlgBox.offset().left;
-			dy = event.pageY - dlgBox.offset().top;*/
-			dx = event.pageX - dlgBox.css('left').substr(0,dlgBox.css('left').length-2);
-			dy = event.pageY - dlgBox.css('top').substr(0,dlgBox.css('top').length-2);
+			$dlgBox.css('margin', '0');
+			dx = event.pageX - $dlgBox.css('left').substr(0, $dlgBox.css('left').length - 2);
+			dy = event.pageY - $dlgBox.css('top').substr(0, $dlgBox.css('top').length - 2);
 			return false;
 		}); 
 	
 		$(document).mouseup(function(event) {
 			if(mouseDown) {
-				localStorage.setItem("anego_dlg_"+settings.title+"_left",dlgBox.css('left').substr(0,dlgBox.css('left').length-2));
-				localStorage.setItem("anego_dlg_"+settings.title+"_top",dlgBox.css('top').substr(0,dlgBox.css('top').length-2));
+				localStorage.setItem("anego_dlg_" + settings.title + "_left", $dlgBox.css('left').substr(0, $dlgBox.css('left').length - 2));
+				localStorage.setItem("anego_dlg_" + settings.title + "_top", $dlgBox.css('top').substr(0, $dlgBox.css('top').length - 2));
 			}
 			mouseDown = 0;
 		});
+		
 		$(document).mousemove(function(event) {
 			if(mouseDown) {
-				dlgBox.css('top',BoundBy(event.pageY-dy,3,$(document).height()-dlgBox.height()-3)+'px');
-				dlgBox.css('left',BoundBy(event.pageX-dx,3,$(document).width()-dlgBox.width()-3)+'px'); 
+				$dlgBox.css('top', BoundBy(event.pageY - dy,3, $(document).height() - $dlgBox.height() - 3) + 'px');
+				$dlgBox.css('left', BoundBy(event.pageX - dx,3, $(document).width() - $dlgBox.width() - 3) + 'px'); 
 			}
 		});	
 		
-	}
-}
+		var boxColor = $dlgBox.css('backgroundColor');
+		var headerColor = $('.dlgTitle', $dlgBox).css('backgroundColor');
+		
+		/* Autocollapse feature */
+		if(settings.autocollapse) {
+			$dlgBox.mouseover(collapse);
+			$dlgBox.mouseout(expand);
+		}
+		
+		if(!document.onkeydown) {
+			document.onkeydown = function(event) {
+				// escape: 27
+				// enter: 13
+				if(!event) event = window.event;
+				
+				// Dispatch these to the currently focused dialog or to the last opened one
+				var $dlg = null;
+				for(var i=0; i < Core.openDialogs.length; i++) {
+					$dlg = Core.openDialogs[i];
+					if ($dlg.is(':focus')) break;
+				}
+				if (!$dlg) return;
 
-function CloseDialog() {
-	document.getElementById("inactive").style.display='none';
-	document.onkeydown = '';
+				if (event.keyCode==27 || ($dlg.dialogSettings.buttons == BTN_CLOSE && event.keyCode==13)) {
+					if($dlg.close_callback != undefined) {
+						$dlg.close_callback();
+					}
+					$dlg.closeDialog();
+				} else
+					if (event.keyCode==13 && $dlg.ok_callback != undefined) {
+						$dlg.ok_callback();
+					}
+			};
+		}
+	}
 }
 
 function BoundBy(x, minx, maxx) {

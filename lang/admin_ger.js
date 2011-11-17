@@ -53,6 +53,7 @@ if(typeof lngMain == 'undefined') {
 	lng_savechanges = "√Ñnderungen speichern";
 	lng_save = 'Speichern';
 	lng_cancelchanges = "Abbrechen";
+	lng_close = 'Schlieﬂen';
 
 	lng_imagelinks = 'Bilderlinks...';
 	lng_defImg = '<abbr title="Das Bild das statt dem Textlink angezeigt werden soll">Standard-Bild</abbr>';

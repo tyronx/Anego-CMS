@@ -134,7 +134,7 @@ ul.mainnav {
 	margin-top:0px;
 }
 
-ul.mainnav a, div#editpage a, ul.nav a, .draggable a { border:0px; }
+ul.mainnav a, div#editpage a, ul.nav a, .draggable a, .gallery a { border:0px; }
 ul#minornav a { border:0px; }
 
 /* Bg color is set if the class is navSelected */

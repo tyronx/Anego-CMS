@@ -77,9 +77,9 @@ switch($ac) {
 	case 'gcec':
 		if(!LOGINOK) exit("300\nYou need to log on first.");
 		
-		$mid = trim($_GET['t']);
-		$elid = intval($_GET['elid']);
-		$pid = intval($_GET['pid']);
+		$mid = trim($_POST['mid']);
+		$elid = intval($_POST['elid']);
+		$pid = intval($_POST['pid']);
 		
 		if(!preg_match("#[a-zA-Z0-9_-]+#",$mid))
 			exit("300\nInvalid module id");
@@ -280,5 +280,3 @@ switch($ac) {
 	default:
 		exit("400\nwrong commmand");
 }
-
-?>

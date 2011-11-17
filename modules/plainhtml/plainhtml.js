@@ -9,9 +9,10 @@ plainhtml = ContentElement.extend({
 					'<button type="button" name="mew2" class="btn_cancelrte" style="min-width:150px">' + lng_cancelchanges + '</button>';
 		
 		/* Loaded contents from server because .html() strips <script> tags */
-		$.get('index.php', {
-			a:'gcec', 
-			t: self.module_id,
+		$.post('index.php', {
+			a: 'gcec', 
+			mid: self.module_id,
+			pid: self.page_id,
 			elid: self.element_id
 		}, function(data) {
 			var aw = GetAnswer(data);

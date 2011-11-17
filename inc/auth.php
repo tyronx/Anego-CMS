@@ -46,5 +46,3 @@ function UserRole() {
 	if(LoggedOn()) return $user_roles[LoggedOn()];
 	else return Role::Nothing; 
 }
-
-?>

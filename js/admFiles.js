@@ -3,6 +3,8 @@ var iframes=0;
 var fileentered=0;
 var curpath;
 
+var $addFileDlg;
+
 function FileEntered() {
 	fileentered=1;
 }
@@ -61,9 +63,9 @@ function SubmitFile(path) {
 	// this deletes the content of the prebvious iframe. No idea why
 	//document.getElementById('dlgContent').innerHTML += str;
 	// alternate solution
-	var prg = document.createElement('span');
-	prg.innerHTML = str;
-	document.getElementById('dlgBtnContainer').parentNode.insertBefore(prg,document.getElementById('dlgBtnContainer'));
+	var $prg = $('<span>'+str+'</span>');
+	
+	$('.dlgBtnContainer', $addFileDlg).prepend($prg);
 	
 	str = '<html><body><form method="POST" enctype="multipart/form-data" name="fileupload" action="admin.php?a=af" accept-charset="UTF-8"  onSubmit="return false">';
 	str += '<input type="file" onchange="parent.FileEntered()" id="fiupl" name="fiupl">'
@@ -83,13 +85,23 @@ function AddFile(path) {
 	curpath=path;
 	
 	var str = '<iframe id="iframe'+iframes+'" style="width:300px;" scrolling="no" class="upload" marginWidth="0" marginheight="0" frameborder="0"></iframe><div class="uploadline" id="upload'+iframes+'"></div>';
-	OpenDialog({title:lng_addfile+' <span style="font-size:10pt;">('+lng_maxfilesize+' '+anego.maxmb+' MB)</span>',
-				content:str,
-				buttons:BTN_CLOSE,
-				close_callback:function() {
-						$.get("admin.php", {a:'files','fgx':Core.GETvar('fgx'),r:response}, function(data) { $('#content').html(data); initLytebox(); });
-					}
+	$addFileDlg = OpenDialog({
+		title: lng_addfile + ' <span style="font-size:10pt;">('+lng_maxfilesize+' '+anego.maxmb+' MB)</span>',
+		content: str,
+		buttons: BTN_CLOSE,
+		close_callback: 
+			function() {
+				$.get("admin.php", {
+					a: 'files',
+					fgx: Core.GETvar('fgx'),
+					r: response
+				}, function(data) { 
+					$('#content').html(data);
+					Core.lightbox('a[rel=lightbox]');
 				});
+			}
+		}
+	);
 	
 	var str = '<html><body><form method="POST" enctype="multipart/form-data" name="fileupload" action="admin.php?a=af" accept-charset="UTF-8"  onSubmit="return false">';
 	str += '<input type="file" size="30" onchange="parent.FileEntered()" id="fiupl" name="fiupl">'
@@ -107,51 +119,72 @@ function AddFile(path) {
 }
 
 function AddFolder(path) {
-	OpenDialog({title:lng_addfolder,
-				content:'<form name="pagedata" onSubmit="return false">'+lng_foldername+':<br><input type="text" size="25" name="folder" onSubmit="return false"></form>',
-				ok_callback:function() { 
-					if(document.pagedata.folder.value.length==0) { alert(lng_enterfolder); return; }
-					if(document.pagedata.folder.value.match(/[^A-Za-z0-9_\-]+/)) { alert(lng_invalidfolder); return; }
-	
-					document.getElementById('im_pr').style.display='';
-					$.get('admin.php',
-						{   a:'cfol',
-							fgx:path,
-							r:response,
-							path:path,
-							nfolder:document.pagedata.folder.value
-						}, function(data) {
-							$('#content').html(data);
-							initLytebox();
-						}
-					);
-					
-					CloseDialog();
+	OpenDialog({
+		title:lng_addfolder,
+		content: '<form name="pagedata" onSubmit="return false">' + lng_foldername + ':<br><input type="text" size="25" name="folder" onSubmit="return false"></form>',
+		ok_callback: function() { 
+			if (document.pagedata.folder.value.length==0) {
+				alert(lng_enterfolder); 
+				return;
+			}
+			if(document.pagedata.folder.value.match(/[^A-Za-z0-9_\-]+/)) { 
+				alert(lng_invalidfolder);
+				return; 
+			}
+			
+			var $dlg = this;
+			$dlg.waitResponse();
+
+			$.get('admin.php', {
+					a: 'cfol',
+					fgx: path,
+					r: response,
+					path: path,
+					nfolder: document.pagedata.folder.value
+				}, function(data) {
+					$('#content').html(data);
+					Core.lightbox('a[rel=lightbox]');
+					$dlg.closeDialog();
 				}
-			});
+			);
+		}
+	});
 }
 
 function RenameFile(path, fgx) {
 	var filename = path.substr(path.lastIndexOf('/')+1);
 	
 	OpenDialog({
-		title:lng_renamefile,
-		content:'<form name="pagedata" onSubmit="return false">File name:<br><input type="text" size="25" name="filen" value="'+filename+'" onSubmit="return false"></form>',
-		ok_callback:function() {
-			if(document.pagedata.filen.value.length=0) { alert(lng_enterfolder); return; }
-			if(document.pagedata.filen.value.match(/[^A-Za-z0-9_\-\.]+/)) { alert(lng_invalidfolder); return; }
-			Core.postData('path='+urlencode(path)+'&renfile='+document.pagedata.filen.value,"admin.php?a=renf&fgx="+urlencode(anego.curPg)+"&r="+response,FileRenamed);
+		title: lng_renamefile,
+		content: '<form name="pagedata" onSubmit="return false">File name:<br><input type="text" size="25" name="filen" value="'+filename+'" onSubmit="return false"></form>',
+		ok_callback: function() {
+			if(document.pagedata.filen.value.length=0) { 
+				alert(lng_enterfolder); 
+				return; 
+			}
+			if(document.pagedata.filen.value.match(/[^A-Za-z0-9_\-\.]+/)) { 
+				alert(lng_invalidfolder);
+				return; 
+			}
+			
+			var $dlg = this;
+			
+			$dlg.waitResponse();
+			
+			$.post('admin.php?a=renf&fgx='+urlencode(anego.curPg)+'&r='+response,{
+					path: path,
+					renfile: document.pagedata.filen.value
+				}, function(data) {
+					var aw;
+					if (aw = GetAnswer(data)) {
+						document.getElementById("content").innerHTML = aw;
+						Core.lightbox('a[rel=lightbox]');
+						$dlg.closeDialog();
+					}
+				}
+			);
 		}
 	});
-}
-
-function FileRenamed(req) {
-	var aw;
-	if(aw=GetAnswer(req.responseText)) {
-		CloseDialog();
-		document.getElementById("content").innerHTML = aw;
-		initLytebox();
-	}
 }
 
 function DelFile(file,fgx,isfolder) {
@@ -164,5 +197,5 @@ function DelFile(file,fgx,isfolder) {
 
 function PrintPics(req) {
 	document.getElementById("content").innerHTML = req.responseText;
-	initLytebox();
+	Core.lightbox('a[rel=lightbox]');
 }

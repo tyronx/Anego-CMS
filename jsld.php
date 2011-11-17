@@ -13,7 +13,7 @@ include('inc/auth.php'); // Also includes config
 
 $jsFiles = array(
 /* Default js files to load */
-'de' => array('lib/jquery-1.6.2.min.js','lib/jquery.fancybox-1.3.4.pack.js', 'lib/jquery.livequery.js', 'js/core.js'), //'js/menu.js', //, 'lib/jquery.mousewheel-3.0.4.pack.js',
+'de' => array('lib/jquery-1.7.min.js','lib/jquery.fancybox-1.3.4.pack.js', 'lib/jquery.livequery.js', 'js/core.js'), //'js/menu.js', //, 'lib/jquery.mousewheel-3.0.4.pack.js',
 /* Admin language files*/
 'adger' => array('lang/admin_ger.js'),
 'adeng' => array('lang/admin_eng.js'),

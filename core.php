@@ -419,4 +419,3 @@ function pageEditJs($p) {
 		
 	return $js;
 }
-?>

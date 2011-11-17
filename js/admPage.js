@@ -7,12 +7,13 @@ Core.endEdit = function(ignorePage) {
 	var unloadDragDrop = function() {
 		anego.editmode=false; 
 		/* Default zoomable picture links */
-		$('a.zoomable').fancybox(fancyBoxSettings);
+		Core.lightbox('a.zoomable');
+		
 		$('#pageEditLink').html(lngMain.edit_page);
 		$('#pageEditLink').attr('href','javascript:Core.editPage()');
 		
-		this.dragdrop=null;
-		CloseDialog();
+		Core.dragdrop = null;
+		Core.pageEditDialog.closeDialog();
 	}
 	
 	/* When switching into an admin page, we don't have to load the old page again */
@@ -24,6 +25,8 @@ Core.endEdit = function(ignorePage) {
 			forceLoad:true
 		});
 }
+
+Core.pageEditDialog = null;
 
 /* Initializes the Page Editor 
  * Handles Drag&Drop insertion, Moving and Deleting of elements and makes all 
@@ -47,9 +50,7 @@ function DragDropElements(contentElements) {
 	/* (Content-)Element, the mouse is currently hovering over */
 	var curEl;
 	/* Mini toolbar stuff */
-	var imgEdit = $('<img src="styles/default/img/cleardot.gif" class="imgEdit icon">');
-	var imgBin = $('<img src="styles/default/img/cleardot.gif" class="imgBin icon">');
-	var miniToolbar = $('<div style="display:none;" class="miniToolbar"></div>');
+	var miniToolbar = $('.miniToolbar');
 	
 	// identifies wether the item currently being dragged is a placed content element or a content element template
 	var movingCE = 0;
@@ -59,11 +60,11 @@ function DragDropElements(contentElements) {
 	var out='<div class="draggableList">';
 	
 	var elements;
-	
+
 	this.init = function() {
 		// Make sure #content is big enough to put something into
-		if(parseInt($('#content').css('min-height')) < 40 || parseInt($('#content').css('height') < 40))
-			$('#content').css('min-height','40px');
+		if(parseInt($('#content').css('min-height')) < 80 || parseInt($('#content').css('height') < 80))
+			$('#content').css('min-height','80px');
 		
 		/* Parse content element modules and execute its js */
 		for(var i=0; i<contentElements.length; i++) {
@@ -72,51 +73,59 @@ function DragDropElements(contentElements) {
 		out +="</div>";
 		
 		/* Create content elements window */
-		OpenDialog({title:'Page Elements',
-			content:out,
-			buttons:BTN_NONE,
-			autocollapse:false,
-			blocking:false,
-			close_callback:function() { Core.endEdit(); }
+		Core.pageEditDialog = OpenDialog({title:'Page Elements',
+			content: out,
+			buttons: BTN_NONE,
+			autocollapse: false,
+			blocking: false,
+			close_callback: function() { Core.endEdit(false, this); }
 		});
 		
 		/* Create element mini toolbar & bind events */	
-		miniToolbar.append(imgEdit);
-		imgEdit.click(function() {
-			var targetElem = elements[$(curEl).attr('id')];
-			
-			if(targetElem != undefined) {
-				if(! targetElem.editing) {
-					targetElem.startEdit();
+		if(miniToolbar.length == 0) {
+			miniToolbar = $('<div style="display:none;" class="miniToolbar"></div>');
+
+			var imgEdit = $('<img src="styles/default/img/cleardot.gif" class="imgEdit icon">');
+			var imgBin = $('<img src="styles/default/img/cleardot.gif" class="imgBin icon">');
+
+			miniToolbar.append(imgEdit);
+			imgEdit.click(function() {
+				var targetElem = elements[$(curEl).attr('id')];
+				
+				if(targetElem != undefined) {
+					if(! targetElem.editing) {
+						targetElem.startEdit();
+					} else {
+						targetElem.endEdit()
+					}
+					
+					if(targetElem.getHideMiniToolbar())
+						miniToolbar.css('display','none');
 				} else {
-					targetElem.endEdit()
+					alert("Module of this Element not found, please install the module '"+splitID($(curEl).attr('id')).module_id+"'");
 				}
-				
-				if(targetElem.getHideMiniToolbar())
-					miniToolbar.css('display','none');
-			} else {
-				alert("Module of this Element not found, please install the module '"+splitID($(curEl).attr('id')).module_id+"'");
-			}
-		});
-		miniToolbar.append(imgBin);
-		imgBin.click(function() {
-			var res=confirm("Really delete?");
-			if(res) {
-				var element2Delete = curEl;
-				var deleteCompleteFn = function() { 
-					$(element2Delete).remove();
-					miniToolbar.css('display','none'); 
-				};
-				
-				// Todo: If module doesn't exist, instantiate a ContentElement class and delete it that way
-				if(elements[$(curEl).attr('id')] != undefined)
-					elements[$(curEl).attr('id')].deleteElement(deleteCompleteFn);
-				else alert("Module of this Element not found, please install the module '"+splitID($(curEl).attr('id')).module_id+"'");
-			}
-		});
-		
-		/* Add the minitoolbar to the html page */
-		$('#inactive').append(miniToolbar);
+			});
+			
+			miniToolbar.append(imgBin);
+			imgBin.click(function() {
+				var res=confirm("Really delete?");
+				if(res) {
+					var element2Delete = curEl;
+					var deleteCompleteFn = function() { 
+						$(element2Delete).remove();
+						miniToolbar.css('display','none'); 
+					};
+					
+					// Todo: If module doesn't exist, instantiate a ContentElement class and delete it that way
+					if(elements[$(curEl).attr('id')] != undefined)
+						elements[$(curEl).attr('id')].deleteElement(deleteCompleteFn);
+					else alert("Module of this Element not found, please install the module '"+splitID($(curEl).attr('id')).module_id+"'");
+				}
+			});
+			
+			/* Add the minitoolbar to the html page */
+			$('#inactive').append(miniToolbar);
+		}
 		
 		/* Set up draggable content element templates in the dialog */
 		for(var i=0; i<contentElements.length; i++) {
@@ -269,7 +278,7 @@ function DragDropElements(contentElements) {
 			if($(curEl).hasClass('ceTemplate')) curEl.offset({ top: y, left: x});
 			else curEl.offset({ top: y }) //, left: x
 			
-			if((!inside($('#content'),event.pageX,event.pageY) && !inside($('#content'),event.pageX,event.pageY+50)) || inside($('#dlgBox'),event.pageX,event.pageY))
+			if((!inside($('#content'),event.pageX,event.pageY) && !inside($('#content'),event.pageX,event.pageY+50)) || inside(Core.pageEditDialog,event.pageX,event.pageY))
 				$('#insertMarker').remove();
 			
 		} else mouseDown=0;
