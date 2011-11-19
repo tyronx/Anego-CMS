@@ -356,13 +356,13 @@ function CoreFunctions() {
 		
 		if(!page) page = Core.curPg.id;
 		
+		anego.editmode = true;
+
 		/* Dragdrop initialized -> only reinitalize for the contents */
-		if(Core.dragdrop != null) {
+		if(Core.dragdrop) {
 			Core.dragdrop.preparePage();
 			return;
 		}
-		
-		anego.editmode = true;
 		
 		if(typeof DragDropElements == "undefined") 
 			Core.loadJavascript('ld.ap.ad'+anego.language);
@@ -378,7 +378,7 @@ function CoreFunctions() {
 						data = jQuery.parseJSON(aw);
 						Core.loadJSONResult(data);
 						$('#content').html(data.content);
-						Core.dragdrop=new DragDropElements(data.modules);
+						Core.dragdrop = new DragDropElements(data.modules);
 						Core.dragdrop.init();
 					}
 				});
