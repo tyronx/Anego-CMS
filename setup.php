@@ -220,6 +220,9 @@ div#padder {
 				if($path[0] == '/') {
 					$path = substr($path,1);
 				}
+				if($url['path'][0] == '/') {
+					$url['path'] = substr($url['path'],1);
+				}
 				
 				if($path == $url['path']) {
 					echo $good;
