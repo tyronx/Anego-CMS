@@ -36,7 +36,7 @@ function AdminMenuFunctions() {
 			
 			var fname='';
 			if ($('input[name=isfile]', this).is(':checked'))
-				fname = $('input[name=isfile]', this).val();
+				fname = $('input[name=filename]', this).val();
 			
 			var nolink = '0';
 			if($('input[name=nolink]', this).is(':checked'))
@@ -154,7 +154,7 @@ function AdminMenuFunctions() {
 				
 				var fname='';
 				if ($('input[name=isfile]', this).is(':checked'))
-					fname = $('input[name=isfile]', this).val();
+					fname = $('input[name=filename]', this).val();
 				
 				$.post("admin.php?a=rp", {
 					page_id: page_id,
