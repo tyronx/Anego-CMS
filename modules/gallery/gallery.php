@@ -20,7 +20,7 @@ class gallery extends ContentElement {
 	var $path;
 	
 	static $methodMap = Array(
-		'save'	=> 'saveElement',
+		'save'	=> 'savePicture',
 		'lp'	=> 'loadPictures',
 		'up'	=> 'uploadPictures'
 	);
@@ -44,7 +44,7 @@ class gallery extends ContentElement {
 			while($pic = mysql_fetch_array($pics)) {
 				$preview = preg_replace("/(\.\w+)$/i", "_r\\1", $pic['filename']);
 				$str .= '<div class="pic">';
-				$str .= '<a rel="gallery'. $this->elementId .'" href="' . $this->path . $pic['filename'] . '" title="' . $pic['shortdescription'] . '"><img src="' . $this->path . $preview . '" alt="' . $pic['description'] . '"></a>';
+				$str .= '<a rel="gallery'. $this->elementId .'" href="' . $this->path . $pic['filename'] . '" title="' . $pic['longdescription'] . '"><img src="' . $this->path . $preview . '" alt="' . $pic['shortdescription'] . '"></a>';
 				$str .= '</div>';
 			}
 			$elemId = $this->elementId;
@@ -62,20 +62,33 @@ EOF;
 		}
 	}
 	
+	function savePicture() {
+		$longdesc = mysql_real_escape_string(@$_POST['longdescription']);
+		$shortdesc = mysql_real_escape_string(@$_POST['shortdescription']);
+		$picid = intval(@$_POST['picid']);
+	
+		$q = 'UPDATE ' . $this->picTable() . ' SET longdescription=\'' . $longdesc . '\', shortdescription=\'' . $shortdesc . '\' WHERE idx=' . $picid;
+		mysql_query($q) or BailSQL('Couldn\'t update image info', $q);
+		
+		return "200\nok";
+	}
+	
 	// Returns a JSON-Array of pictures
 	function loadPictures() {
 		$files = array(
 			'path' => $this->path,
-			'original' => array(),
-			'preview' => array(),
-			'titles' => array()
+			'pictures' => array()
 		);
 		
 		$r = $this->pictures();
 		while($row = mysql_fetch_array($r)) {
-			$files['original'][] = $row['filename'];
-			$files['preview'][] = preg_replace('/(\.\w+)$/i', "_r\\1", $row['filename']);
-			$files['titles'][] = $row['description'];
+			$files['pictures'][] = array(
+				'idx' 				=> $row['idx'],
+				'original'			=> $row['filename'],
+				'preview'			=> preg_replace('/(\.\w+)$/i', "_r\\1", $row['filename']),
+				'shortdescription'	=> $row['shortdescription'],
+				'longdescription'	=> $row['longdescription']
+			);
 		}
 		
 		return "200\n".json_encode($files);
@@ -83,7 +96,7 @@ EOF;
 	
 	function pictures() {
 		$q = 'SELECT * FROM ' . $this->picTable() . ' WHERE gallery_id=' . $this->elementId . ' ORDER BY position';
-		$res = mysql_query($q) or BailErr('Couldn\'t read images from db', $q);
+		$res = mysql_query($q) or BailSQL('Couldn\'t read images from db', $q);
 		return $res;
 	}
 	
@@ -123,7 +136,7 @@ EOF;
 			break;
 		}
 
-		if ($_FILES['pictures']['error'] == 0) {
+		if ($_FILES['pic']['error'] == 0) {
 			if(! is_dir($this->path)) {
 				if(! @mkdir($this->path)) {
 					$result['status'] = "501\n" . $lng_err_file_cantwrite; 
@@ -164,9 +177,9 @@ EOF;
 		$name_sized = substr($file, 0, strrpos($file, '.')) . '_r' . substr($file, strrpos($file, '.'));
 	
 		$q = 'SELECT preview_width, preview_height FROM ' . $this->databaseTable() . ' WHERE idx=' . $this->elementId;
-		$res = mysql_query($q) or BailErr('Couldn\'t retrieve preview image sizes', $q);
+		$res = mysql_query($q) or BailSQL('Couldn\'t retrieve preview image sizes', $q);
 		list($pWidth, $pHeight) = mysql_fetch_row($res);
-	
+		
 		if (CopyResized($this->path . $file, $pWidth, $pHeight, true, 'file', '', $this->path . $name_sized)) {
 			$result['preview'] = $cfg['domain'] . $this->path . $name_sized;
 		} else {

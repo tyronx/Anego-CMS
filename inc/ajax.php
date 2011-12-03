@@ -17,7 +17,9 @@ switch($ac) {
 	// Rebuild page contents
 	case 'rp':
 		$page = intval($_GET['page']);
-		$pmg->generatePage($page);
+		if(LOGINOK)
+			$pmg->generatePage($page);
+		
 		exit("200\nok");
 		break;
 	
@@ -239,34 +241,40 @@ switch($ac) {
 	case 'p':
 		$p=intval($_GET['p']);
 		
-		if($p == -1) $p = CurrentPage();
+		if ($p == -1) $p = CurrentPage();
 		
 		$json = Array();
 		
-		if($p < 1) {
+		if ($p < 1) {
 			$json['content'] = 'Invalid page';
 			exit("200\n".json_encode($json)); 
 		}
 		
+		if(@$_GET['updatePage'] && LOGINOK) {
+			include('inc/modules.php');
+			$pmg = new PageManager();
+			$pmg->generatePage($p);
+			$json['pageUpdated'] = true;
+		}
 		
 		$q = "SELECT name, file, content, content_prepared FROM ".PAGES." WHERE idx=$p ".(!LOGINOK?"AND (visibility&1)=1":"")."";
-		if(! ($res = mysql_query($q)))	 {
+		if (! ($res = mysql_query($q)))	 {
 			$json['content'] = "Failed getting page data for page $p";
 			logError("Failed getting page data for page $p<br>",$q);
 			exit("200\n".json_encode($json)); 
 		}
 		$row = mysql_fetch_array($res);
 
-		if(!mysql_affected_rows()) {
+		if (!mysql_affected_rows()) {
 			$json['content'] = $lng_permission;
 			exit("200\n".json_encode($json)); 
 		}
 		
-		if(!strlen($row['content'])) $row['content']="<i id=\"hasnoContent\">$lng_content</i>";
-		if(!strlen($row['content_prepared'] && strlen($row['content']))) $row['content_prepared'] = $row['content'];
+		if (!strlen($row['content'])) $row['content']="<i id=\"hasnoContent\">$lng_content</i>";
+		if (!strlen($row['content_prepared'] && strlen($row['content']))) $row['content_prepared'] = $row['content'];
 		
 		/* Also deliever what js files to load */
-		$json['js']=pageLoadJs($p);
+		$json['js'] = pageLoadJs($p);
 
 		$lng_pagetitle = str_replace(array('&lt;','&gt;'),array('<','>'),$lng_pagetitle);
 		

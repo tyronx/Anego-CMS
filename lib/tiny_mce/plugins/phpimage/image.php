@@ -13,7 +13,7 @@ require 'inc/auth.php';
 // Image resizing tools
 require 'inc/functions.php';
 // Some language strings
-require 'inc/'.$language.'.php';
+require 'lang/'.$language.'.php';
 
 if(!LoggedOn())
 	exit("300\nYou are not logged on. Please log in as admin to upload a picture");

@@ -496,6 +496,86 @@ div.gallery div.pic {
 	float:left;
 }
 
+div.galleryEditor {
+	padding: 5px;
+	padding-left:0px;
+}
+
+
+.galleryEditor .pic {
+	width: 170px;
+	height: 130px;
+	float: left;
+	margin: 10px;
+	position: relative;
+	text-align: center;
+}
+
+.galleryEditor .pic img{
+	max-width: 240px;
+	max-height:180px;
+	border:3px solid #fff;
+	display: block;
+	
+	box-shadow:0 0 2px #000;
+	-webkit-box-shadow:0 0 2px #000;
+	-moz-box-shadow:0 0 2px #000;
+}
+
+.galleryEditor .imageHolder{
+	display: inline-block;
+	position: relative;
+}
+
+.galleryEditor .uploading {
+	position: absolute;
+	top:0;
+	left:0;
+	height:100%;
+	width:100%;
+	background: white;
+	opacity: 0.8;
+	display: none;
+}
+
+.galleryEditor .pic.done .uploading {
+	display: block;
+}
+
+.galleryEditor .progressHolder{
+	position: absolute;
+	background-color:#252f38;
+	height:12px;
+	width:100%;
+	left:0;
+	bottom: 0;
+	
+	box-shadow:0 0 2px #000;
+	-webkit-box-shadow:0 0 2px #000;
+	-moz-box-shadow:0 0 2px #000;
+}
+
+.galleryEditor .progress{
+	background-color:#2586d0;
+	position: absolute;
+	height:100%;
+	left:0;
+	width:0;
+	
+	box-shadow: 0 0 1px rgba(255, 255, 255, 0.4) inset;
+	-webkit-box-shadow: 0 0 1px rgba(255, 255, 255, 0.4) inset;
+	-moz-box-shadow: 0 0 1px rgba(255, 255, 255, 0.4) inset;
+	
+	-moz-transition:0.25s;
+	-webkit-transition:0.25s;
+	-o-transition:0.25s;
+	transition:0.25s;
+}
+
+.galleryEditor .pic.done .progress{
+	width:100% !important;
+}
+
 
 /********* Lightbox *********/
 

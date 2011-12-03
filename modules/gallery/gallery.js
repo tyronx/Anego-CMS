@@ -1,10 +1,16 @@
 gallery = ContentElement.extend({
+	onInit: function() {
+		// Will be loaded only once (loadJavascript() takes care of that)
+		Core.loadJavascript('ld.jui');
+		Core.loadJavascript('modules/gallery/jquery.filedrop.js');
+	},
 	imgTemplate: '<div class="pic">'+
-				'<span class="imageHolder">'+
+				'<div class="imageHolder">'+
 					'<a href="#">'+
-					'<img /></a>'+
-					'<span class="uploaded"></span>'+
-				'</span>'+
+					'<img />' + 
+					'</a>'+
+					'<span class="uploading"></span>'+
+				'</div>'+
 				'<div class="progressHolder">'+
 					'<div class="progress"></div>'+
 				'</div>'+
@@ -13,13 +19,10 @@ gallery = ContentElement.extend({
 	onStartEdit: function() {
 		var self = this;
 		var $container = $('#' + self.containerId);
-		// Will be loaded only once (loadJavascript() takes care of that)
-		Core.loadJavascript('ld.jui');
-		Core.loadJavascript('modules/gallery/jquery.filedrop.js');
+		var $imageDlg;
 		
 		self.html = $('#' + self.containerId).html();
 			
-		/* Loaded contents from server because .html() strips <script> tags */
 		// Done by custom-ce call 
 		$.post('index.php',{
 			a: 'callce',
@@ -29,7 +32,7 @@ gallery = ContentElement.extend({
 			elid: self.element_id
 		},function(data) {
 			if ((aw = GetAnswer(data)) != null) {
-				var images = $.parseJSON(aw);
+				var response = $.parseJSON(aw);
 				var $galleryEditor = $('<div class="galleryEditor"></div>');
 				var $imageGrid = $('<div class="gallery pictureGrid"></div>');
 				
@@ -42,36 +45,85 @@ gallery = ContentElement.extend({
 
 				$galleryEditor.append($imageGrid);
 				
-				var $button = $('<button type="button" name="mew" class="btn_cancelrte" style="min-width:150px">' + lng_close + '</button>');
+				var $button = $('<button type="button" name="mew" class="btn_cancelrte" style="min-width:150px">' + lng_close + ' & Update page</button>');
 				
 				$container.append($button);
 				$button.click(function() {
 					self.endEdit();
+					// Update the page
+					$.get('index.php', { a: 'rp', page: self.page_id});
 				});
 				
 				var $image;
-				$.each(images.preview, function(index, value) {
+				$.each(response.pictures, function(index, pic) {
 					$image = $(self.imgTemplate);
-					$('img', $image).attr('src',images.path + '/' + value);
-					$('a', $image).click(function() {
-						var str = '<p>Short description (for <a href="http://en.wikipedia.org/wiki/Search_engine_optimization">SEO</a>)<br>' +
-							'<input type="text" name="shortdesc"></p><p>Long description<br><input type="text" name="longdesc"></p>';
-						
-						OpenDialog({
-							title: 'Image settings',
-							content: str,
-							buttons: BTN_SAVECANCEL,
-							ok_callback: function() {
-								//self.saveSettings(
+					$('img', $image)
+						.attr('src',response.path + '/' + pic.preview)
+						.attr('alt', pic.shortdescription);
+					
+					$('.progressHolder', $image).remove();
+					$('.uploading', $image).remove();
+					$image.data('idx', pic.idx);
+					console.log(pic.preview + '/' + pic.idx);
+					
+					$('a', $image)
+						.attr('title', pic.longdescription)
+						.click(function() {
+							var str = '<p>Short description (for <a href="http://en.wikipedia.org/wiki/Search_engine_optimization">SEO</a>)<br>' +
+								'<input type="text" name="shortdescription"></p><p>Long description<br><input type="text" name="longdescription"></p>';
+							
+							$image = $(this).parent().parent();
+							
+							if($imageDlg) {
+								$imageDlg.closeDialog();
+								$imageDlg = null;
 							}
+							
+							$imageDlg = OpenDialog({
+								title: 'Image settings',
+								content: str,
+								buttons: BTN_SAVECANCEL,
+								ok_callback: function() {
+									var $self = this;
+									$self.waitResponse();
+									console.log('edit ' + $('img',$image).attr('src') + '/' + $image.data('idx'));
+									
+									$.post('index.php', {
+										a: 'callce',
+										fn: 'save',
+										mid: self.module_id,
+										pid: self.page_id,
+										elid: self.element_id,
+										picid: $image.data('idx'),
+										longdescription: $('input[name="longdescription"]', $imageDlg).val(),
+										shortdescription: $('input[name="shortdescription"]', $imageDlg).val() 
+									}, function(data) {
+										if(GetAnswer(data)) {
+											$('a', $image).attr('title', $('input[name="longdescription"]', $imageDlg).val());
+											$('img', $image).attr('alt', $('input[name="shortdescription"]', $imageDlg).val());
+											
+											$self.closeDialog();
+										} else {
+											$self.endWait();
+										}
+									});
+								}
+							});
+							
+							$('input[name="longdescription"]', $imageDlg).val($(this).attr('title'));
+							$('input[name="shortdescription"]', $imageDlg).val($(this).find('img').attr('alt'));
+							
+							return false;
 						});
-						return true;
-					});
 					
 					$imageGrid.append($image);
 				});
 				
 				$galleryEditor.append('<div class="bothclear"></div>');
+				
+				$('.pictureGrid', $container).sortable({
+					containment: 'parent'
+				});
 			}
 		});
 		
@@ -90,10 +142,15 @@ gallery = ContentElement.extend({
 			url: 'index.php',
 			
 			uploadFinished:function(i,file,response){
-				$.data(file, 'preview').addClass('done');
+				$img = $.data(file, 'preview');
+				
+				$img.addClass('done');
+				$('.progressHolder', $img).fadeOut();
+				$('.uploading', $img).fadeOut();
+				
 				// response is the JSON object that post_file.php returns
 				if(GetAnswer(response.status)) {
-					$.data(file, 'preview').find('img').attr('src', response.preview);
+					$img.find('img').attr('src', response.preview);
 				}
 			},
 			
@@ -135,28 +192,26 @@ gallery = ContentElement.extend({
 		});
 		
 		function createImage(file){
-			var $preview = $(self.template), $image = $('img', $preview);
-				
+			var $preview = $(self.imgTemplate), $image = $('img', $preview);
 			var reader = new FileReader();
 			
-			$image.attr('width',100);
-			$image.attr('height',100);
+			$image.attr('width', 160);
+			$image.attr('height', 120);
 			
-			reader.onload = function(e){
+			reader.onload = function(e) {
 				// e.target.result holds the DataURL which
 				// can be used as a source of the image:
-				$image.attr('src',e.target.result);
+				$image.attr('src', e.target.result);
 			};
 			
 			// Reading the file as a DataURL. When finished,
 			// this will trigger the onload function above:
 			reader.readAsDataURL(file);
 			
-			$preview.appendTo($('#' + self.containerId + ' .pictureGrid'));
+			$('#' + self.containerId + ' .pictureGrid').append($preview);
 			
 			// Associating a preview container
 			// with the file, using jQuery's $.data():
-			
 			$.data(file, 'preview', $preview);
 		}
 

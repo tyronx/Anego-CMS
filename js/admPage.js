@@ -5,7 +5,8 @@
 /* Turns off the page editing interface */
 Core.endEdit = function(ignorePage) {
 	var unloadDragDrop = function() {
-		anego.editmode=false; 
+		anego.editmode = false; 
+		
 		/* Default zoomable picture links */
 		Core.lightbox('a.zoomable');
 		
@@ -18,13 +19,21 @@ Core.endEdit = function(ignorePage) {
 	}
 	
 	/* When switching into an admin page, we don't have to load the old page again */
-	if(typeof ignorePage != 'undefined' || ignorePage)
+	if (typeof ignorePage != 'undefined' || ignorePage) {
 		unloadDragDrop();
-	else 
+	} else {
+		// Let Core.loadPage know that we are not in editmode anymore
+		anego.editmode = false; 
+		
 		Core.loadPage(Core.curPg,{
 			beforeContentLoaded: unloadDragDrop,
-			forceLoad:true
+			forceLoad: true,
+			updatePage: true
 		});
+		
+		// But leave it on until a page has been successfully loaded
+		anego.editmode = true; 
+	}
 }
 
 Core.pageEditDialog = null;

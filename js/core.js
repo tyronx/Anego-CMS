@@ -127,7 +127,7 @@ function CoreFunctions() {
 		if(anego.pageLoad=='ajax')
 			$('#content a').attr('href',function(idx,attr) { return attr.replace(/^pg(\d+)/g,'#pg$1'); } );
 		/* Default zoomable picture links */
-		$('a.zoomable').fancybox(fancyBoxSettings);
+		this.lightbox($('a.zoomable'));
 	}
 	
 	this.initPageContentEdit=function(data) {
@@ -212,38 +212,57 @@ function CoreFunctions() {
 				break;
 				
 			case 'pg':
-				if($('#pageEditLink').length == 0)
+				if($('#pageEditLink').length == 0) {
 					$('ul.adminnav').prepend('<li><a href="javascript:Core.editPage()" id="pageEditLink">' + lngMain.edit_page + '</a></li>');
-				else $('#pageEditLink').parent().css('display','');
+				} else {
+					$('#pageEditLink').parent().css('display','');
+				}
+				
 				this.selectPage(newpage);
 				
-				get = {a:'p',p:newpage.id};
-				if(anego.editmode)
-					get={a:'gce',fgx:newpage.id};
+				get = {a: 'p', p: newpage.id};
+				
+				if (anego.editmode)
+					get = {a: 'gce', fgx: newpage.id};
+					
+				if (settings.updatePage)
+					get.updatePage = 1;
+				else
+					get.updatePage = 0;
+				
 				break;
 					
 			default:
-				loadingPage=null;
+				loadingPage = null;
 				return false;	
 		}
 		
 		//$('#name').append('e');
 		
-		var animated=false,loaded=false;
+		var animated = false,loaded = false;
 		var aw;	
-		var xdf=0;
-		if(anego.animatePageLoad==0)
-			animated=true;
-		else
-			$('#content').css({opacity: 1.0}).animate({opacity: 0.0}, anego.animatePageLoad, function() {
-				if(loaded && !animated) putLoadedText(aw);
-				animated=true;
-			});
+		var xdf = 0;
 		
-		$.get(file,get,function(data) {
+		if (anego.animatePageLoad == 0) {
+			animated = true;
+		} else {
+			$('#content')
+				.css({opacity: 1.0})
+				.animate({opacity: 0.0}, anego.animatePageLoad, function() {
+					if (loaded && !animated) 
+						putLoadedText(aw);
+					animated=true;
+				});
+		}
+		
+		// Retrieve the actual page
+		$.get(file, get, function(data) {
 			if(aw=GetAnswer(data)) {
 				if(animated) putLoadedText(aw);
 				loaded=true;
+			} else {
+				if(settings.fail_callback) 
+					settings.fail_callback(aw);
 			}
 		});
 
@@ -645,11 +664,11 @@ function OpenDialog(settings) {
 	}
 	$dlgBox.waitResponse = function() {
 		$('input[type=button]', $dlgBox).attr('disabled','disabled');
-		$('.dlgBtnContainer .loadingIcon').show();
+		$('.dlgBtnContainer .loadingIcon', $dlgBox).show();
 	}
 	$dlgBox.endWait = function() {
 		$('input[type=button]', $dlgBox).removeAttr('disabled');
-		$('.dlgBtnContainer .loadingIcon').hide();
+		$('.dlgBtnContainer .loadingIcon', $dlgBox).hide();
 	}
 	
 	$dlgBox.dialogSettings = settings;

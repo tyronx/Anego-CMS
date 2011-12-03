@@ -42,6 +42,7 @@ $lng_renamepage = 'Name oder Einstellungen der Seite ändern';
 /*$lng_movepage = 'Seite um eine Position hochschieben';
 $lng_movepage2 = 'Seite um eine Position runterschieben';*/
 $lng_failedpages = 'Keinte unterseiten nicht löschen';
+$lng_wrongProvider = 'Falscher Daten(-bank) provider, file nicht gefunden in inc/dbi';
 $lng_nomysql = 'MySQL Unterstützung für PHP fehlt. Bitte installieren.';
 $lng_dberror = 'Die Datenbank ist leider nicht erreichbar, bitte versuche es spaeter nocheinmal!';
 $lng_exiterror = '<br>Es trat ein Fehler auf, ich konnte die Anfrage leider nicht ausführen. Der verantwortliche Programmteil antwortete: %s<br><br>Eine genau Fehlermeldung wurde geloggt.';
@@ -105,5 +106,3 @@ $lng_err_file_cantwrite2 = 'Kann Datei nicht in den Zielordner verschieben. Evtl
 $lng_err_file_fail = 'Ein unerwarterter Fehler trat beim Upload auf. Error nummer %s';
 
 $lng_missing_rights = 'Nicht genügend Zugriffsrechte für diese Funktion.';
-
-?>

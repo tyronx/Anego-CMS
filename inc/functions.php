@@ -70,7 +70,7 @@ function prettyName($name) {
 	return $name;
 }
 
-function CopyResized($file, $width = 0, $height = 0, $proportional = true, $output = 'file',$ext='_thumb',$newfile='') {
+function CopyResized($file, $width = 0, $height = 0, $proportional = true, $output = 'file', $ext='_thumb', $newfile='') {
 	$use_linux_commands = false;
 	
 	if ( $height <= 0 && $width <= 0 ) {
