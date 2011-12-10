@@ -74,6 +74,7 @@ function CoreFunctions() {
 	var dragdrop = null;
 	// Keeps a list of loaded js files (and ignores any loads that are done twice)
 	var loadedJsFiles = Array();
+	var loadedCSSFiles = Array();
 	
 	var loadHooks = Array();
 	// anego.curPg is fullpath string, Core.curPg is splitted object containing usfull infos about the current page
@@ -464,7 +465,10 @@ function CoreFunctions() {
 	
 	// Loads given css file
 	this.loadCSS = function(file) {
+		if(loadedCSSFiles.contains(file)) return;
+		
 		$('head').append('<link rel="stylesheet" href="'+file+'" type="text/css" media="screen">');	
+		loadedCSSFiles.push(file);
 	}
 	
 	// Reads a get parameter from the current url - previously gup
@@ -772,7 +776,9 @@ function OpenDialog(settings) {
 			$dlgBox.mouseout(expand);
 		}
 		
-		if(!document.onkeydown) {
+		if(settings.nohotkeys) return;
+		
+		if( !document.onkeydown) {
 			document.onkeydown = function(event) {
 				// escape: 27
 				// enter: 13

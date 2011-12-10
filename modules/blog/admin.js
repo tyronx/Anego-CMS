@@ -31,10 +31,12 @@ function blogFunctions() {
 	
 	this.newEntry=function(blog_id) {
 		OpenDialog({
-			title:lngBlog.newblog,
-			buttons:BTN_SAVECANCEL,
-			content:lngBlog.blogtitle+'<br><input style="width:90%;" type="text" id="newblogTitle"><br><br><textarea style="width:100%" id="newblogText"></textarea>',
+			title: lngBlog.newblog,
+			buttons: BTN_SAVECANCEL,
+			nohotkeys: true,
+			content: lngBlog.blogtitle + '<br><input style="width:90%;" type="text" id="newblogTitle"><br><br><textarea style="width:100%" id="newblogText"></textarea>',
 			ok_callback: function() {
+				var $self = this;
 				$('#im_pr').css('display','');
 				$('#dlgOK').attr('disabled','disabled');
 				
@@ -45,7 +47,7 @@ function blogFunctions() {
 						$('#im_pr').css('display','none');
 						$('#dlgOK').removeAttr('disabled');
 						$('#newblogText').tinymce().hide();
-						CloseDialog();
+						$self.closeDialog();
 					}
 				});
 			},
@@ -56,12 +58,13 @@ function blogFunctions() {
 		this.tinyfy("newblogText");
 	}
 	
-	this.editEntry = function(el_id,fullview) {
+	this.editEntry = function(el_id, fullview) {
 		OpenDialog({
-			title:lngBlog.editblog,
-			buttons:BTN_SAVECANCEL,
-			content:lngBlog.blogtitle+'<br><input style="width:90%;" type="text" id="editblogTitle" value="'+$('#blogElement_'+el_id+' .blogTitle').html()+'"><br><br><textarea style="width:100%" id="editblogText">'+$('#blogElement_'+el_id+' .blogContent').html()+'</textarea>',
+			title: lngBlog.editblog,
+			buttons: BTN_SAVECANCEL,
+			content: lngBlog.blogtitle+'<br><input style="width:90%;" type="text" id="editblogTitle" value="'+$('#blogElement_'+el_id+' .blogTitle').html()+'"><br><br><textarea style="width:100%" id="editblogText">'+$('#blogElement_'+el_id+' .blogContent').html()+'</textarea>',
 			ok_callback: function() {
+				var $self = this;
 				$('#im_pr').css('display','');
 				$('#dlgOK').attr('disabled','disabled');
 				
@@ -73,7 +76,7 @@ function blogFunctions() {
 						$('#im_pr').css('display','none');
 						$('#dlgOK').removeAttr('disabled');
 						$('#editblogText').tinymce().hide();
-						CloseDialog();
+						$self.closeDialog();
 					}
 				});
 			},
@@ -84,17 +87,18 @@ function blogFunctions() {
 		this.tinyfy("editblogText");
 	}
 	
-	this.deleteEntry = function(el_id,fullview) {
+	this.deleteEntry = function(el_id, fullview) {
 		OpenDialog({
-			title:lngBlog.deleteblog,
-			content:lngBlog.reallydelete,
+			title: lngBlog.deleteblog,
+			content: lngBlog.reallydelete,
 			ok_callback: function() {
+				var $self = this;
 				$.get('modules/blog/',{a:'db',id:el_id},function(data) {
 					if(GetAnswer(data)) {
 						if(typeof fullview != 'undefined' && fullview==true)
 							javascript:history.go(-1);
 						else $('#blogElement_'+el_id).remove();
-						CloseDialog();
+						$self.closeDialog();
 					}
 				});
 			}
@@ -172,12 +176,13 @@ function blogFunctions() {
 			title:lngBlog.deletecmt ,
 			content:lngBlog.rlydeletecmt ,
 			ok_callback: function() {
+				var $self = this;
 				$.get('modules/blog/',{a:'dc',cmt_id:cmt_id,blog_id:blog_id},function(data) {
 					var aw;
 					if(aw=GetAnswer(data)) {
 						$('#blogCmt'+cmt_id).remove();
 						$('#blogElement_'+blog_id+' .commentCounter').html(aw);
-						CloseDialog();
+						$self.closeDialog();
 					}
 				});
 			}
