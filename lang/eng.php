@@ -101,7 +101,7 @@ $lng_settings_description = 'Website description (e.g. displayed in the google s
 /***** Admin ****/
 $lng_err_file_tobig = 'Can\'t upload File. Size exceeds server limits!';
 $lng_err_file_cantwrite = 'Cannot write file to temporary files folder. No free space left?';
-$lng_err_file_cantwrite2 = 'Cannot write file to disk. Forgot to set writting permissions?';
+$lng_err_file_cantwrite2 = 'Cannot write file to folder %s. Forgot to set writting permissions?';
 $lng_err_file_fail = 'A unexpected error occurend while uploading. Error number %s';
 
 $lng_missing_rights = 'No permission to access this page, sorry.';

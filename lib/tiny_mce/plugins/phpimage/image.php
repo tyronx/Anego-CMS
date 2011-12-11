@@ -1,4 +1,11 @@
 <?php
+/* PLEASE NOTE:
+ * There is still a bug in this code.
+ * If there are undeleted files in the tmpPath (e.g. when the user cancels the picture insert)
+ * And a file of the same name is uploaded again, inserted, then resized again it seems to mess up 
+ * the preview pictures.
+ * Also it seems that the automatic image description insertion is broken
+*/
 /* Relative path to website */
 $cfg['homePath']='../../../../';
 
@@ -15,20 +22,21 @@ require 'inc/functions.php';
 // Some language strings
 require 'lang/'.$language.'.php';
 
-if(!LoggedOn())
+if (!LoggedOn())
 	exit("300\nYou are not logged on. Please log in as admin to upload a picture");
 
 /* Editing a picture requires the original size picture */
-if(isset($_POST['getoriginal'])) {
-	if(preg_match('#_r\.[a-zA-Z]+$#',$_POST['file'])) {
-		$_POST['file']=trim($_POST['file']);
-		$name_unsized = basename(preg_replace("#(.*)_r(\.[a-zA-Z]+)$#","\\1\\2",$_POST['file']));		
-		if(is_file($cfg['imagePath'].$name_unsized )) {
-			list($w,$h)=@getimagesize($cfg['imagePath'].$name_unsized);
-			if(!$w) exit("200\n".$lng_format);
-			exit("200\n".$cfg['domain'].$cfg['imagePath'].$name_unsized."\n".$w."\n".$h);
+if (isset($_POST['getoriginal'])) {
+	if (preg_match('#_r\.[a-zA-Z]+$#',$_POST['file'])) {
+		$_POST['file'] = trim($_POST['file']);
+		$name_unsized = basename(preg_replace("#(.*)_r(\.[a-zA-Z]+)$#", "\\1\\2", $_POST['file']));
+		if (is_file($cfg['imagePath'] . $name_unsized )) {
+			list($w, $h) = @getimagesize($cfg['imagePath'] . $name_unsized);
+			if ( !$w) exit("200\n".$lng_format);
+			exit("200\n" . $cfg['domain'].$cfg['imagePath'] . $name_unsized . "\n" . $w . "\n" . $h);
+		} else {
+			exit("200\n");
 		}
-		else exit("200\n");
 	} else exit("200\n");
 }
 
@@ -36,32 +44,57 @@ if(isset($_POST['getoriginal'])) {
 	- resizes the picture
 	- copies resized and original to image folder
 */
-
 if(isset($_POST['insert'])) {
-	if(!isset($_POST['file']) || !isset($_POST['width']) || !isset($_POST['height'])) exit("300\nScript giving me not enough values :(");
+	if (! isset($_POST['file']) || ! isset($_POST['width']) || ! isset($_POST['height'])) 
+		exit("300\nScript giving me not enough values :(");
 	
 	//$url = parse_url($_POST['file']);
 	//$file = basename($url['path']);
-	$file = basename(substr(trim($_POST['file']),strlen($cfg['domain'])));
+	$file = basename(substr(trim($_POST['file']), strlen($cfg['domain'])));
 	
+	$justResize = false;
 	// This file may either come from tmp-folder (new image), or image-folder (editing image)
-	if(!is_file($cfg['tmpPath'].$file)) {
+	if (! is_file($cfg['tmpPath'] . $file)) {
 		// When editing files, the image is not in the tmp path of course
-		if(!is_file($cfg['imagePath'].$file)) exit("300\nCouldn't find image on disk. Has it been deleted already?");
-		else $path = $cfg['imagePath'].$file;
-	} else $path = $cfg['tmpPath'].$file;
+		if (! is_file($cfg['imagePath'] . $file)) {
+			exit("300\nCouldn't find image on disk. Has it been deleted already?");
+		} else {
+			$path = $cfg['imagePath'] . $file;
+			$justResize = true;
+		}
+	} else {
+		$path = $cfg['tmpPath'] . $file;
+	}
 	
-	// create a resized filename_r.(jpg/png/gif) file	
-	$name_sized = substr($file,0,strrpos($file,'.')).'_r'.substr($file,strrpos($file,'.'));
+	// make sure we dont overwrite files (unless its just a resize)
+	if(! $justResize) {
+		$newfile = prettyName($file, $cfg['imagePath']);
+	} else {
+		$newfile = $file;
+	}
+	// create a resized filename_r.(jpg/png/gif) file
+	$name_sized = resizedName($newfile);
 	
-	if(CopyResized($path,$_POST['width'],$_POST['height'],true,'file','',$cfg['imagePath'].$name_sized)) {
+	if (CopyResized($path, $_POST['width'], $_POST['height'], true, 'file', '', $cfg['imagePath'] . $name_sized)) {
 		// Also keep a copy of the original size picture
-		copy($path,$cfg['imagePath'].$file);
+		if (! $justResize) copy($path, $cfg['imagePath'] . $newfile);
 		// delete from tmp directory if its there & possible to delete
-		if(is_file($cfg['tmpPath'].$file)) @unlink($cfg['tmpPath'].$file);
-		
-		exit("200\n".$cfg['domain'].$cfg['imagePath'].$name_sized."\n".$cfg['domain'].$cfg['imagePath'].$file);
-	} else exit("500\nnot ok :(");
+		if (is_file($cfg['tmpPath'] . $file)) 
+			@unlink($cfg['tmpPath'] . $file);
+		// Delete old image if possible (if it wasnt a resize)
+		if ($_POST['isReplace'] && is_file($cfg['imagePath'] . basename($_POST['oldImage'])) && ! $justResize) {
+			@unlink($cfg['imagePath'] . basename($_POST['oldImage']));
+			@unlink($cfg['imagePath'] . resizedName(basename($_POST['oldImage'])));
+		}
+
+		exit("200\n" . $cfg['domain'] . $cfg['imagePath'] . $name_sized . "\n" . $cfg['domain'] . $cfg['imagePath'] . $file);
+	} else {
+		exit("500\nnot ok :(");
+	}
+}
+
+function resizedName($file) {
+	return substr($file, 0, strrpos($file, '.')) . '_r' . substr($file, strrpos($file, '.'));
 }
 
 /* Upload image temporarily (happens automatically once a image is selected) 
@@ -79,14 +112,15 @@ if(isset($_POST['uploadImg'])) {
 		break;
 	}
 
-	if($_FILES['fiupl']['error']==0) {
-		$newName = prettyName($_FILES['fiupl']['name']);
+	if ($_FILES['fiupl']['error'] == 0) {
+		$newName = prettyName($_FILES['fiupl']['name'], $cfg['tmpPath']);
 		if (validPictureFormat($_FILES['fiupl']['name'])) {
-			if (move_uploaded_file($_FILES['fiupl']['tmp_name'], $cfg['tmpPath'].$newName)) {
-				chmod ($cfg['tmpPath'].$newName,0664);
+			if (move_uploaded_file($_FILES['fiupl']['tmp_name'], $cfg['tmpPath'] . $newName)) {
+				chmod ($cfg['tmpPath'] . $newName, 0664);
+				
 				echo "200\n".$cfg['domain'].$cfg['tmpPath'].$newName;
 			} else {
-				echo ("500\n".$lng_err_file_cantwrite2);
+				echo ("500\n".sprintf($lng_err_file_cantwrite2, $cfg['tmpPath']));
 			}
 		} else {
 			echo "300\n$lng_format";
@@ -116,7 +150,7 @@ STREND;
 	<script type="text/javascript" src="js/image.js"></script>
 	<link href="css/phpimage.css" rel="stylesheet" type="text/css" />
 </head>
-<body id="advimage" style="display: none" onresize="ResizePrev()">
+<body id="advimage" style="display: none" onresize="ImageDialog.resizePreview()">
 	<form id="wholepageForm" action="" enctype="multipart/form-data" method="post"> 
 		<div class="tabs">
 			<ul>
@@ -164,10 +198,10 @@ STREND;
 								<td class="column1" width="105" ><label id="altlabel" for="alt">{#phpimage_dlg.alt}</label></td> 
 								<td colspan="2"><input id="alt" name="alt" type="text" value="" /></td> 
 							</tr> 
-							<tr> 
+							<!--<tr> 
 								<td class="column1"><label id="titlelabel" for="title">{#phpimage_dlg.title}</label></td> 
 								<td colspan="2"><input id="title" name="title" type="text" value="" /></td> 
-							</tr>
+							</tr>-->
 							<tr>
 								<td class="column1"><label id="widthlabel" for="width">{#phpimage_dlg.dimensions}</label></td> 
 								<td colspan="2">
@@ -348,8 +382,8 @@ STREND;
 		</div>
 	</form>
 <script type="text/javascript">
-window.setTimeout(AddForm,50);
-window.setTimeout(AutoUpload,250);	
+window.setTimeout(ImageDialog.addForm, 50);
+window.setTimeout(ImageDialog.autoUpload, 250);
 </script>
 </body> 
 </html> 

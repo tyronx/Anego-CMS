@@ -43,7 +43,7 @@ function BoundBy($val,$min,$max) {
 }
 
 // Take a filename and replaces a number of chars that might cause trouble in urls
-function prettyName($name) {
+function prettyName($name, $path = '') {
 	$lr = array(
 		"A" => array("À","Á","Â","Ã","Ä","Å","Ā","Ă"),
 		"a" => array("à","á","â","ã","ä","ā","ă","ą"),
@@ -59,14 +59,34 @@ function prettyName($name) {
 		"u" => array("ų","ű","ů","ŭ","ū","ũ","ù","ú","û","ü"),
 		"C" => array("Ć","Ĉ","Ċ","Č"),
 		"c" => array("ć","ĉ","ċ","č"),
-		"_" => array(" ")
+		"_" => array(" ","(",")","[","]","<",">")
 	);
-	foreach($lr as $replace=>$letters) {
+	
+	foreach ($lr as $replace=>$letters) {
 		$name = str_replace($letters,$replace,$name);
 	}
+	
 	$len = strlen($name);
-	for($i=0; $i<$len; $i++)
-		$name[$i]=preg_replace("#[^a-zA-Z0-9_\-\.]+#","",$name[$i]);
+	for ($i=0; $i<$len; $i++) {
+		$name[$i] = preg_replace("#[^a-zA-Z0-9_\-\.]+#","",$name[$i]);
+	}
+	
+	// If a path is given, it also assures that the file is not being overwritten
+	if (strlen($path) && file_exists($path . '/' . $name)) {
+		$num = 2;
+		if (preg_match("/_(\d+)\.\w+$/", $name, $match)) {
+			$num = $match[1] + 1;
+			$name = preg_replace("/_\d+(\.\w+)$/","_$num\\1", $name);
+		} else {
+			$name = substr($name, 0, strpos($name, '.')) . '_' . $num . substr($name, strpos($name, '.'));
+		}
+		
+		while (file_exists($path . '/' . $name)) {
+			$num++;
+			$name = preg_replace("/_\d+(\.\w+)$/","_$num\\1", $name);
+		}
+	}
+	
 	return $name;
 }
 

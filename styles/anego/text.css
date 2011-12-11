@@ -78,7 +78,7 @@ a:hover {
 	border-bottom:1px dotted #12334F;
 }
 
-a.dotless, a#fancybox-close {
+a.dotless, a#fancybox-close, a.zoomable {
 	border-bottom:0;
 }
 

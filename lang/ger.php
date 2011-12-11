@@ -102,7 +102,7 @@ $lng_settings_description = 'Website Beschreibung (wird z.b. in Google angezeigt
 /***** Admin ****/
 $lng_err_file_tobig = 'Kann datei nicht hochladen. Die Dateigröße überschreitet die server limits!';
 $lng_err_file_cantwrite = 'Kann keine temporäre Datei erstellen. Kein Speicherplatz mehr frei?';
-$lng_err_file_cantwrite2 = 'Kann Datei nicht in den Zielordner verschieben. Evtl. fehlende Schreibrechte?';
+$lng_err_file_cantwrite2 = 'Kann Datei nicht in den Zielordner %s verschieben. Evtl. fehlende Schreibrechte?';
 $lng_err_file_fail = 'Ein unerwarterter Fehler trat beim Upload auf. Error nummer %s';
 
 $lng_missing_rights = 'Nicht genügend Zugriffsrechte für diese Funktion.';
