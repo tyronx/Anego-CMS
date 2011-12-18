@@ -1,107 +1,104 @@
 <?
-$lng_adminarea = 'Anego CMS Administration Area';
-$lng_login_name = "Name";
-$lng_login_pass = "Password";
-$lng_login = "Login";
-$lng_staysigned = "Stay signed in";
+$lang['Anego CMS Administration Area'] = 'Anego CMS Administration Area';
+$lang['Name'] = 'Name';
+$lang['Password'] = 'Password';
+$lang['Login'] = 'Login';
+$lang['Stay signed in'] = 'Stay signed in';
 
-$lng_loginfail = "Wrong password or username";
-$lng_legend = 'Legend:';
-$lng_genericerror = 'A database query failed.';
-// $lng_test = "test"; 'test'
-$lng_examples = 'Examples';
-$lng_logout = 'Logout';
-$lng_adminpages = "Edit Menu";
-$lng_adminfiles = "Manage files";
-$lng_settings = "Settings";
-$lng_addfile = "add file";
-$lng_addfolder = "add folder";
-$lng_hack = 'path var is tampererd, this looks like a hack attempt. Stopping.';
-$lng_pageinfo = 'Failed getting page info';
-$lng_failedsettings = 'Failed getting settings data';
-$lng_nofirstpage = 'You havn\'t set up your home page yet. Please set it up in the Settings menu.';
-$lng_failedfreeing = "Failed freeing a position for new page";
-$lng_failedgetting = "Failed getting idx from ";
-$lng_failedinserting = "Failed inserting new page";
-$lng_failedretrieving = "Failed retrieving position from page";
-$lng_failedmoving = "Failed moving page";
-$lng_failedmovingselected = "Failed moving selected page";
-$lng_failedrenaming = "Failed renaming page";
-$lng_faileddeleting = "Failed deleting page";
-$lng_upload = "Upload successful!";
-$lng_format = "Format not allowed! Any kind of php,html,js files are refused. Sorry";
-$lng_contain = 'File/Folder Names may only contain letters, numbers, dot (.) dash (-) and underscore (_)';
-$lng_notexist = 'The file you want to rename does not exist (anymore)';
-$lng_failedmain = "Failed getting main pages";
-$lng_createnew = "New page";
-$lng_addpage = "Add page below current page";
-$lng_tree = "Add page inside current page (tree)";
-$lng_picLink = 'Set up pictures for the menu links';
-$lng_deletepage = "Delete Page";
-$lng_renamepage = "Rename page or edit page settings";
-$lng_movepage = "Move page a position higher";
-$lng_movepage2 = "Move page a position lower";
-$lng_failedpages = "Failed getting child pages for deletion";
-$lng_nomysql = 'No PHP MySQL Support on this Server. Please install it.';
-$lng_wrongProvider = 'Wrong data(-base) provider, file not found in inc/dbi.';
-$lng_dberror = "Our Database is not reachable. Please try again later!";
-$lng_exiterror = "<br>There was an error, I'm sorry I couldnt execute your request. The respsonsible php script told me: %s<br><br>A detailed error message has been logged.";
-$lng_editpage = "Edit page";
-$lng_doneedit = 'Finished editing';
-$lng_invalidname = "invalid file name";
-$lng_failedupdating = "Failed updating page.";
-$lng_permission = 'Page nonexistant or no permission to see it';
-$lng_nofirstpage = 'No start page set up yet. Please check your settings.';
-$lng_logon = "You need to log on first.";
-$lng_content = "This page has not been filled with content yet. Please use the 'Edit this page' Link to enter your text";
-$lng_unkown_opt = "Unkown option '%s' for Gallery.";
-$lng_invalidsynt = "Invalid syntax at option '%s'";
-$lng_unkownfiletype = "Unkown filetype (file %s, type %s)";
-$lng_dirnotexist = "Sorry the directory '%s' for the gallery does not exist";
-$lng_youarehere = "You are here:";
-$lng_show = "Sorry, nothing to show";
-$lng_failedchildermain = "Failed getting children of main page";
-$lng_pagetitle = "Anego CMS";
+$lang['Wrong password or username'] = 'Wrong password or username';
+$lang['Legend:'] = 'Legend:';
+$lang['A database query failed.'] = 'A database query failed.';
 
-$lng_selectforinsert = "Please select the Image you want to insert.";
-$lng_insertimg = "Insert uploaded Image";
+$lang['Examples'] = 'Examples';
+$lang['Logout'] = 'Logout';
+$lang['Edit Menu'] = 'Edit Menu';
+$lang['Manage files'] = 'Manage files';
+$lang['Settings'] = 'Settings';
+$lang['add file'] = 'add file';
+$lang['add folder'] = 'add folder';
+$lang['path var is tampererd, this looks like a hack attempt. Stopping.'] = 'path var is tampererd, this looks like a hack attempt. Stopping.';
+$lang['Failed getting page info'] = 'Failed getting page info';
+$lang['Failed getting settings data'] = 'Failed getting settings data';
+$lang['You havn\'t set up your home page yet. Please set it up in the Settings menu.'] = 'You havn\'t set up your home page yet. Please set it up in the Settings menu.';
+$lang['Failed freeing a position for new page'] = 'Failed freeing a position for new page';
+$lang['Failed getting idx from '] = 'Failed getting idx from ';
+$lang['Failed inserting new page'] = 'Failed inserting new page';
+$lang['Failed retrieving position from page'] = 'Failed retrieving position from page';
+$lang['Failed moving page'] = 'Failed moving page';
+$lang['Failed moving selected page'] = 'Failed moving selected page';
+$lang['Failed renaming page'] = 'Failed renaming page';
+$lang['Failed deleting page'] = 'Failed deleting page';
+$lang['Upload successful!'] = 'Upload successful!';
+$lang['Format not allowed! Any kind of php,html,js files are refused. Sorry'] = 'Format not allowed! Any kind of php,html,js files are refused. Sorry';
+$lang['File/Folder Names may only contain letters, numbers, dot (.) dash (-) and underscore (_)'] = 'File/Folder Names may only contain letters, numbers, dot (.) dash (-) and underscore (_)';
+$lang['The file you want to rename does not exist (anymore)'] = 'The file you want to rename does not exist (anymore)';
+$lang['Failed getting main pages'] = 'Failed getting main pages';
+$lang['New page'] = 'New page';
+$lang['Add page below current page'] = 'Add page below current page';
+$lang['Add page inside current page (tree)'] = 'Add page inside current page (tree)';
+$lang['Set up pictures for the menu links'] = 'Set up pictures for the menu links';
+$lang['Delete Page'] = 'Delete Page';
+$lang['Rename page or edit page settings'] = 'Rename page or edit page settings';
+$lang['Failed getting child pages for deletion'] = 'Failed getting child pages for deletion';
+$lang['No PHP MySQL Support on this Server. Please install it.'] = 'No PHP MySQL Support on this Server. Please install it.';
+$lang['Our Database is not reachable. Please try again later!'] = 'Our Database is not reachable. Please try again later!';
+$lang['<br>There was an error, I\'m sorry I couldnt execute your request. The respsonsible php script told me: %s<br><br>A detailed error message has been logged.'] = '<br>There was an error, I\'m sorry I couldnt execute your request. The respsonsible php script told me: %s<br><br>A detailed error message has been logged.';
+$lang['Edit page'] = 'Edit page';
+$lang['Finished editing'] = 'Finished editing';
+$lang['invalid file name'] = 'invalid file name';
+$lang['Failed updating page.'] = 'Failed updating page.';
+$lang['Page nonexistant or no permission to see it'] = 'Page nonexistant or no permission to see it';
+$lang['No start page set up yet. Please check your settings.'] = 'No start page set up yet. Please check your settings.';
+$lang['You need to log on first.'] = 'You need to log on first.';
+$lang['This page has not been filled with content yet. Please use the <i>Edit this page</i> Link to enter your text'] = 'This page has not been filled with content yet. Please use the <i>Edit this page</i> Link to enter your text';
+$lang['Unkown option "%s" for Gallery.'] = 'Unkown option "%s" for Gallery.';
+$lang['Invalid syntax at option "%s"'] = 'Invalid syntax at option "%s"';
+$lang['Unkown filetype (file %s, type %s)'] = 'Unkown filetype (file %s, type %s)';
+$lang['Sorry the directory "%s" for the gallery does not exist'] = 'Sorry the directory "%s" for the gallery does not exist';
+$lang['You are here:'] = 'You are here:';
+$lang['Sorry, nothing to show'] = 'Sorry, nothing to show';
+$lang['Failed getting children of main page'] = 'Failed getting children of main page';
+$lang['Anego CMS'] = 'Anego CMS';
 
-$lng_selectgal = "Please open the folder you want to insert as gallery. Note that you can only display a whole folder as gallery.";
-$lng_insertgal = "Insert gallery";
-$lng_insertgalbtn = "Insert currently opened folder";
+$lang['Please select the Image you want to insert.'] = 'Please select the Image you want to insert.';
+$lang['Insert uploaded Image'] = 'Insert uploaded Image';
 
-$lng_mainmenu = 'Main menu';
-$lng_minormenu = 'Secondary menu';
+$lang['Please open the folder you want to insert as gallery. Note that you can only display a whole folder as gallery.'] = 'Please open the folder you want to insert as gallery. Note that you can only display a whole folder as gallery.';
+$lang['Insert gallery'] = 'Insert gallery';
+$lang['Insert currently opened folder'] = 'Insert currently opened folder';
 
-$lng_noalign = 'Don\'t align';
-$lng_leftalign = 'Align to left side';
-$lng_rightalign = 'Align to right side';
+$lang['Main menu'] = 'Main menu';
+$lang['Secondary menu'] = 'Secondary menu';
 
-$lng_alignment = 'Alignment';
+$lang['Don\'t align'] = 'Don\'t align';
+$lang['Align to left side'] = 'Align to left side';
+$lang['Align to right side'] = 'Align to right side';
 
-$lng_titledesc = "Title/Description";
+$lang['Alignment'] = 'Alignment';
 
-$lng_savechanges = "Save changes";
-$lng_cancelchanges = "Cancel";
+$lang['Title/Description'] = 'Title/Description';
 
-$lng_send_success = "Mail sent successfully";
+$lang['Save changes'] = 'Save changes';
+$lang['Cancel'] = 'Cancel';
+
+$lang['Mail sent successfully'] = 'Mail sent successfully';
 
 /**** Settings *****/
 
-$lng_settings = 'Settings';
-$lng_settings_general = 'General';
-$lng_settings_modules = 'Modules';
-$lng_settings_homepage = 'Home page (The Page which the visitor gets to see first)';
-$lng_settings_title = 'Website title';
-$lng_settings_keywords = 'Website keywords (seperated by comma, no newlines!)';
-$lng_settings_save = 'Save settings';
-$lng_settings_description = 'Website description (e.g. displayed in the google search results, without newlines)';
+$lang['Settings'] = 'Settings';
+$lang['General'] = 'General';
+$lang['Modules'] = 'Modules';
+$lang['Home page (The Page which the visitor gets to see first)'] = 'Home page (The Page which the visitor gets to see first)';
+$lang['Website title'] = 'Website title';
+$lang['Website keywords (seperated by comma, no newlines!)'] = 'Website keywords (seperated by comma, no newlines!)';
+$lang['Save settings'] = 'Save settings';
+$lang['Website description (e.g. displayed in the google search results, without newlines)'] = 'Website description (e.g. displayed in the google search results, without newlines)';
 
 
 /***** Admin ****/
-$lng_err_file_tobig = 'Can\'t upload File. Size exceeds server limits!';
-$lng_err_file_cantwrite = 'Cannot write file to temporary files folder. No free space left?';
-$lng_err_file_cantwrite2 = 'Cannot write file to folder %s. Forgot to set writting permissions?';
-$lng_err_file_fail = 'A unexpected error occurend while uploading. Error number %s';
+$lang['Can\'t upload File. Size exceeds server limits!'] = 'Can\'t upload File. Size exceeds server limits!';
+$lang['Cannot write file to temporary files folder. No free space left?'] = 'Cannot write file to temporary files folder. No free space left?';
+$lang['Cannot write file to folder %s. Forgot to set writting permissions?'] = 'Cannot write file to folder %s. Forgot to set writting permissions?';
+$lang['A unexpected error occurend while uploading. Error number %s'] = 'A unexpected error occurend while uploading. Error number %s';
 
-$lng_missing_rights = 'No permission to access this page, sorry.';
+$lang['No permission to access this page, sorry.'] = 'No permission to access this page, sorry.';

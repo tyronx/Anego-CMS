@@ -1,7 +1,7 @@
 <?
 include("core.php");
 
-$anego->assign('lng_pagetitle',$lng_pagetitle." - Admin");
+$anego->assign('pagetitle', __('Anego CMS') . " - Admin");
 
 // Load admin related js language file - core.php loads this already...?
 //if(!isset($_GET['noheader'])) {
@@ -12,15 +12,24 @@ $anego->assign('lng_pagetitle',$lng_pagetitle." - Admin");
 if(!LOGINOK && (!isset($_GET['a']) || $_GET['a']!='li')) {
 	if(isset($_GET['noheader']) && $_GET['noheader']) $lib='Core.loadJavascript(\'ld.lo\');';
 	else $lib='';
+	
+	$lng_name = __('Name');
+	$lng_pass = __('Password');
+	$lng_sign = __('Stay signed in');
+	$lng_login = __('Login');
+	$lng_pleaseuser = __('Please enter your user name.');
+	$lng_pleasepass = __('Please enter your password.');
+	
+	
 	$logon = <<<EOT
-		<div align="center"><div class="loginTitle">$lng_adminarea</div>
+		<div align="center"><div class="loginTitle">__('Anego CMS Administration Area')</div>
 		<div class="loginBox">
 		<form id="loginForm" action="#" method="post" accept-charset="UTF-8" onsubmit="return false">
-			$lng_login_name<br>
+			$lng_name<br>
 			<input type="text" name="username"><br><br>
-			$lng_login_pass<br>
+			$lng_pass<br>
 			<input type="password" name="password"><br>
-			<input type="checkbox" name="staysigned" value="1" checked="checked"> $lng_staysigned<br><br>
+			<input type="checkbox" name="staysigned" value="1" checked="checked"> $lng_sign<br><br>
 			<div align="right"><input type="button" onclick="login()" name="submit" value="$lng_login"></div>
 		</form>
 		</div></div>
@@ -34,11 +43,11 @@ if(!LOGINOK && (!isset($_GET['a']) || $_GET['a']!='li')) {
 			function login() {
 				var loginForm = document.getElementById("loginForm");
 				if (loginForm.username.value == "") {
-					alert("Please enter your user name.");
+					alert("$lng_pleaseuser");
 					return false;
 				}
 				if (loginForm.password.value == "") {
-					alert("Please enter your password.");
+					alert("$lng_pleasepass");
 					return false;
 				}
 				var submitForm = document.getElementById("submitForm");
@@ -71,16 +80,7 @@ EOT;
 }
 
 if(!isset($_GET['a'])) {
-	if( UserRole() < Role::ProMod ) Bail($lng_missing_rights);
-	
-	$p = CurrentPage();
-			
-	$anego->AddJsPreload("\tanego.editmode=true;");
-	$anego->AddJsModule('ap');
-
-	define('ADMIN_MODE',1);
-	PrintPage(CurrentPage());
-	exit();
+	$anego->Reload($cfg['domain']);
 }
 
 $anego->assign('action',1);
@@ -104,7 +104,7 @@ switch($_GET['a']) {
 			//else 
 			$anego->Reload($cfg['domain']);
 		} else {
-			$anego->AddContent($lng_loginfail);
+			$anego->AddContent(__('Wrong password or username'));
 			$anego->display('index.tpl');
 		}
 		break;
@@ -119,7 +119,7 @@ switch($_GET['a']) {
 	case 'pgad':
 		/* Ajax call */
 		if(isset($_GET['noheader'])) {
-			if(UserRole() < Role::ProMod) BailErr($lng_missing_rights);
+			if(UserRole() < Role::ProMod) BailErr(__('No permission to access this page, sorry.'));
 			
 			$json = Array();
 			$json['title'] = 'Anego - Admin';
@@ -130,7 +130,7 @@ switch($_GET['a']) {
 		}
 		
 		/* Normal call */
-		if(UserRole() < Role::ProMod) Bail($lng_missing_rights);
+		if(UserRole() < Role::ProMod) Bail(__('No permission to access this page, sorry.'));
 		AdminBar(-1);		
 		
 		$anego->AddJsModule("am");
@@ -145,13 +145,16 @@ switch($_GET['a']) {
 	case 'filad':
 		if(isset($_GET['fgx'])) $fgx = str_replace(array('"',"'"),array('',''),$_GET['fgx']);
 		else $fgx = '';
-		$max_filesize=min(in_mb(ini_get('post_max_size')),in_mb(ini_get('upload_max_filesize')));
-		$content="<div id=\"editpage\">[<a href=\"javascript:AddFile('$fgx')\">$lng_addfile</a> | <a href=\"javascript:AddFolder('$fgx')\">$lng_addfolder</a>]</div>";
-		$content.=Gallery("",DTYPE_ADMIN,$cfg['galAdminRows'],$cfg['galAdminCols']);
+		$max_filesize = min(in_mb(ini_get('post_max_size')),in_mb(ini_get('upload_max_filesize')));
+		
+		$content = "<div id=\"editpage\">[<a href=\"javascript:AddFile('$fgx')\">"  . __('add file') . "</a> ".
+				 "| <a href=\"javascript:AddFolder('$fgx')\">" . __('add folder') . "</a>]</div>";
+				 
+		$content .= Gallery("",DTYPE_ADMIN,$cfg['galAdminRows'],$cfg['galAdminCols']);
 		
 		/* Ajax call */
 		if(isset($_GET['noheader'])) {
-			if(UserRole() < Role::ProMod) BailErr($lng_missing_rights);
+			if(UserRole() < Role::ProMod) BailErr(__('No permission to access this page, sorry.'));
 			
 			$json = Array();
 			$json['title']='Anego - Admin';
@@ -164,7 +167,7 @@ switch($_GET['a']) {
 		}
 		
 		/* Normal call */
-		if(UserRole() < Role::ProMod) Bail($lng_missing_rights);
+		if(UserRole() < Role::ProMod) Bail(__('No permission to access this page, sorry.'));
 		AdminBar(-1);
 		
 		$anego->AddJsModule("af");
@@ -176,9 +179,9 @@ switch($_GET['a']) {
 	/* Admin settings */
 	case 'setg':
 		if(isset($_GET['noheader']))
-			if(UserRole() < Role::Admin) BailErr($lng_missing_rights);
+			if(UserRole() < Role::Admin) BailErr(__('No permission to access this page, sorry.'));
 		else 
-			if(UserRole() < Role::Admin) Bail($lng_missing_rights);
+			if(UserRole() < Role::Admin) Bail(__('No permission to access this page, sorry.'));
 			
 		if(isset($_POST['Save'])) {
 			mysql_query('REPLACE INTO '.SETTINGS.' (name,value) VALUES (\'firstpage\',\''.$_POST['homepage'].'\')');
@@ -194,15 +197,15 @@ switch($_GET['a']) {
 		ob_start();
 ?>
 		<div id="adminpage" class="adminstyles">
-			<h2><?=$lng_settings?></h2>
+			<h2><?=__('Settings')?></h2>
 			<div id="tabs">
 				<ul>
-					<li><a href="#tabs-1"><?=$lng_settings_general?></a></li>
-					<li><a href="#tabs-2"><?=$lng_settings_modules?></a></li>
+					<li><a href="#tabs-1"><?=__('General')?></a></li>
+					<li><a href="#tabs-2"><?=__('Modules')?></a></li>
 				</ul>
 				<div id="tabs-1">
 					<form action="admin.php?a=setg&g=1" method="POST" accept-charset="UTF-8">
-					<?=$lng_settings_homepage?><br>
+					<?=__('Home page (The Page which the visitor gets to see first)')?><br>
 					<select name="homepage">					
 			<?
 			$res=mysql_query("SELECT idx,name FROM ".PAGES." WHERE nolink=0 AND file='' ORDER BY name");
@@ -214,13 +217,13 @@ switch($_GET['a']) {
 			
 			
 			?>
-					</select><br><br><?=$lng_settings_title?><br>
+					</select><br><br><?=__('Website title')?><br>
 					<input type="text" name="pagetitle" value="<?=@$s['pagetitle']?>">
-					<br><br><?=$lng_settings_keywords?><br>
+					<br><br><?=__('Website keywords (seperated by comma, no newlines!)')?><br>
 					<textarea type="text" cols="60" style="width:100%" rows="3" name="keywords"><?=@$s['keywords']?></textarea>
-					<br><br><?=$lng_settings_description?><br>
+					<br><br><?=__('Website description (e.g. displayed in the google search results, without newlines)')?><br>
 					<textarea name="description" rows="3" cols="60" style="width:100%"><?=@$s['description']?></textarea>
-					<br><br><input type="submit" name="Save" value="<?=$lng_settings_save?>"></form>
+					<br><br><input type="submit" name="Save" value="<?=__('Save settings')?>"></form>
 				</div>
 				<div id="tabs-2">
 					<table id="modulesTable" class="grid" style="width:100%">
@@ -263,7 +266,7 @@ switch($_GET['a']) {
 		
 	/* Load modules list */
 	case 'lm':
-		if(UserRole() < Role::Admin) Bail($lng_missing_rights);
+		if(UserRole() < Role::Admin) Bail(__('No permission to access this page, sorry.'));
 		
 		include('inc/modules.php');
 		$pmg = new PageManager();
@@ -273,7 +276,7 @@ switch($_GET['a']) {
 		
 	/* Install module */
 	case 'im':
-		if(UserRole() < Role::Admin) Bail($lng_missing_rights);
+		if(UserRole() < Role::Admin) Bail(__('No permission to access this page, sorry.'));
 		
 		if(!isset($_GET['name'])) exit("400\nForgot module name to install?");
 		if(preg_match('#(\.|/)#',$_GET['name'])) exit("400\nInvalid module name");
@@ -287,7 +290,7 @@ switch($_GET['a']) {
 		
 	/* Uninstall module */
 	case 'uim':
-		if(UserRole() < Role::Admin) Bail($lng_missing_rights);
+		if(UserRole() < Role::Admin) Bail(__('No permission to access this page, sorry.'));
 		
 		if(!isset($_GET['name'])) exit("400\nForgot module name to uninstall?");
 		if(preg_match('#(\.|/)#',$_GET['name'])) exit("400\nInvalid module name");
@@ -301,14 +304,16 @@ switch($_GET['a']) {
 		
 	/* AJAX functions - no smarty can be used here. Direct output needed */
 	case 'files':
-		if(UserRole() < Role::ProMod) Bail($lng_missing_rights);
+		if(UserRole() < Role::ProMod) Bail(__('No permission to access this page, sorry.'));
 		
 		if(!isset($_GET['fgx'])) $fgx='';
 			else $fgx = $_GET['fgx'];
 		$path = SimplifyPath($fgx);	
-		if(preg_match("#\.\.#",$path)) exit($lng_hack);
+		if(preg_match("#\.\.#",$path)) exit(__('path var is tampererd, this looks like a hack attempt. Stopping.'));
 		
-		echo "<div id=\"editpage\">[<a href=\"javascript:AddFile('$fgx')\">$lng_addfile</a> | <a href=\"javascript:AddFolder('$fgx')\">$lng_addfolder</a>]</div>";
+		echo "<div id=\"editpage\">[<a href=\"javascript:AddFile('$fgx')\">" . __('add file') . "</a> ";
+		echo "| <a href=\"javascript:AddFolder('$fgx')\">" . __('add folder') . "</a>]</div>";
+		
 		if($_GET['r']==0)
 			echo Gallery('',DTYPE_ADMIN,$cfg['galAdminRows'],$cfg['galAdminCols']);
 		if($_GET['r']==1)
@@ -317,7 +322,7 @@ switch($_GET['a']) {
 	
 	// Add page
 	case 'ap':
-		if(UserRole() < Role::ProMod) Bail($lng_missing_rights);
+		if(UserRole() < Role::ProMod) Bail(__('No permission to access this page, sorry.'));
 		
 		$subm = intval($_POST['subm']);
 		$nolink = intval($_POST['nolink']);
@@ -333,7 +338,7 @@ switch($_GET['a']) {
 			// Add page to the bottom of the root tree
 			$q = "SELECT MAX(position) as pos FROM ".PAGES." WHERE parent_idx=0 AND menu='".$menu."'";
 			$res = mysql_query($q) or
-				BailErr($lng_failedfreeing,$q);
+				BailErr(__('Failed freeing a position for new page'),$q);
 			$row = mysql_fetch_array($res);
 
 			$pos = $row['pos'] + 1;
@@ -344,17 +349,17 @@ switch($_GET['a']) {
 			
 			$q="SELECT * FROM ".PAGES." WHERE idx=".$intopage;
 			$res = mysql_query($q) or
-				BailErr($lng_pageinfo,$q);
+				BailErr(__('Failed getting page info'),$q);
 			$row = mysql_fetch_array($res);
 
 			$q = "SELECT idx FROM ".PAGES." WHERE parent_idx=".$row['idx']." LIMIT 1";
 			$res2=mysql_query($q) or
-				BailErr($lng_failedgetting,$q);
+				BailErr(__('Failed getting idx from '),$q);
 				
 			if(mysql_affected_rows()) {
 				$q = "UPDATE ".PAGES." SET position=position+1 WHERE parent_idx=".$row['idx']." AND menu=".$row['menu'];
 				mysql_query($q) or
-					BailErr($lng_failedfreeing,$q);
+					BailErr(__('Failed freeing a position for new page'),$q);
 			}
 			$pos = 0;
 			$par = $row['idx'];
@@ -376,14 +381,14 @@ switch($_GET['a']) {
 				
 		$q = "INSERT INTO ".PAGES." (name, info, date, parent_idx, file, visibility, position, subpoint,nolink,content,menu) VALUES ('".$_POST['name']."','".$_POST['info']."',".time().",'".$par."','".$fname."','".$vis."','".$pos."','$subm','$nolink','','".$menu."')";
 		mysql_query($q) or
-			BailErr($lng_failedinserting,$q);
+			BailErr(__('Failed inserting new page'),$q);
 		
 		echo "200\n".PrintLinks();
 		
 		break;
 	
 	case 'movenode':
-		if(UserRole() < Role::ProMod) BailErr($lng_missing_rights);
+		if(UserRole() < Role::ProMod) BailErr(__('No permission to access this page, sorry.'));
 		
 		if(!preg_match("/^node(\d+)$/",$_GET['movingNode'],$match)) exit("400\nProgramming error: wrong dropped node");
 		$movingNodeId = $match[1];
@@ -393,12 +398,12 @@ switch($_GET['a']) {
 		
 		$q = "SELECT idx,name,position,parent_idx,menu FROM ".PAGES." WHERE idx=$movingNodeId";
 		$res=mysql_query($q) or
-			BailErr($lng_failedmoving,$q);
+			BailErr(__('Failed moving page'),$q);
 		$movingNode = mysql_fetch_array($res);
 			
 		$q = "SELECT idx,name,position,parent_idx,menu FROM ".PAGES." WHERE idx=$targetNodeId";
 		$res=mysql_query($q) or
-			BailErr($lng_failedmoving,$q);
+			BailErr(__('Failed moving page'),$q);
 		$targetNode = mysql_fetch_array($res);
 			
 			
@@ -409,19 +414,19 @@ switch($_GET['a']) {
 		// Free the space from old place
 		$q="UPDATE ".PAGES." SET position=position-1 WHERE position>".$movingNode['position']." AND parent_idx=".$movingNode['parent_idx']." AND menu='".$movingNode['menu']."'";
 		if(!($res=mysql_query($q)))
-			{ @mysql_query("ROLLBACK"); BailErr($lng_failedmoving,$q); }
+			{ @mysql_query("ROLLBACK"); BailErr(__('Failed moving page'),$q); }
 		
 		switch($_GET['position']) {
 			case 'before':
 				// Make space in new place
 				$q="UPDATE ".PAGES." SET position=position+1 WHERE position>=".$targetNode['position']." AND parent_idx=".$targetNode['parent_idx']." AND menu='".$targetNode['menu']."'";
 				if(!($res=mysql_query($q)))
-					{ @mysql_query("ROLLBACK"); BailErr($lng_failedmoving,$q); }
+					{ @mysql_query("ROLLBACK"); BailErr(__('Failed moving page'),$q); }
 				
 				// Move the node
 				$q="UPDATE ".PAGES." SET parent_idx=".$targetNode['parent_idx'].", position=".$targetNode['position'].", menu='".$targetNode['menu']."' WHERE idx=".$movingNode['idx'];
 				if(!($res=mysql_query($q)))
-					{ @mysql_query("ROLLBACK"); BailErr($lng_failedmoving,$q); }
+					{ @mysql_query("ROLLBACK"); BailErr(__('Failed moving page'),$q); }
 				
 				break;
 				
@@ -429,12 +434,12 @@ switch($_GET['a']) {
 				// Make space in new place
 				$q="UPDATE ".PAGES." SET position=position+1 WHERE position>".$targetNode['position']." AND parent_idx=".$targetNode['parent_idx']." AND menu='".$targetNode['menu']."'";
 				if(!($res=mysql_query($q)))
-					{ @mysql_query("ROLLBACK"); BailErr($lng_failedmoving,$q); }
+					{ @mysql_query("ROLLBACK"); BailErr(__('Failed moving page'),$q); }
 				
 				// Move the node
 				$q="UPDATE ".PAGES." SET parent_idx=".$targetNode['parent_idx'].", position=".$targetNode['position']."+1, menu='".$targetNode['menu']."' WHERE idx=".$movingNode['idx'];
 				if(!($res=mysql_query($q)))
-					{ @mysql_query("ROLLBACK"); BailErr($lng_failedmoving,$q); }
+					{ @mysql_query("ROLLBACK"); BailErr(__('Failed moving page'),$q); }
 					
 				break;
 				
@@ -442,28 +447,28 @@ switch($_GET['a']) {
 				// 'inside' always moves to the bottom of the target parent
 				$q='SELECT MAX(position) FROM '.PAGES.' WHERE parent_idx='.$targetNode['idx']." AND menu='".$targetNode['menu']."'";;
 				if(!($res=mysql_query($q)))
-					{ @mysql_query("ROLLBACK"); BailErr($lng_failedmoving,$q); }
+					{ @mysql_query("ROLLBACK"); BailErr(__('Failed moving page'),$q); }
 				list($newPos)=mysql_fetch_row($res);
 				$newPos++;
 				
 				// Move the node
 				$q="UPDATE ".PAGES." SET parent_idx=".$targetNode['idx'].", position=".$newPos.", menu='".$targetNode['menu']."' WHERE idx=".$movingNode['idx'];
 				if(!($res=mysql_query($q)))
-					{ @mysql_query("ROLLBACK"); BailErr($lng_failedmoving,$q); }
+					{ @mysql_query("ROLLBACK"); BailErr(__('Failed moving page'),$q); }
 			
 				break;
 				
 			case 'bottom':
 				$q='SELECT MAX(position) FROM '.PAGES.' WHERE parent_idx=0 AND menu=\''.$movingNode['menu'].'\'';
 				if(!($res=mysql_query($q)))
-					{ @mysql_query("ROLLBACK"); BailErr($lng_failedmoving,$q); }
+					{ @mysql_query("ROLLBACK"); BailErr(__('Failed moving page'),$q); }
 				list($newPos)=mysql_fetch_row($res);
 				$newPos++;
 				
 				// Move the node
 				$q="UPDATE ".PAGES." SET parent_idx=0, position=".$newPos." WHERE idx=".$movingNode['idx'];
 				if(!($res=mysql_query($q)))
-					{ @mysql_query("ROLLBACK"); BailErr($lng_failedmoving,$q); }
+					{ @mysql_query("ROLLBACK"); BailErr(__('Failed moving page'),$q); }
 				
 				break;
 				
@@ -482,7 +487,7 @@ switch($_GET['a']) {
 
 	// Update page
 	case 'rp':
-		if(UserRole() < Role::ProMod) Bail($lng_missing_rights);
+		if(UserRole() < Role::ProMod) Bail(__('No permission to access this page, sorry.'));
 		
 		$id=intval($_POST['page_id']);
 		
@@ -500,7 +505,7 @@ switch($_GET['a']) {
 			
 		$q = "UPDATE ".PAGES." SET name='".mysql_real_escape_string($_POST['name'])."', info='".mysql_real_escape_string($_POST['info'])."',file='".mysql_real_escape_string($_POST['filename'])."', visibility='".$vis."', subpoint='".$subm."' WHERE idx='$id'";
 		mysql_query($q) or
-			BailErr($lng_failedrenaming,$q);
+			BailErr(__('Failed renaming page'),$q);
 			
 		//$res=mysql_query("SELECT name FROM ".PAGES." WHERE idx='$id'");
 		//list($name)=mysql_fetch_array($res);
@@ -512,13 +517,13 @@ switch($_GET['a']) {
 	
 	// Remove Page
 	case 'dp':
-		if(UserRole() < Role::ProMod) Bail($lng_missing_rights);
+		if(UserRole() < Role::ProMod) Bail(__('No permission to access this page, sorry.'));
 		
 		$id=intval($_POST['page_id']);
 		
 		$q = "DELETE FROM ".PAGES." WHERE idx=$id";
 		mysql_query($q) or
-			BailErr($lng_faileddeleting,$q);
+			BailErr(__('Failed deleting page'),$q);
 			
 		DeleteChildPages($id);
 		
@@ -527,32 +532,32 @@ switch($_GET['a']) {
 	
 	// Add file
 	case 'af':
-		if(UserRole() < Role::ProMod) Bail($lng_missing_rights);
+		if(UserRole() < Role::ProMod) Bail(__('No permission to access this page, sorry.'));
 		
 		echo "<html><body><span id='result' style='display:none;'>";
 		
 		switch($_FILES['fiupl']['error']) {
 			case 0: break;
 			case 1: 
-			case 2: echo("500\n$lng_err_file_tobig"); break;
-			case 7: echo("500\n$lng_err_file_cantwrite"); break;
-			default: echo("500\n".sprintf($lng_err_file_fail,$_FILES['fiupl']['error'])); break;
+			case 2: echo("500\n" . __('Can\'t upload File. Size exceeds server limits!')); break;
+			case 7: echo("500\n" . __('Cannot write file to temporary files folder. No free space left?')); break;
+			default: echo("500\n" . sprintf(__('A unexpected error occurend while uploading. Error number %s'), $_FILES['fiupl']['error'])); break;
 			break;
 		}
 		
-		if($_FILES['fiupl']['error']==0) {
-			if(!InvalidFormat($_FILES['fiupl']['name'])) {
+		if ($_FILES['fiupl']['error']==0) {
+			if (!InvalidFormat($_FILES['fiupl']['name'])) {
 				$path = SimplifyPath('files/'.$_POST['path']);	
-				if(!preg_match("#^files.*#",$path)) Bail($lng_hack,true);
+				if (!preg_match("#^files.*#",$path)) Bail(__('path var is tampererd, this looks like a hack attempt. Stopping.'),true);
 				
-				if(move_uploaded_file($_FILES['fiupl']['tmp_name'],$path.'/'.$_FILES['fiupl']['name'])) {
+				if (move_uploaded_file($_FILES['fiupl']['tmp_name'],$path.'/'.$_FILES['fiupl']['name'])) {
 					chmod ($path.'/'.$_FILES['fiupl']['name'],0664);
-					echo "200\n".$path.'/'.$_FILES['fiupl']['name']."</span><span>$lng_upload";
-				} else echo ("500\n".$lng_err_file_cantwrite2); 
-				
-				
+					echo "200\n" . $path . '/' . $_FILES['fiupl']['name'] . "</span><span>" . __('Upload successful!');
+				} else {
+					echo ("500\n". __('Cannot write file to folder %s. Forgot to set writting permissions?')); 
+				}
 			} else {
-				echo "300\n$lng_format";
+				echo "300\n" . __('Format not allowed! Any kind of php,html,js files are refused. Sorry');
 			}
 		}
 		echo "</span></body></html>";
@@ -560,13 +565,13 @@ switch($_GET['a']) {
 	
 	// Create folder
 	case 'cfol':
-		if(UserRole() < Role::ProMod) Bail($lng_missing_rights);
+		if(UserRole() < Role::ProMod) Bail(__('No permission to access this page, sorry.'));
 		
 		$folder = $_POST['nfolder'];
 		if(!strlen($folder) || preg_match("/[^A-Za-z0-9_\-]/",$folder)) $folder = 'New folder';
 		
 		$path = SimplifyPath('files/'.$_POST['path']);	
-		if(!preg_match("#^files.*#",$path)) Bail($lng_hack,true);
+		if(!preg_match("#^files.*#",$path)) Bail(__('path var is tampererd, this looks like a hack attempt. Stopping.'),true);
 		
 		if(!file_exists($path.'/'.$folder))
 			mkdir($path.'/'.$folder);
@@ -574,7 +579,8 @@ switch($_GET['a']) {
 		if(isset($_GET['fgx'])) $fgx = $_GET['fgx'];
 		else $fgx = '';			
 			
-		echo "<div id=\"editpage\">[<a href=\"javascript:AddFile('$fgx')\">$lng_addfile</a> | <a href=\"javascript:AddFolder('$fgx')\">$lng_addfolder</a>]</div>";
+		echo "<div id=\"editpage\">[<a href=\"javascript:AddFile('$fgx')\">" . __('add file') . "</a> |";
+		echo "<a href=\"javascript:AddFolder('$fgx')\">" . __('add folder') . "</a>]</div>";
 		if($_GET['r']==0)
 			echo Gallery('',DTYPE_ADMIN,$cfg['galAdminRows'],$cfg['galAdminCols']);
 		if($_GET['r']==1)
@@ -583,19 +589,19 @@ switch($_GET['a']) {
 		
 	// Rename folder/file
 	case 'renf':
-		if(UserRole() < Role::ProMod) Bail($lng_missing_rights);
+		if(UserRole() < Role::ProMod) Bail(__('No permission to access this page, sorry.'));
 		
 		$path = SimplifyPath($_POST['path']);
-		if(!preg_match("#^files.*#",$path)) Bail($lng_hack,true);
+		if(!preg_match("#^files.*#",$path)) Bail(__('path var is tampererd, this looks like a hack attempt. Stopping.'),true);
 		
-		if(preg_match("/[^A-Za-z0-9_\-\.]/",$_POST['renfile'])) Bail($lng_contain);
+		if(preg_match("/[^A-Za-z0-9_\-\.]/",$_POST['renfile'])) Bail(__('File/Folder Names may only contain letters, numbers, dot (.) dash (-) and underscore (_)'));
 		
 		$newf = dirname($_POST['path']).'/'.$_POST['renfile'];
 		
-		if(!file_exists($_POST['path'])) Bail($lng_notexist);
+		if(!file_exists($_POST['path'])) Bail(__('The file you want to rename does not exist (anymore)'));
 		
 		if(InvalidFormat($newf))
-			exit("300\n$lng_format");
+			exit("300\n" . __('Format not allowed! Any kind of php,html,js files are refused. Sorry'));
 		
 		rename($_POST['path'],$newf);
 		
@@ -606,7 +612,8 @@ switch($_GET['a']) {
 		if(isset($_GET['fgx'])) $fgx = $_GET['fgx'];
 		else $fgx = '';
 
-		echo "<div id=\"editpage\">[<a href=\"javascript:AddFile('$fgx')\">$lng_addfile</a> | <a href=\"javascript:AddFolder('$fgx')\">$lng_addfolder</a>]</div>";
+		echo "<div id=\"editpage\">[<a href=\"javascript:AddFile('$fgx')\">" . __('add file') . "</a> |";
+		echo "<a href=\"javascript:AddFolder('$fgx')\">" . __('add folder') . "</a>]</div>";
 		
 		if($_GET['r']==0)
 			echo Gallery('',DTYPE_ADMIN,$cfg['galAdminRows'],$cfg['galAdminCols']);
@@ -618,10 +625,10 @@ switch($_GET['a']) {
 	
 	// Delete folder
 	case 'delf':
-		if(UserRole() < Role::ProMod) Bail($lng_missing_rights);
+		if(UserRole() < Role::ProMod) Bail(__('No permission to access this page, sorry.'));
 		
 		$file = SimplifyPath($_POST['file']);	
-		if(!preg_match("#^files.*#",$file)) Bail($lng_hack,true);
+		if(!preg_match("#^files.*#",$file)) Bail(__('path var is tampererd, this looks like a hack attempt. Stopping.'),true);
 		
 		if(!is_dir($file))
 			unlink($file);
@@ -631,7 +638,9 @@ switch($_GET['a']) {
 		else $fgx = '';
 
 
-		echo "<div id=\"editpage\">[<a href=\"javascript:AddFile('$fgx')\">$lng_addfile</a> | <a href=\"javascript:AddFolder('$fgx')\">$lng_addfolder</a>]</div>";
+		echo "<div id=\"editpage\">[<a href=\"javascript:AddFile('$fgx')\">" . __('add file') . "</a> |";
+		echo "<a href=\"javascript:AddFolder('$fgx')\">" . __('add folder') . "</a>]</div>";
+
 		if($_GET['r']==0)
 			echo Gallery('',DTYPE_ADMIN,$cfg['galAdminRows'],$cfg['galAdminCols']);
 		if($_GET['r']==1)
@@ -653,15 +662,13 @@ function PrintLinks() {
 	
 	ob_start();
 
-	echo '<div class="treeDiv"><b>'.$GLOBALS['lng_mainmenu'].'</b><br>';
+	echo '<div class="treeDiv"><b>' . __('Main menu') . '</b><br>';
 	PrintLinksRec(0, MENU_MAIN,true);
 	echo '</div>';
 
-	//Legend();
-
 	if($cfg['minorMenu']) {
-		echo '<div class="treeDiv"><b>'.$GLOBALS['lng_minormenu'].'</b><br>';
-		PrintLinksRec(0,MENU_MINOR,true);
+		echo '<div class="treeDiv"><b>' . __('Secondary menu') . '</b><br>';
+		PrintLinksRec(0, MENU_MINOR, true);
 		echo '</div>';
 	}
 
@@ -675,18 +682,18 @@ function PrintLinksRec($parent, $menu, $first=0) {
 	
 	$q = "SELECT * FROM ".PAGES." WHERE parent_idx=$parent AND menu='".$menu."' ORDER BY position";
 	$res=mysql_query($q) or
-		BailSQLn($GLOBALS['lng_failedmain'],$q);
+		BailSQLn(__('Could\'nt read pages for menu'),$q);
 	
 	$id='1';
 	if($first) $id='0';
 
-	if(!mysql_affected_rows() && !$first) return;
+	if (!mysql_affected_rows() && !$first) return;
 
-	if($first) {
+	if ($first) {
 		echo '<div class="innertreeDiv">';
-		echo "<img alt=\"\" title=\"".$GLOBALS['lng_addpage']."\" class=\"adp\" src=\"".$defIcons['add']."\"> <a href=\"javascript:adminMenu.addPage(0,'$menu',$id)\">".$GLOBALS['lng_createnew']."</a>"; 
+		echo "<img alt=\"\" title=\"" . __('New page') ."\" class=\"adp\" src=\"".$defIcons['add']."\"> <a href=\"javascript:adminMenu.addPage(0,'$menu',$id)\">" . __('New page') ."</a>"; 
 	
-		if($menu==MENU_MAIN)
+		if($menu == MENU_MAIN)
 			echo '<ul id="tree_major" class="menuTree">';
 		else echo '<ul id="tree_minor" class="menuTree">';
 	} else echo '<ul>';
@@ -713,7 +720,7 @@ function PrintLinksRec($parent, $menu, $first=0) {
 		else echo '<img src="styles/default/img/cleardot.gif" class="listImg"><span class="listEl">';
 		echo "<a id=\"adm".$row['idx']."\" href=\"javascript:adminMenu.renamePage(".$row['idx'].",'".addslashes(htmlentities($row['name'],ENT_COMPAT,'UTF-8'))."','".addslashes(htmlentities($row['info'],ENT_COMPAT,'UTF-8'))."',".$row['visibility'].",".$row['subpoint'].",'".$row['file']."')\">$name</a> ";
 		echo '</span>';
-		echo "<a href=\"javascript:adminMenu.delPage(".$row['idx'].")\"><img class=\"adp smallIcon smallimgBin\" alt=\"".$GLOBALS['lng_deletepage']."\" title=\"".$GLOBALS['lng_deletepage']."\" src=\"styles/default/img/cleardot.gif\"></a>\n";
+		echo "<a href=\"javascript:adminMenu.delPage(".$row['idx'].")\"><img class=\"adp smallIcon smallimgBin\" alt=\"". __('Delete Page') ."\" title=\"". __('Delete Page') ."\" src=\"styles/default/img/cleardot.gif\"></a>\n";
 		PrintLinksRec($row['idx'], $menu);
 		echo "</li>\n\n";
 		
@@ -725,32 +732,16 @@ function PrintLinksRec($parent, $menu, $first=0) {
 	return;
 }
 
-function Legend() {
-	global $defIcons, $cfg;
-?>
-		<div class="legend">
-		<b><?=$GLOBALS['lng_legend']?></b><br>
-		<div class="box">
-		<img src="styles/default/img/cleardot.gif" class="adp icon imbBin" align="left" alt="Add">&nbsp;<?=$GLOBALS['lng_addpage']?><br>
-		<? if(isset($cfg['menuPics'])) { ?>
-		<img src="<?=$defIcons['linkpic']?>" class="adp" align="left" alt="Set up images">&nbsp;<?=$GLOBALS['lng_picLink']?><br>
-		<? } ?>
-		<!--		<img src="styles/<?=STYLE?>/img/add_into.png" class="adp" align="left" alt="Add into">&nbsp;<?=$GLOBALS['lng_tree']?><br>-->
-		<img src="<?=$defIcons['del']?>" class="adp" align="left" alt="Delete">&nbsp;<?=$GLOBALS['lng_deletepage']?><br>
-		</div>
-		</div><?
-}
-
 function DeleteChildPages($id) {
 	$q = "SELECT idx FROM ".PAGES." WHERE parent_idx=$id";
 	$res=mysql_query($q) or
-		BailSQLn($GLOBALS['lng_failedpages'],$q);
+		BailSQLn(__('Failed getting child pages for deletion'), $q);
 	while(list($idx)=mysql_fetch_row($res))
 		DeleteChildPages($idx);
 		
 	$q="DELETE FROM ".PAGES." WHERE idx=$id";
 	mysql_query($q) or
-		BailSQLn($GLOBALS['lng_faileddeleting']." $id",$q);
+		BailSQLn(sprintf(__('Failed deleting page %s'), $id), $q);
 }
 
 function deltree($path) {

@@ -6,8 +6,8 @@ define('IS_AJAX', isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVE
 require "default.conf.php";
 require "conf.inc.php";
 require "inc/auth.php";
-
 require "inc/functions.php";
+$lang = Array();
 require "lang/$language.php";
 require "inc/html.php";
 
@@ -38,6 +38,21 @@ if($language=='auto') {
 		$language='eng';
 }
 
+function __($str) {
+	global $lang;
+	
+    if (isset($lang[$str])) {
+        return $lang[$str];
+		
+    } else {
+        return $str;
+    }
+}
+
+function i10n_smarty($source, $template) {
+     return preg_replace('!{__([^}]+)}!e', '__("$1")', $source);
+}
+
 /**** Table constants ****/
 
 if($language=='ger') {
@@ -53,9 +68,11 @@ if($language=='ger') {
 // Main HTML output handler
 $anego = new Anego(STYLE);
 $anego->assign('language',$language);
-if(strpos($_SERVER['HTTP_USER_AGENT'],'MSIE'))
+if(strpos($_SERVER['HTTP_USER_AGENT'],'MSIE')) {
 	$anego->assign('browser','ie');
-else $anego->assign('browser','non-ie');
+} else {
+	$anego->assign('browser','non-ie');
+}
 
 // Todo: Some of these icons are not needed anymore
 $defIcons = array(
@@ -96,15 +113,15 @@ define('MENU_MINOR','MINOR');
 
 
 /**** Init MySQL ****/
-if(!function_exists('mysql_connect')) Bail($lng_nomysql);
+if(!function_exists('mysql_connect')) Bail(__('No PHP MySQL Support on this Server. Please install it.'));
 
 /**** Init MySQL ****/
 $sql_link=@mysql_connect(HOST,SQLUSER,SQLPASS)
-	or BailErr($lng_dberror,mysql_error(),true);
+	or BailErr(__('Our Database is not reachable. Please try again later!'),mysql_error(),true);
 
 if(!@mysql_select_db(SQLDB)) {
 	$sql_link=0;
-	BailErr($lng_dberror,mysql_error(),true);
+	BailErr(__('Our Database is not reachable. Please try again later!'),mysql_error(),true);
 }
 
 /**** More setup code for the design ****/
@@ -113,7 +130,7 @@ $s=array();
 // Todo: Reduce to the needed settings (dont retrieve all)
 $q="SELECT * FROM ".SETTINGS;
 $res = mysql_query($q) or
-	BailSQLn($lng_genericerror,$q); 
+	BailSQLn(__('A database query failed.'),$q); 
 while($row = mysql_fetch_array($res))
 	$settings[$row['name']] = $row['value'];
 
@@ -130,14 +147,21 @@ if(!isset($settings['menu_scroll'])) $settings['menu_scroll']='0';
 
 $anego->AddJsPreload("\tanego.homepage=".HomePage().';');
 $anego->AddJsPreload("\tanego.menu_scroll=".$settings['menu_scroll'].";");
-if(isset($settings['keywords']) && strlen($settings['keywords'])) $anego->AddHeadHeader("\t".'<meta name="keywords" content="'.htmlentities(utf8_decode($settings['keywords'])).'">');
-if(isset($settings['description']) && strlen($settings['description'])) $anego->AddHeadHeader("\t".'<meta name="description" content="'.htmlentities(utf8_decode(str_replace("\n",' ',$settings['description']))).'">');
-if(isset($settings['pagetitle']) && strlen($settings['pagetitle'])) $lng_pagetitle = str_replace(array('<','>'),array('&lt;','&gt;'),$settings['pagetitle']);
-else $lng_pagetitle='Anego';
 
-$anego->assign('lng_pagetitle',$lng_pagetitle);
+if (isset($settings['keywords']) && strlen($settings['keywords'])) {
+	$anego->AddHeadHeader("\t".'<meta name="keywords" content="'.htmlentities(utf8_decode($settings['keywords'])).'">');
+}
+if (isset($settings['description']) && strlen($settings['description'])) {
+	$anego->AddHeadHeader("\t".'<meta name="description" content="'.htmlentities(utf8_decode(str_replace("\n",' ',$settings['description']))).'">');
+}
+if (isset($settings['pagetitle']) && strlen($settings['pagetitle'])) {
+	$anego->assign('pagetitle', str_replace(array('<','>'),array('&lt;','&gt;'), $settings['pagetitle']));
+} else {
+	$anego->assign('pagetitle', str_replace(array('<','>'),array('&lt;','&gt;'), __('Anego CMS')));
+}
+
 $anego->assign('loginok',LOGINOK);
-$anego->assign('editablePage',LOGINOK && basename($_SERVER['SCRIPT_NAME'])=='index.php');
+$anego->assign('editablePage',LOGINOK && basename($_SERVER['SCRIPT_NAME']) == 'index.php');
 
 /**** Error handling ****/
 
@@ -174,9 +198,9 @@ function BailErr($msg,$log="",$log_once=0) {
 
 // Only writes extensive error messages to log file
 function logError($msg, $query = '') {
-	global $lng_exiterror;
-	
-	$mymsg = str_replace('<br>',"\n",sprintf($lng_exiterror,$msg));
+	$mymsg = str_replace('<br>',"\n", 
+		sprintf(__('<br>There was an error, I\'m sorry I couldnt execute your request. The respsonsible php script '.
+				   'told me: %s<br><br>A detailed error message has been logged.'),$msg));
 	
 	if(strlen($query))
 		$log=mysql_error()."\nQuery: '$query'";
@@ -202,10 +226,11 @@ function logError($msg, $query = '') {
 // 0 ... no effect
 // id ... check if error has been logged within last hour. if yes, dont log
 function ExitError($msg,$ToLog="", $severity=0, $log_once=0, $no_header=0) {
-	global $_GET, $_POST, $anego, $lng_exiterror;
+	global $_GET, $_POST, $anego;
 	
 	if($severity>0)
-		$mymsg = '<br>'.sprintf($lng_exiterror,$msg);
+		$mymsg = '<br>'.sprintf(__('<br>There was an error, I\'m sorry I couldnt execute your request. '.
+								   'The respsonsible php script told me: %s<br><br>A detailed error message has been logged.'), $msg);
 	else 
 		$mymsg = "<br>$msg";
 	
@@ -270,21 +295,19 @@ function CurrentPage() {
 
 /* Returns and defines constant HOMEPAGE, which is the first page to be shown when a visitor comes to the site */
 function HomePage() {
-	global $lng_failedsettings;
-	
 	if(defined('HOMEPAGE'))
 		return HOMEPAGE;
 		
 	$q = "SELECT value FROM ".SETTINGS." WHERE name='firstpage'";
 	$res = mysql_query($q) or
-		BailSQLn($lng_failedsettings,$q);
+		BailSQLn(__('Failed getting settings data'),$q);
 	list($p) = mysql_fetch_array($res);
 
 	/* No home page set up => lets just take the first page we can find */
 	if(mysql_affected_rows()==0) {
 		$q = "SELECT idx FROM ".PAGES." LIMIT 1";
 		$res = mysql_query($q) or
-			BailSQLn($lng_failedsettings,$q);
+			BailSQLn(__('Failed getting settings data'),$q);
 		list($p) = mysql_fetch_array($res);
 		// Not even a page available? Damn.
 		if(mysql_affected_rows()==0) $p=-1;
@@ -297,30 +320,32 @@ function HomePage() {
 
 /* Admin links */
 function AdminBar($p) {
-	global $lng_settings,$lng_adminpages,$lng_adminfiles, $lng_editpage;
 	global $cfg,$anego;
 	
 	$userRole = UserRole();
 	if(LOGINOK && $userRole>=Role::ProMod) {
 		if($p!=-1)
-			$anego->AddLink("<a href=\"javascript:Core.editPage()\" id=\"pageEditLink\">$lng_editpage</a>");
+			$anego->AddLink("<a href=\"javascript:Core.editPage()\" id=\"pageEditLink\">" . __('Edit page') . "</a>");
 			
 		if($cfg['pageLoad'] == 'ajax') {
-			$anego->AddLink("<a href=\"admin?a=pgad\" onclick=\"$(this).attr('href','#adm/pgad'); Core.loadPage('adm/pgad');\">$lng_adminpages</a>");
-			$anego->AddLink("<a href=\"admin?a=filad\" onclick=\"$(this).attr('href','#adm/filad'); Core.loadPage('adm/filad');\">$lng_adminfiles</a>");
-			if($userRole>=Role::Admin) $anego->AddLink("<a href=\"admin?a=setg\" onclick=\"$(this).attr('href','#adm/setg'); Core.loadPage('adm/setg');\">$lng_settings</a>");
+			$anego->AddLink("<a href=\"admin?a=pgad\" onclick=\"$(this).attr('href','#adm/pgad'); Core.loadPage('adm/pgad');\">" . __('Edit Menu') . "</a>");
+			$anego->AddLink("<a href=\"admin?a=filad\" onclick=\"$(this).attr('href','#adm/filad'); Core.loadPage('adm/filad');\">" . __('Manage files') . "</a>");
+			
+			if($userRole>=Role::Admin) 
+				$anego->AddLink("<a href=\"admin?a=setg\" onclick=\"$(this).attr('href','#adm/setg'); Core.loadPage('adm/setg');\">" . __('Settings') . "</a>");
 		} else {
-			$anego->AddLink("<a href=\"admin?a=pgad\">$lng_adminpages</a>");
-			$anego->AddLink("<a href=\"admin?a=filad\">$lng_adminfiles</a>");
-			if($userRole>=Role::Admin) $anego->AddLink("<a href=\"admin?a=setg\">$lng_settings</a>");
+			$anego->AddLink("<a href=\"admin?a=pgad\">" . __('Edit Menu') . "</a>");
+			$anego->AddLink("<a href=\"admin?a=filad\">" . __('Manage files') . "</a>");
+			
+			if($userRole>=Role::Admin) 
+				$anego->AddLink("<a href=\"admin?a=setg\">" . __('Settings') . "</a>");
 		}
 	}
 }
 
 /* Print the page */
 function PrintPage($p) {
-	global $lng_content, $lng_editpage, $anego, $cfg;
-	global $lng_permission, $lng_pagetitle,$lng_nofirstpage;
+	global $anego, $cfg;
 	
 	$anego->curPg = $p;
 	$anego->AddJsPreload("\tanego.curPg='pg$p';");
@@ -328,7 +353,7 @@ function PrintPage($p) {
 	AdminBar($p);
 	
 	if($p==-1) {
-		$anego->AddContent("<i>$lng_nofirstpage</i>");
+		$anego->AddContent(__('<i>No start page set up yet. Please check your settings.</i>'));
 		$anego->display('index.tpl');
 		exit();
 	}
@@ -340,24 +365,26 @@ function PrintPage($p) {
 	$row = mysql_fetch_array($res);
 
 	if(!mysql_affected_rows()) {
-		$anego->AddContent($lng_permission);
+		$anego->AddContent(__('Page nonexistant or no permission to see it'));
 		$anego->display('index.tpl');
 		exit();
 	}
 	
-	$anego->assign('lng_pagetitle',$lng_pagetitle." - ".$row['name']);
-	$anego->assign('pagename',$row['name']);
+	$anego->assign('pagetitle', $row['name'] . " - " . $anego->get_template_vars('pagetitle'));
+	$anego->assign('pagename', $row['name']);
 	
 	$js = pageLoadJs($p);
-	if(count($js))
-		$anego->AddJsPreload("\tanego.pageJS=new Array('".implode("','",$js)."');");
+	if (count($js))
+		$anego->AddJsPreload("\tanego.pageJS=new Array('" . implode("','",$js) . "');");
 	
-	if(strlen($row['file'])) {
+	if (strlen($row['file'])) {
 		/***** Page is file: include file *****/
 		include($row['file']);
 	} else {
 		/***** Otherwise set up and display page *****/		
-		if(!strlen($row['content'])) $row['content']="<i id=\"hasnoContent\">$lng_content</i>";
+		if(!strlen($row['content'])) {
+			$row['content']="<i id=\"hasnoContent\">". __('This page has not been filled with content yet. Please use the \'Edit this page\' Link to enter your text') . "</i>";
+		}
 		if(!strlen($row['content_prepared']) && strlen($row['content']) && $p!=-1) {
 			include('inc/modules.php');	
 			$pmg = new PageManager();
