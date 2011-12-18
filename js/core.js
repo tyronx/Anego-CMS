@@ -1,7 +1,9 @@
+//setTimeout(function() { Core.editPage() }, 800);
+
 // Todo: Make this configurable
 var fancyBoxSettings = {
 	'cyclic'		: false,
-	'overlayShow'	: false,
+	'overlayShow'	: true,
 	'transitionIn'	: 'elastic',
 	'transitionOut'	: 'elastic'
 }
@@ -556,7 +558,8 @@ var BTN_NONE = 5;
 	top:			y coordinate of the window, if x&y not defined it will be centered and the position will be remembered in a cookie
 	width:			dialog width in pixel (default: autosize)
 	height:			dialog height in pixel (default: autosize)
-	buttons:		BTN_YESNO, BTN_OKCANCEL, BTN_SAVECANCEL, BTN_CLOSE or BTN_NONE (default: BTN_OKCANCEL)
+	buttons:		Number: BTN_YESNO, BTN_OKCANCEL, BTN_SAVECANCEL, BTN_CLOSE or BTN_NONE (default: BTN_OKCANCEL)
+					Object: Custom defined buttons with their callbacks
 	blocking:		false if you want the dialog to be non blocking (= user can still interact with the page) (default: true)
 	ok_callback:	function to be called when the user pressed Ok/Yes
 	close_callback:	function to be called when the user pressed Cancel,No or Close
@@ -564,34 +567,9 @@ var BTN_NONE = 5;
 */
 /* Todo: Refactor this into a jquery plugin. But more importanly, allow multiple dialogs! */
 function OpenDialog(settings) {
-	var w='',h='';
+	var w='', h='';
 	
-	/*** Button set up ***/
-	var btn1 = lng_ok, btn2 = lng_cancel;
-	
-	switch (settings.buttons) {
-		case BTN_YESNO: 
-			btn1=lng_yes;
-			btn2=lng_no;
-			break;
-		
-		case BTN_SAVECANCEL: 
-			btn1=lng_save;
-			break;
-
-		case BTN_CLOSE:
-			btn2=lng_close;
-			break;	
-	}
-	
-	var buttons = '';
-	if (settings.buttons != BTN_NONE) {
-		if (settings.buttons != BTN_CLOSE)	
-			buttons += '<input type="button" class="dlgOK" value="' + btn1 + '"> ';
-		buttons += '<input type="button" class="dlgCancel" value="' + btn2 + '">';
-	}
-	
-	/*** Other dialog behavior ***/
+	/*** Dialog behavior ***/
 	if (settings.collapse == undefined) settings.collapse = false;
 	
 	if (settings.width != undefined) 
@@ -617,15 +595,56 @@ function OpenDialog(settings) {
 				/* Content goes here */
 				'<div class="dlgBtnContainer adminstyles">' +
 					'<img src="styles/default/img/cleardot.gif" class="loadingIcon"> ' +
-					buttons +
+					//buttons +
 				'</div>' +
 			'</div>' +
 		'</div>';
 
 	var $dlgBox = $(str);
+
+	/*** Button set up ***/
+	var btn1 = lng_ok, btn2 = lng_cancel;
 	
+	switch (settings.buttons) {
+		case BTN_YESNO: 
+			btn1=lng_yes;
+			btn2=lng_no;
+			break;
+		
+		case BTN_SAVECANCEL: 
+			btn1=lng_save;
+			break;
+
+		case BTN_CLOSE:
+			btn2=lng_close;
+			break;	
+	}
+	
+	var $buttons = $('<span></span>');
+	
+	if (typeof settings.buttons == "object") {
+		$.each(settings.buttons, function(name, callback) {
+			var $btn = $('<input type="button" class="dlgButton" value="' + name + '"> ');
+			// Weird encapsulation thingy to have the correct 'this' in the callback
+			if(callback) {
+				$dlgBox['button_cb'+name] = callback; 
+				$btn.click({ name: name }, function(e) { $dlgBox['button_cb' + e.data.name]() });
+			} 
+			i++;
+			$buttons.append($btn);
+		});
+	} else {
+		if (settings.buttons != BTN_NONE) {
+			if (settings.buttons != BTN_CLOSE)	
+				$buttons.append('<input type="button" class="dlgOK" value="' + btn1 + '"> ');
+			$buttons.append('<input type="button" class="dlgCancel" value="' + btn2 + '">');
+		}
+	}
+
 	$('.dlgContent', $dlgBox).prepend(settings.content);
+	$('.dlgBtnContainer', $dlgBox).append($buttons);
 	$("#inactive").append($dlgBox);
+	
 	
 	/* settings.blocking defines wether the user is still 
 	 * allowed to interact with the site or not (blocking or non blocking dialog) 
