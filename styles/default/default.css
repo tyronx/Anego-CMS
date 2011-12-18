@@ -23,6 +23,10 @@ body {
 	padding:0px;
 }
 
+.grabCursor {
+	cursor:url(img/grab.cur),move;
+}
+
 .smallIcon {
 	padding:0px;
 	cursor:pointer;
@@ -144,7 +148,7 @@ img.adp {
 .menuTree li { 
 	padding:0px;
 	list-style-type:none;
-	cursor:url(img/grab.cur),pointer;
+	cursor:url(img/grab.cur),move;
 	line-height:100%;
 }
 
@@ -436,6 +440,66 @@ div.dlgBox hr.dlgSep {
 	margin-bottom:10px;
 }
 
+/* E.g. used in edit image in gallery module */
+.tabBox {
+	float: left;
+	margin-right: 0px;
+	margin-left: 10px;
+	background-color: #D2DCFA;
+	padding: 2px;
+	padding-left: 5px;
+	padding-right: 5px;
+	margin-top: 2px;
+	padding-top: 3px;
+	border: 1px solid #07273D;
+	border-bottom: 0;
+	border-radius: 8px;
+	-moz-border-radius: 8px;
+	border-bottom-left-radius: 0;
+	border-bottom-right-radius: 0;
+	-moz-border-bottom-left-radius: 0;
+	-moz-border-bottom-right-radius: 0;
+}
+
+.editArea .toolbar {
+	float: right;
+	padding-bottom: 2px;
+}
+
+.toolbar .button {
+	float: left;
+	border: 1px outset gray;
+	border-radius: 4px;
+	margin-right: 5px;
+	height: 20px;
+	width: 20px;
+	background-color: #E3E3E3;
+}
+
+.toolbar .button:hover {
+	border-color: silver;
+	background-color: #F0F0F0;
+}
+
+.toolbar .button:active, .toolbar .button.active {
+	border-style: inset;
+	border-color: #BABABA;
+	background-color: #D0D0D0;
+}
+
+.toolbar .button:active img.toolbarIcon, .toolbar .button.active img.toolbarIcon {
+	padding-left: 3px;
+}
+
+.toolbar .button img.toolbarIcon {
+	padding-top: 2px;
+	padding-left: 2px;
+}
+
+.tabBox.active {
+	background-color:#EDF1FD;
+}
+
 .adminstyles input, .adminstyles textarea, .adminstyles select {
 	border:1px solid gray;
 	border-radius:4px;
@@ -576,6 +640,28 @@ div.galleryEditor {
 	width:100% !important;
 }
 
+.editArea {
+	padding: 8px;
+}
+
+.editArea .imageContainer {
+	position: relative;
+	overflow: hidden;
+	border: 1px solid black;
+}
+
+.editArea .originalImg {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	width: auto;
+	height: auto;
+	padding: 0;
+}
+
+.editArea img.original {
+	padding: 0;
+}
 
 /********* Lightbox *********/
 

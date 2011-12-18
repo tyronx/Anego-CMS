@@ -150,7 +150,7 @@ CREATE TABLE IF NOT EXISTS `anego_pages_forms` (
 -- Table structure for table `anego_pages_gallery`
 --
 
-CREATE TABLE IF NOT EXISTS `test_pages_gallery` (
+CREATE TABLE IF NOT EXISTS `anego_pages_gallery` (
   `idx` int(11) NOT NULL AUTO_INCREMENT,
   `value` longtext NOT NULL,
   `style` varchar(255) NOT NULL,

@@ -19,7 +19,7 @@ $jsFiles = array(
 'adeng' => array('lang/admin_eng.js'),
 /* Admin settings */
 'as' => array('js/admSettings.js',),
-'jui' => array('lib/jquery-ui-1.8.11.custom.min.js'),
+'jui' => array('lib/jquery-ui-1.8.16.custom.min.js'),
 /* Admin menu */
 'am' => array('js/jquery.sortableTree.js','js/admMenu.js'),
 /* Admin files */
@@ -50,9 +50,9 @@ foreach($k as $group) {
 		$minifyJS->addFile($jsFiles[$group]);
 }
 
+
 echo $minifyJS->combine();
 */
-
 
 /* Output compression mostly taken from tinymce compressor */
 
@@ -67,7 +67,7 @@ if (isset($_SERVER['---------------']))
 
 $supportsGzip = !empty($encoding) && !$zlibOn && function_exists('gzencode');
 
-/* Only update if one of the js files is updated */
+// Only update if one of the js files is updated
 $allFiles='';
 $newestFileDate=0;
 foreach($k as $group)

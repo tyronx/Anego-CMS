@@ -35,13 +35,13 @@
 		
 		function sortableTreeInstance(tree, options) {
 			var draggedElement;
-			var listElements=new Array();
-			var overElement=null;
+			var listElements = new Array();
+			var overElement = null;
 			var dropAt = null;
 			var draggedAwayListNode = null;
-			var mouseDownOn=null;
+			var mouseDownOn = null;
 			var dragger;
-			var dragging=false;
+			var dragging = false;
 			var draggerIcon = $('<img src="styles/default/img/cleardot.gif" alt="" class="iconDrop"> ');
 			
 			if(!options) options = {};
