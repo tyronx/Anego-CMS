@@ -227,9 +227,9 @@ div#padder {
 				if($path == $url['path']) {
 					echo $good;
 				} else { 
-					echo $bad;
-					$sql_link=0;
-					$err='<div style="padding-left:20px;">Please add the following line to conf.inc.php:<div class="box">$cfg[\'domain\'].=\''.$path.'\';</div>';
+					echo $warn;
+					//$sql_link=0;
+					$err='<div style="padding-left:20px;">Your Path settings might be incorrect. Try adding the following line to conf.inc.php:<div class="box">$cfg[\'domain\'].=\''.$path.'\';</div>';
 				}
 				echo 'Anego path'.$err;
 								
