@@ -17,8 +17,10 @@ switch($ac) {
 	// Rebuild page contents
 	case 'rp':
 		$page = intval($_GET['page']);
-		if(LOGINOK)
+		if (LOGINOK) {
+			if (! $page) exit("500\nMissing page");
 			$pmg->generatePage($page);
+		}
 		
 		exit("200\nok");
 		break;

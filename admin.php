@@ -13,6 +13,7 @@ if(!LOGINOK && (!isset($_GET['a']) || $_GET['a']!='li')) {
 	if(isset($_GET['noheader']) && $_GET['noheader']) $lib='Core.loadJavascript(\'ld.lo\');';
 	else $lib='';
 	
+	$lng_adminWelcome = __('Anego CMS Administration Area');
 	$lng_name = __('Name');
 	$lng_pass = __('Password');
 	$lng_sign = __('Stay signed in');
@@ -22,7 +23,7 @@ if(!LOGINOK && (!isset($_GET['a']) || $_GET['a']!='li')) {
 	
 	
 	$logon = <<<EOT
-		<div align="center"><div class="loginTitle">__('Anego CMS Administration Area')</div>
+		<div align="center"><div class="loginTitle">$lng_adminWelcome</div>
 		<div class="loginBox">
 		<form id="loginForm" action="#" method="post" accept-charset="UTF-8" onsubmit="return false">
 			$lng_name<br>

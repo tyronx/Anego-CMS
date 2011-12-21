@@ -90,7 +90,7 @@ function prettyName($name, $path = '') {
 	return $name;
 }
 
-function CopyResized($file, $width = 0, $height = 0, $proportional = true, $output = 'file', $ext='_thumb', $newfile='') {
+function CopyResized($file, $width = 0, $height = 0, $proportional = true, $output = 'file', $ext='_thumb', $newfile='', $crop=null) {
 	$use_linux_commands = false;
 	
 	if ( $height <= 0 && $width <= 0 ) {
@@ -117,9 +117,8 @@ function CopyResized($file, $width = 0, $height = 0, $proportional = true, $outp
  
 	  $final_width = round ($width_old * $factor);
 	  $final_height = round ($height_old * $factor);
- 
-	}
-	else {
+	  
+	} else {
 	  $final_width = ( $width <= 0 ) ? $width_old : $width;
 	  $final_height = ( $height <= 0 ) ? $height_old : $height;
 	}
@@ -138,7 +137,11 @@ function CopyResized($file, $width = 0, $height = 0, $proportional = true, $outp
 		return false;
 	}
 
-	$image_resized = imagecreatetruecolor( $final_width, $final_height );
+	if($crop) {
+		$image_resized = imagecreatetruecolor( $crop['w'], $crop['h'] );
+	} else {
+		$image_resized = imagecreatetruecolor( $final_width, $final_height );
+	}
  
 	if ( ($info[2] == IMAGETYPE_GIF) || ($info[2] == IMAGETYPE_PNG) ) {
 	  $trnprt_indx = imagecolortransparent($image);
@@ -178,7 +181,15 @@ function CopyResized($file, $width = 0, $height = 0, $proportional = true, $outp
 	}
  
 	//imagecopyresampled($image_resized, $image, 0, 0, 0, 0, $final_width, $final_height, $width_old, $height_old);
-	fastimagecopyresampled($image_resized, $image, 0, 0, 0, 0, $final_width, $final_height, $width_old, $height_old);
+	//bool imagecopyresampled(resource $dst_image, resource $src_image, int $dst_x, int $dst_y, int $src_x, int $src_y, int $dst_w, int $dst_h, int $src_w, int $src_h )
+	if($crop) {
+		$propX = $width_old / $final_width;
+		$propY = $height_old / $final_height;
+	
+		fastimagecopyresampled($image_resized, $image, 0, 0, $crop['x'] * $propX, $crop['y'] * $propY, $crop['w'], $crop['h'], $crop['w'] * $propX, $crop['h'] * $propY);
+	} else {
+		fastimagecopyresampled($image_resized, $image, 0, 0, 0, 0, $final_width, $final_height, $width_old, $height_old);
+	}
  
 	switch ( strtolower($output) ) {
 		case 'browser':

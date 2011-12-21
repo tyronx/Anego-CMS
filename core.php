@@ -182,7 +182,7 @@ function BailSQLn($msg,$q,$log_once=0) {
 // Bail after unsuccessfull SQL Query with header
 function BailSQL($msg,$q,$log_once=0) {
 	if(IS_AJAX) {
-		logError($msg,$query);
+		logError($msg,$q);
 		exit("500\n$msg");
 	}
 	ExitError($msg,mysql_error()."\r\nQuery: '$q'",2,$log_once);
