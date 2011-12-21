@@ -534,6 +534,10 @@ div.dlgBox hr.dlgSep {
 	border-color:#AAA;
 }
 
+.smallTextInput {
+	width: 30px;
+}
+
 /**** Menu editing ****/
 
 .renamePageDlgContent div.toPage {
@@ -642,6 +646,7 @@ div.galleryEditor {
 
 .editArea {
 	padding: 8px;
+	padding-top: 0;
 }
 
 .editArea .imageContainer {
@@ -989,3 +994,10 @@ div.galleryEditor {
 .fancybox-ie #fancybox-bg-sw { filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='styles/default/fancybox/fancy_shadow_sw.png', sizingMethod='scale'); }
 .fancybox-ie #fancybox-bg-w { filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='styles/default/fancybox/fancy_shadow_w.png', sizingMethod='scale'); }
 .fancybox-ie #fancybox-bg-nw { filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='styles/default/fancybox/fancy_shadow_nw.png', sizingMethod='scale'); }
+
+/* jPaginate */
+.pagination {list-style:none; margin:0px; padding:0px;}  
+.pagination li{float:left; margin:3px;}  
+.pagination li a{   display:block; padding:3px 5px; color:#fff; background-color:#44b0dd; text-decoration:none;}  
+.pagination li a.active {border:1px solid #000; color:#000; background-color:#fff;}  
+.pagination li a.inactive {background-color:#eee; color:#777; border:1px solid #ccc;}  

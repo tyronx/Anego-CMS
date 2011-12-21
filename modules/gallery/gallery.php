@@ -27,6 +27,7 @@ class gallery extends ContentElement {
 	
 	function databaseTable() { return $GLOBALS['cfg']['tablePrefix'].'pages_gallery'; }
 	function picTable() { return $GLOBALS['cfg']['tablePrefix'].'pages_gallerypicture'; }
+	function imageSizesTable() { return $GLOBALS['cfg']['tablePrefix'].'image_sizes'; }
 	
 	function __construct($pageId, $elementId = 0) {
 		$this->path = FILESROOT.'gallery/' . $elementId . '/';
@@ -66,29 +67,74 @@ EOF;
 		$longdesc = mysql_real_escape_string(@$_POST['longdescription']);
 		$shortdesc = mysql_real_escape_string(@$_POST['shortdescription']);
 		$picid = intval(@$_POST['picid']);
-	
-		$q = 'UPDATE ' . $this->picTable() . ' SET longdescription=\'' . $longdesc . '\', shortdescription=\'' . $shortdesc . '\' WHERE idx=' . $picid;
-		mysql_query($q) or BailSQL('Couldn\'t update image info', $q);
 		
-		return "200\nok";
+		$q = 'SELECT filename FROM ' . $this->picTable() . ' WHERE idx=' . $picid;
+		$res = mysql_query($q) or BailSQL(__('Couldn\'t read image info'), $q);
+		
+		list($filename)= mysql_fetch_array($res);
+		
+		if (!$filename) exit("500\n" . __('Wrong picture id or broken picture row in db'));
+		
+		$pic = $_POST['resizeSettings'];
+	
+		$q = 'UPDATE ' . $this->picTable() . ' SET 
+			longdescription=\'' . $longdesc . '\', 
+			shortdescription=\'' . $shortdesc . '\',
+			prev_cropx=\'' . $pic['selection']['x'] . '\', 
+			prev_cropy=\'' . $pic['selection']['y'] . '\', 
+			prev_cropw=\'' . $pic['selection']['w'] . '\', 
+			prev_croph=\'' . $pic['selection']['h'] . '\', 
+			prev_w=\'' . $pic['size']['w'] . '\', 
+			prev_h=\'' . $pic['size']['h'] . '\'
+		WHERE idx=' . $picid;
+		
+		mysql_query($q) or BailSQL(__('Couldn\'t update image info'), $q);
+		
+		$pic = $_POST['resizeSettings'];
+		
+		if ($pic['changed']) {
+			if ($pic['selection']['w'] > 0) {
+				CopyResized($this->path . $filename, $pic['size']['w'], $pic['size']['h'], false, 'file', '_r', '', $pic['selection']);
+			} else {
+				CopyResized($this->path . $filename, $pic['size']['w'], $pic['size']['h'], true, 'file', '_r');
+			}
+		}
+		
+		$q = 'SELECT * FROM ' . $this->picTable() . ' WHERE idx=' . $picid;
+		$res = mysql_query($q) or BailSQL(__('Couldn\'t read image info'), $q);
+		
+		$row = mysql_fetch_array($res, MYSQL_ASSOC);
+
+		$row['filename_preview'] = preg_replace('/(\.\w+)$/i', "_r\\1", $row['filename']);
+		
+		return "200\n".json_encode($row);
 	}
 	
 	// Returns a JSON-Array of pictures
 	function loadPictures() {
 		$files = array(
 			'path' => $this->path,
+			'sizes' => array(),
 			'pictures' => array()
 		);
 		
+		$q = 'SELECT * FROM ' . $this->imageSizesTable();
+		$res = mysql_query($q) or BailSQL(__('Couldn\'t read image sizes info from db'), $q);
+		while($row = mysql_fetch_array($res, MYSQL_ASSOC)) {
+			$files['sizes'][] = $row;
+		}
+		
+		
+		$q = 'SELECT preview_default_size_id, original_default_size_id FROM ' . $this->databaseTable() . ' WHERE idx=' . $this->elementId;
+		$res = mysql_query($q) or BailSQL(__('Couldn\'t read gallery info from db'), $q);
+		$row = mysql_fetch_array($res, MYSQL_ASSOC);
+		
+		$files = array_merge($row, $files);
+		
 		$r = $this->pictures();
-		while($row = mysql_fetch_array($r)) {
-			$files['pictures'][] = array(
-				'idx' 				=> $row['idx'],
-				'original'			=> $row['filename'],
-				'preview'			=> preg_replace('/(\.\w+)$/i', "_r\\1", $row['filename']),
-				'shortdescription'	=> $row['shortdescription'],
-				'longdescription'	=> $row['longdescription']
-			);
+		while($row = mysql_fetch_array($r, MYSQL_ASSOC)) {
+			$row['filename_preview'] = preg_replace('/(\.\w+)$/i', "_r\\1", $row['filename']);
+			$files['pictures'][] = $row;
 		}
 		
 		return "200\n".json_encode($files);
@@ -96,7 +142,7 @@ EOF;
 	
 	function pictures() {
 		$q = 'SELECT * FROM ' . $this->picTable() . ' WHERE gallery_id=' . $this->elementId . ' ORDER BY position';
-		$res = mysql_query($q) or BailSQL('Couldn\'t read images from db', $q);
+		$res = mysql_query($q) or BailSQL(__('Couldn\'t read images from db'), $q);
 		return $res;
 	}
 	
