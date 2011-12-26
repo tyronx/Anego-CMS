@@ -22,7 +22,9 @@ class gallery extends ContentElement {
 	static $methodMap = Array(
 		'save'	=> 'savePicture',
 		'lp'	=> 'loadPictures',
-		'up'	=> 'uploadPicture'
+		'up'	=> 'uploadPicture',
+		'us'	=> 'updateSettings',
+		'dp'	=> 'deletePicture'
 	);
 	
 	function databaseTable() { return $GLOBALS['cfg']['tablePrefix'].'pages_gallery'; }
@@ -203,19 +205,19 @@ EOF;
 		if (validPictureFormat($_FILES['pic']['name'])) {
 			// Move original file to temp folder
 			if (! move_uploaded_file($_FILES['pic']['tmp_name'], $this->path . $newName)) {
-				$result['status'] = "503\n" . sprintf('Cannot write file to folder %s. Forgot to set writing permissions?', $this->path);
+				$result['status'] = "503\n" . sprintf(__('Cannot write file to folder %s. Forgot to set writing permissions?'), $this->path);
 				return json_encode($result);
 			}
 			
 			// Create original resized file
 			if (! $this->createResizedImage($result, $newName, 'original')) {
-				$result['status'] = "504\n" . sprintf('Cannot write file to folder %s. Forgot to set writing permissions?', $this->path);
+				$result['status'] = "504\n" . sprintf(__('Cannot write file to folder %s. Forgot to set writing permissions?'), $this->path);
 				return json_encode($result);
 			}
 			
 			// Create preview resized file
 			if (! $this->createResizedImage($result, $newName, 'preview')) {
-				$result['status'] = "505\n" . sprintf('Cannot write file to folder %s. Forgot to set writing permissions?', $this->path);
+				$result['status'] = "505\n" . sprintf(__('Cannot write file to folder %s. Forgot to set writing permissions?'), $this->path);
 				return json_encode($result);
 			}
 			
@@ -224,17 +226,17 @@ EOF;
 			$result['status'] = "200\nok";
 			
 			$q = 'SELECT max(position) FROM ' . $this->picTable() . ' WHERE gallery_id=' . $this->elementId;
-			$res = mysql_query($q) or BailSQL('Couldn\'t move images in db', $q);
+			$res = mysql_query($q) or BailSQL(__('Couldn\'t move images in db'), $q);
 			list($maxPos) = mysql_fetch_row($res);
 			
 			$q = 'INSERT INTO ' . $this->picTable() . ' (gallery_id, position, filename) VALUES ';
 			$q.= "('" . $this->elementId . "','" . ($maxPos + 1) . "', '" . $newName . "')";
-			$res = mysql_query($q) or BailSQL('Couldn\'t insert image into db', $q);
+			$res = mysql_query($q) or BailSQL(__('Couldn\'t insert image into db'), $q);
 			
 			$idx = mysql_insert_id();
 			
 			$q = 'SELECT * FROM ' . $this->picTable() . ' WHERE idx='.$idx;
-			$res = mysql_query($q) or BailSQL('Couldn\'t insert image into db', $q);
+			$res = mysql_query($q) or BailSQL(__('Couldn\'t insert image into db'), $q);
 			
 			$result['pic'] = mysql_fetch_array($res);
 		} else {
@@ -242,6 +244,35 @@ EOF;
 		}
 		
 		return json_encode($result);
+	}
+	
+	public function deletePicture() {
+		$picid = intval($_POST['picid']);
+		if (! $picid) return "500\nWrong pic id?";
+		
+		$q = 'SELECT filename FROM '. $this->picTable() . ' WHERE idx='.$picid;
+		$res = mysql_query($q) or BailSQL(__('Couldn\'t read image in db'), $q);
+		list($filename) = mysql_fetch_row($res);
+		
+		$q = 'DELETE FROM '. $this->picTable() . ' WHERE idx='.$picid;
+		$res = mysql_query($q) or BailSQL(__('Couldn\'t remove image from db'), $q);
+		
+		@unlink($this->path . $filename);
+		@unlink($this->path . preg_replace("/(\.\w+)$/i", "_r\\1", $filename));
+		
+		return "200\nok";
+	}
+	
+	public function updateSettings() {
+		$previewSize = intval($_POST['previewSize']);
+		$originalSize = intval($_POST['originalSize']);
+		
+		if($previewSize && $originalSize) {
+			$q = 'UPDATE ' . $this->databaseTable() . ' SET original_default_size_id=$previewSize, preview_default_size_id=$originalSize WHERE idx=' . $this->elementId;
+			$res = mysql_query($q) or BailSQL(__('Couldn\'t update gallery settings'), $q);
+		}
+	
+		return "200\nok";
 	}
 	
 	private function createResizedImage(&$result, $file, $type='preview') {
@@ -253,7 +284,7 @@ EOF;
 	
 		$q = 'SELECT sizes.width as width, sizes.height as height FROM ' . $this->imageSizesTable() . ' as sizes, ' . $this->databaseTable() . ' as gallery WHERE 
 			 sizes.idx=gallery.' . $type . '_default_size_id AND gallery.idx = '. $this->elementId;
-		$result['sql'] = $q;
+
 		$res = mysql_query($q) or BailSQL('Couldn\'t retrieve preview image sizes', $q);
 		
 		// Id unset or wrong => dont resize, unless its a preview image. in that case just assume 160x120 as standard

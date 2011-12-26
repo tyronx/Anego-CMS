@@ -59,8 +59,10 @@ gallery = ContentElement.extend({
 	settingsTemplate: 
 		'<div class="settings"> ' +
 			'<fieldset><legend>Global Settings</legend>' +
-				'Image sizes: ' +
-				'blabla' +
+				'<p>Default preview size:<br> ' +
+				'<select name="previewSize"> </select></p>' +
+				'<p>Default original image size:<br> ' +
+				'<select name="originalSize"> </select></p>' +
 			'</fieldset>' +
 		'</div>',
 	
@@ -92,8 +94,13 @@ gallery = ContentElement.extend({
 							w: self.imageData.sizes[i].width,
 							h: self.imageData.sizes[i].height
 						};
+						
+					if(self.imageData.sizes[i].idx == self.imageData.original_default_size_id)
+						self.originalSize = {
+							w: self.imageData.sizes[i].width,
+							h: self.imageData.sizes[i].height
+						};
 				}
-				
 				
 				var $galleryEditor = $('<div class="galleryEditor"></div>');
 				var $imageGrid = $('<div class="gallery pictureGrid"></div>');
@@ -101,8 +108,8 @@ gallery = ContentElement.extend({
 				$container.html('<div style="text-align:left;"><a class="GalAddFilesLink" href="#">Add files</a> | <a class="GalSettingsLink" href="#">Settings</a></div>');
 				$container.append($galleryEditor);
 				
-				$container.find('.GalAddFilesLink').click(self.addFiles);
-				$container.find('.GalSettingsLink').click(self.settings);
+				$container.find('.GalAddFilesLink').click(function() { return self.addFiles(); });
+				$container.find('.GalSettingsLink').click(function() { return self.settings(); });
 
 				$galleryEditor.append($imageGrid);
 				
@@ -269,7 +276,6 @@ gallery = ContentElement.extend({
 			var $imgsize = $('<a href="#">' + size['width'] + 'x' + size['height'] + '</a>');
 			var $cropsize = $('<a href="#">' + size['width'] + 'x' + size['height'] + '</a>');
 			
-			
 			$imgsize.data('size', { w: parseInt(size['width']), h: parseInt(size['height']) });
 			$('.defaultSizes', $dlgContent).append($imgsize);
 			$cropsize.data('size', { w: parseInt(size['width']), h: parseInt(size['height']) });
@@ -341,6 +347,28 @@ gallery = ContentElement.extend({
 			});
 		};
 		
+		dlgSettings.buttons['Delete Picture'] = function() {
+			var dlg = this;
+			
+			if (confirm('Really Delete?')) {
+				dlg.waitResponse();
+				$.post('index.php', {
+					a: 'callce',
+					fn: 'dp',
+					mid: self.module_id,
+					pid: self.page_id,
+					elid: self.element_id,
+					picid: picData.idx
+				}, function(data) {
+					dlg.endWait();
+					if(aw = GetAnswer(data)) {
+						dlg.closeDialog();
+						$previewImage.remove();
+					}
+				});
+			}
+		};
+		
 		dlgSettings.buttons['Cancel'] = function() {
 			this.closeDialog();
 		};
@@ -360,7 +388,7 @@ gallery = ContentElement.extend({
 					//preview: {
 						currentSize: {
 							w: parseInt( parseInt(picData.prev_w) || $('img', $previewImage).width() ),
-							h: parseInt( parseInt(picData.prev_h) || $('img', $previewImage).height() ), 
+							h: parseInt( parseInt(picData.prev_h) || $('img', $previewImage).height() )
 						},
 						originalSize: {
 					 		w: $('img.original', $editorArea).width(),
@@ -417,10 +445,52 @@ gallery = ContentElement.extend({
 	},
 	
 	settings: function() {
+		var self = this;
+		
+		var $settings = $(self.settingsTemplate);
+		
+		var prevSelected = '', origSelected = '';
+		for(var i=0; i < self.imageData.sizes.length; i++) {
+			size = self.imageData.sizes[i];
+			
+			if (size.idx == self.imageData.original_default_size_id) {
+				origSelected = 'selected';
+			}
+			if (size.idx == self.imageData.preview_default_size_id) {
+				prevSelected = 'selected';
+			}
+			
+			$('select[name="previewSize"]', $settings).append('<option value="' + size.idx + '"' + prevSelected + '> ' + size.name + '(' + size.width + ' x ' + size.height + ')</option>');
+			$('select[name="originalSize"]', $settings).append('<option value="' + size.idx + '"' + origSelected + '> ' + size.name + '(' + size.width + ' x ' + size.height + ')</option>');
+			prevSelected = '', origSelected = '';
+		}
+		
 		OpenDialog({
 			title: "Settings",
-			content: "Some lots of settings"
+			content: $settings,
+			buttons: BTN_SAVECANCEL,
+			ok_callback: function() {
+				var dlg = this;
+				
+				$.post('index.php',{
+					a: 'callce',
+					fn: 'us',
+					mid: self.module_id,
+					pid: self.page_id,
+					elid: self.element_id,
+					previewSize: $('select[name="previewSize"]', $settings).val(),
+					originalSize: $('select[name="originalSize"]', $settings).val()
+				}, function(data) {
+					dlg.endWait();
+					if(GetAnswer(data)) {
+						dlg.closeDialog();
+					}
+				});
+				
+				dlg.waitResponse();
+			}
 		});
+		
 		return false;
 	},
 	

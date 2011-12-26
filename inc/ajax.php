@@ -9,6 +9,12 @@ if(in_array($ac,Array('rp','gce','cce','edce','callce','delce','mce','gcec'))) {
 	$pmg = new PageManager();
 }
 
+/* CSRF Protection */
+$allowed = array('rp', 'p', 'rw');
+if (! in_array($ac, $allowed) && !IS_AJAX) {
+	exit("300\n" . __('This action may only be called via AJAX'));
+}
+
 switch($ac) {
 	// Helper to check if url_rewrite is enabled
 	case 'rw':
@@ -16,9 +22,9 @@ switch($ac) {
 	
 	// Rebuild page contents
 	case 'rp':
-		$page = intval($_GET['page']);
+		$page = intval(@$_GET['page']);
 		if (LOGINOK) {
-			if (! $page) exit("500\nMissing page");
+			if (! $page) exit("500\n" . __('Missing page'));
 			$pmg->generatePage($page);
 		}
 		
@@ -27,9 +33,9 @@ switch($ac) {
 	
 	// Get content elements. This is data required once the user presses "Edit page"
 	case 'gce':
-		if(!LOGINOK) exit("300\nYou need to log on first.");
+		if(!LOGINOK) exit("300\n" . __('You need to log on first.'));
 		
-		$p = intval($_GET['fgx']);
+		$p = intval(@$_GET['fgx']);
 		
 		// Delievers ce modules, page content and page elements of this page
 		$json = $pmg->contentElementModules($p);
@@ -40,7 +46,7 @@ switch($ac) {
 	
 	// Create Content Element
 	case 'cce':
-		if(!LOGINOK) exit("300\nYou need to log on first.");
+		if(!LOGINOK) exit("300\n" . __('You need to log on first.'));
 		
 		$mid = trim($_GET['mid']);
 		$page = intval($_GET['page_id']);

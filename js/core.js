@@ -687,15 +687,17 @@ function OpenDialog(settings) {
 				Core.openDialogs.splice(i,1);
 		}
 		this.remove();
-	}
+	};
+	
 	$dlgBox.waitResponse = function() {
 		$('input[type=button]', $dlgBox).attr('disabled','disabled');
 		$('.dlgBtnContainer .loadingIcon', $dlgBox).show();
-	}
+	};
+	
 	$dlgBox.endWait = function() {
 		$('input[type=button]', $dlgBox).removeAttr('disabled');
 		$('.dlgBtnContainer .loadingIcon', $dlgBox).hide();
-	}
+	};
 	
 	$dlgBox.dialogSettings = settings;
 	$dlgBox.dialogId = Core.dialogId++;
