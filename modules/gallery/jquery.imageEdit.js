@@ -57,6 +57,7 @@
 		var init_jcrop_delay = null;
 		var sliderWidth;
 		var valuesChanged = false;
+		var currentSelection = [0,0,0,0];
 		
 		this.init = function() {
 			containerSize = {
@@ -145,8 +146,10 @@
 				select.w = size.w;
 				select.h = size.h;
 				
-				
-				jcrop_api.setSelect([select.x, select.y, select.x + select.w, select.y + select.h]);
+				var sel = [select.x, select.y, select.x + select.w, select.y + select.h];
+				jcrop_api.setSelect(sel);
+				updateCurrentSelection(sel);
+				console.log(currentSelection);
 			}
 		}
 		
@@ -219,29 +222,48 @@
 
 			// Re-Init jcrop if image size changes
 			if (jcrop_api) {
-				oldImageSize = jcrop_api.imageSize;
-				oldSelection = jcrop_api.tellSelect();
-
+				var oldImageSize = jcrop_api.imageSize;
+				var selection;
+				
 				jcrop_api.setImageSize([imageSize.w, imageSize.h]);
 				
 				var prop = {
 					x: imageSize.w / oldImageSize.w,
 					y: imageSize.h / oldImageSize.h
 				}
-				if(oldSelection.w > 0) {
-					jcrop_api.setSelect([
-						oldSelection.x * prop.x,
-						oldSelection.y * prop.y,
-						(oldSelection.x + oldSelection.w) * prop.x,
-						(oldSelection.y + oldSelection.h) * prop.y
-					]);
+			
+				if(currentSelection[2] > 0) {
+					selection = [
+						currentSelection[0] * prop.x,
+						currentSelection[1] * prop.y,
+						currentSelection[2] * prop.x,
+						currentSelection[3] * prop.y
+					];
+					
+					jcrop_api.setSelect(selection);
+					updateCurrentSelection(selection);
 				}
+				
 				jcrop_api.imageSize = {
 					w: imageSize.w,
 					h: imageSize.h
 				};
 
 			}
+		}
+		
+		function updateCurrentSelection(selection) {
+			if (!selection) {
+				selection = jcrop_api.tellSelect();
+				currentSelection = [
+					selection.x,
+					selection.y,
+					(selection.x + selection.w),
+					(selection.y + selection.h)
+				];
+			} else {
+				currentSelection = selection;
+ 			}
 		}
 
 		function toolbarButtonClick() {
@@ -287,8 +309,9 @@
 					h: imageSize.h
 				};
 				
-				if(options.crop) {
+				if(options.crop && options.crop[2] > 0) {
 					jcrop_api.setSelect(options.crop);
+					updateCurrentSelection(options.crop);
 				}
 				
 			});
@@ -298,6 +321,7 @@
 			if(sel.w > 0) {
 				$('.jcrop_selection', $editorArea).show();
 				$('.jcrop_selection_value', $editorArea).text('(' + sel.w + ', ' + sel.h + ') @ ('+ sel.x + ', ' + sel.y + ')');
+				updateCurrentSelection();
 			} else {
 				$('.jcrop_selection', $editorArea).hide();
 			}

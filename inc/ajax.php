@@ -268,19 +268,19 @@ switch($ac) {
 		$row = mysql_fetch_array($res);
 
 		if (!mysql_affected_rows()) {
-			$json['content'] = $lng_permission;
+			$json['content'] = __('Page does not exist or no permission to see it');
 			exit("200\n".json_encode($json)); 
 		}
 		
-		if (!strlen($row['content'])) $row['content']="<i id=\"hasnoContent\">$lng_content</i>";
+		if (!strlen($row['content'])) $row['content']="<i id=\"hasnoContent\">" . __("This page has not been filled with content yet. Please use the 'Edit this page' Link to enter your text") . "</i>";
 		if (!strlen($row['content_prepared'] && strlen($row['content']))) $row['content_prepared'] = $row['content'];
 		
 		/* Also deliever what js files to load */
 		$json['js'] = pageLoadJs($p);
 
-		$lng_pagetitle = str_replace(array('&lt;','&gt;'),array('<','>'),$lng_pagetitle);
+		$settings['pagetitle'] = str_replace(array('&lt;', '&gt;'), array('<','>'), $settings['pagetitle']);
 		
-		$json['title'] = $lng_pagetitle." - ".$row['name'];
+		$json['title'] = $settings['pagetitle'] . " - " . $row['name'];
 		$json['content'] = $row['content_prepared'];
 		
 		echo "200\n".json_encode($json)."\r\n";

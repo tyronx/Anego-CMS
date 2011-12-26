@@ -134,6 +134,9 @@ $res = mysql_query($q) or
 while($row = mysql_fetch_array($res))
 	$settings[$row['name']] = $row['value'];
 
+if (!isset($settings['pagetitle']))
+	$settings['pagetitle'] = 'Anego CMS';
+
 function getSetting($name) {
 	return $settings[$name];
 }
@@ -151,15 +154,12 @@ $anego->AddJsPreload("\tanego.menu_scroll=".$settings['menu_scroll'].";");
 if (isset($settings['keywords']) && strlen($settings['keywords'])) {
 	$anego->AddHeadHeader("\t".'<meta name="keywords" content="'.htmlentities(utf8_decode($settings['keywords'])).'">');
 }
+
 if (isset($settings['description']) && strlen($settings['description'])) {
 	$anego->AddHeadHeader("\t".'<meta name="description" content="'.htmlentities(utf8_decode(str_replace("\n",' ',$settings['description']))).'">');
 }
-if (isset($settings['pagetitle']) && strlen($settings['pagetitle'])) {
-	$anego->assign('pagetitle', str_replace(array('<','>'),array('&lt;','&gt;'), $settings['pagetitle']));
-} else {
-	$anego->assign('pagetitle', str_replace(array('<','>'),array('&lt;','&gt;'), __('Anego CMS')));
-}
 
+$anego->assign('pagetitle', str_replace(array('<','>'),array('&lt;','&gt;'), $settings['pagetitle']));
 $anego->assign('loginok',LOGINOK);
 $anego->assign('editablePage',LOGINOK && basename($_SERVER['SCRIPT_NAME']) == 'index.php');
 

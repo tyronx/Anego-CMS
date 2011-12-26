@@ -22,7 +22,7 @@ class gallery extends ContentElement {
 	static $methodMap = Array(
 		'save'	=> 'savePicture',
 		'lp'	=> 'loadPictures',
-		'up'	=> 'uploadPictures'
+		'up'	=> 'uploadPicture'
 	);
 	
 	function databaseTable() { return $GLOBALS['cfg']['tablePrefix'].'pages_gallery'; }
@@ -45,7 +45,8 @@ class gallery extends ContentElement {
 			while($pic = mysql_fetch_array($pics)) {
 				$preview = preg_replace("/(\.\w+)$/i", "_r\\1", $pic['filename']);
 				$str .= '<div class="pic">';
-				$str .= '<a rel="gallery'. $this->elementId .'" href="' . $this->path . $pic['filename'] . '" title="' . $pic['longdescription'] . '"><img src="' . $this->path . $preview . '" alt="' . $pic['shortdescription'] . '"></a>';
+				$str .= '<a rel="gallery'. $this->elementId .'" href="' . $this->path . $pic['filename'] . '" title="' . $pic['longdescription'] . '">
+						<img class="thumbnail" src="' . $this->path . $preview . '" alt="' . $pic['shortdescription'] . '"></a>';
 				$str .= '</div>';
 			}
 			$elemId = $this->elementId;
@@ -167,70 +168,115 @@ EOF;
 		}
 	}
 	
-	function uploadPictures() {
+	function uploadPicture() {
 		global $cfg;
-		global $lng_err_file_tobig, $lng_err_file_cantwrite, $lng_err_file_cantwrite2, $lng_err_file_fail, $lng_format, $lng_contain; 
 		
 		$result = array();
 		
 		switch($_FILES['pic']['error']) {
 			case 0: break;
 			case 1: 
-			case 2: $result['status'] = $lng_err_file_tobig; break;
-			case 7: $result['status'] = $lng_err_file_cantwrite; break;
-			default: $result['status'] = sprintf($lng_err_file_fail,$_FILES['pic']['error']); break;
+			case 2: $result['status'] = "501\n" . __('Can\'t upload File. Size exceeds server limits!'); break;
+			case 7: $result['status'] = "501\n" . __('Cannot write file to temporary files folder. No free space left?'); break;
+			default: $result['status'] = "501\n" . sprintf(__('A unexpected error occurend while uploading. Error number %s'), $_FILES['pic']['error']); break;
 			break;
 		}
 
-		if ($_FILES['pic']['error'] == 0) {
-			if(! is_dir($this->path)) {
-				if(! @mkdir($this->path)) {
-					$result['status'] = "501\n" . $lng_err_file_cantwrite; 
-					return json_encode($result);
-				}
-				chmod($this->path, 0664);
-			}
+		if ($_FILES['pic']['error'] != 0) {
+			return json_encode($result);
+		}
 		
-			$newName = prettyName($_FILES['pic']['name']);
-			
-			if (validPictureFormat($_FILES['pic']['name'])) {
-				if (move_uploaded_file($_FILES['pic']['tmp_name'], $this->path . $newName)) {
-					chmod($this->path . $newName, 0664);
-					$result['status'] = "200\nok";
-					$result['original'] = $cfg['domain'] . $this->path . $newName;
-					$this->createPreviewImage($result, $newName);
-					
-					$q= 'UPDATE ' . $this->picTable() . ' SET position = position+1 WHERE gallery_id=' . $this->elementId;
-					$res = mysql_query($q) or BailErr('Couldn\'t move images in db', $q);
-					
-					$q = 'INSERT INTO ' . $this->picTable() . ' (gallery_id, position, filename) VALUES ';
-					$q.= "('" . $this->elementId . "','0', '" . $newName . "')";
-					$res = mysql_query($q) or BailErr('Couldn\'t insert image into db', $q);
-					
-				} else $result['status'] = "503\n".$lng_err_file_cantwrite2;
-			} else {
-				$result['status'] = "300\n" . $lng_format; 
+		// Create gallery directory if not created yet
+		if(! is_dir($this->path)) {
+			if(! @mkdir($this->path)) {
+				$result['status'] = "501\n" . $lng_err_file_cantwrite; 
+				return json_encode($result);
 			}
+			if(! @chmod($this->path, 0664)) {
+				$result['status'] = "501\n" . $lng_err_file_cantwrite; 
+				return json_encode($result);
+			}
+		}
+	
+		$newName = prettyName($_FILES['pic']['name']);
+		
+		if (validPictureFormat($_FILES['pic']['name'])) {
+			// Move original file to temp folder
+			if (! move_uploaded_file($_FILES['pic']['tmp_name'], $this->path . $newName)) {
+				$result['status'] = "503\n" . sprintf('Cannot write file to folder %s. Forgot to set writing permissions?', $this->path);
+				return json_encode($result);
+			}
+			
+			// Create original resized file
+			if (! $this->createResizedImage($result, $newName, 'original')) {
+				$result['status'] = "504\n" . sprintf('Cannot write file to folder %s. Forgot to set writing permissions?', $this->path);
+				return json_encode($result);
+			}
+			
+			// Create preview resized file
+			if (! $this->createResizedImage($result, $newName, 'preview')) {
+				$result['status'] = "505\n" . sprintf('Cannot write file to folder %s. Forgot to set writing permissions?', $this->path);
+				return json_encode($result);
+			}
+			
+			// Upload successfull, insert to db and etc.
+			@chmod($this->path . $newName, 0664);
+			$result['status'] = "200\nok";
+			
+			$q = 'SELECT max(position) FROM ' . $this->picTable() . ' WHERE gallery_id=' . $this->elementId;
+			$res = mysql_query($q) or BailSQL('Couldn\'t move images in db', $q);
+			list($maxPos) = mysql_fetch_row($res);
+			
+			$q = 'INSERT INTO ' . $this->picTable() . ' (gallery_id, position, filename) VALUES ';
+			$q.= "('" . $this->elementId . "','" . ($maxPos + 1) . "', '" . $newName . "')";
+			$res = mysql_query($q) or BailSQL('Couldn\'t insert image into db', $q);
+			
+			$idx = mysql_insert_id();
+			
+			$q = 'SELECT * FROM ' . $this->picTable() . ' WHERE idx='.$idx;
+			$res = mysql_query($q) or BailSQL('Couldn\'t insert image into db', $q);
+			
+			$result['pic'] = mysql_fetch_array($res);
+		} else {
+			$result['status'] = "300\n" . $lng_format; 
 		}
 		
 		return json_encode($result);
 	}
 	
-	private function createPreviewImage(&$result, $file) {
+	private function createResizedImage(&$result, $file, $type='preview') {
 		global $cfg;
 		
 		// create a resized filename_r.(jpg/png/gif) file
-		$name_sized = substr($file, 0, strrpos($file, '.')) . '_r' . substr($file, strrpos($file, '.'));
+		$fileExt = '';
+		if($type == 'preview') $fileExt = '_r';
 	
-		$q = 'SELECT preview_width, preview_height FROM ' . $this->databaseTable() . ' WHERE idx=' . $this->elementId;
+		$q = 'SELECT sizes.width as width, sizes.height as height FROM ' . $this->imageSizesTable() . ' as sizes, ' . $this->databaseTable() . ' as gallery WHERE 
+			 sizes.idx=gallery.' . $type . '_default_size_id AND gallery.idx = '. $this->elementId;
+		$result['sql'] = $q;
 		$res = mysql_query($q) or BailSQL('Couldn\'t retrieve preview image sizes', $q);
-		list($pWidth, $pHeight) = mysql_fetch_row($res);
 		
-		if (CopyResized($this->path . $file, $pWidth, $pHeight, true, 'file', '', $this->path . $name_sized)) {
-			$result['preview'] = $cfg['domain'] . $this->path . $name_sized;
+		// Id unset or wrong => dont resize, unless its a preview image. in that case just assume 160x120 as standard
+		if (! mysql_affected_rows()) {
+			if($type == 'preview') {
+				$pWidth = 160;
+				$pHeight = 120;
+			} else {
+				$result[$type] = $cfg['domain'] . $this->path . $file;
+				return true;
+			}
+		} else {
+			list($pWidth, $pHeight) = mysql_fetch_row($res);
+		}
+		
+		if ($name_sized = CopyResized($this->path . $file, $pWidth, $pHeight, true, 'file', $fileExt)) {
+			$result[$type] = $cfg['domain'] . $name_sized;
 		} else {
 			$result['status'] = "502\n" . 'Can\'t write thumbnail to disk'; 
+			return false;
 		}
+		
+		return true;
 	}
 
 	public static function installModule() {

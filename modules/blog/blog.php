@@ -43,6 +43,7 @@ class blog extends ContentElement {
 				if(aw=GetAnswer(data)) {
 					$("#blogc_$elemId").html(aw);
 					Core.initPageContent();
+					$("#blogc_$elemId .blogElements").jPaginate({ items: 4 });
 				}
 			});
 		});

@@ -81,6 +81,19 @@ gallery = ContentElement.extend({
 		}, function(data) {
 			if ((aw = GetAnswer(data)) != null) {
 				self.imageData = $.parseJSON(aw);
+				self.previewSize = {
+					w: 160,
+					h: 120
+				};
+				
+				for(var i=0; i < self.imageData.sizes.length; i++) {
+					if(self.imageData.sizes[i].idx == self.imageData.preview_default_size_id)
+						self.previewSize = {
+							w: self.imageData.sizes[i].width,
+							h: self.imageData.sizes[i].height
+						};
+				}
+				
 				
 				var $galleryEditor = $('<div class="galleryEditor"></div>');
 				var $imageGrid = $('<div class="gallery pictureGrid"></div>');
@@ -98,10 +111,11 @@ gallery = ContentElement.extend({
 				$container.append($button);
 				$button.click(function() {
 					self.endEdit();
+					
 					if(self.$imageDlg) {
 						self.$imageDlg.closeDialog();
 					}
-					// Update the page
+					// Update the page server side
 					$.get('index.php', { a: 'rp', page: self.page_id} );
 				});
 				
@@ -119,7 +133,7 @@ gallery = ContentElement.extend({
 					
 					$('.progressHolder', $image).remove();
 					$('.uploading', $image).remove();
-					$image.data('idx', pic.idx);
+					
 					
 					$('a', $image)
 						.data('picData', pic)
@@ -155,7 +169,7 @@ gallery = ContentElement.extend({
 			maxfilesize: 4,
 			url: 'index.php',
 			
-			uploadFinished:function(i,file,response){
+			uploadFinished:function(i, file, response){
 				$img = $.data(file, 'preview');
 				
 				$img.addClass('done');
@@ -165,6 +179,16 @@ gallery = ContentElement.extend({
 				// response is the JSON object that post_file.php returns
 				if(GetAnswer(response.status)) {
 					$img.find('img').attr('src', response.preview);
+					$('a', $img)
+						.data('picData', response.pic)
+						.attr('title', response.pic.longdescription)
+						.click(function() {
+							// Opens the image editor dialog
+							self.openImageDialog($(this));
+							return false;
+						});
+				} else {
+					$img.remove();
 				}
 			},
 			
@@ -200,7 +224,7 @@ gallery = ContentElement.extend({
 			},
 			
 			progressUpdated: function(i, file, progress) {
-				$.data(file, 'preview').find('.progress').width(progress);
+				$.data(file, 'preview').find('.progress').css('width', progress + '%');
 			}
 			 
 		});
@@ -209,8 +233,8 @@ gallery = ContentElement.extend({
 			var $preview = $(self.imgTemplate), $image = $('img', $preview);
 			var reader = new FileReader();
 			
-			$image.attr('width', 160);
-			$image.attr('height', 120);
+			$image.css('max-width', self.previewSize.w + 'px');
+			$image.css('max-height', self.previewSize.h + 'px');
 			
 			reader.onload = function(e) {
 				// e.target.result holds the DataURL which
@@ -290,7 +314,7 @@ gallery = ContentElement.extend({
 				mid: self.module_id,
 				pid: self.page_id,
 				elid: self.element_id,
-				picid: $previewImage.data('idx'),
+				picid: picData.idx,
 				longdescription: $('input[name="longdescription"]', self.$imageDlg).val(),
 				shortdescription: $('input[name="shortdescription"]', self.$imageDlg).val(),
 				resizeSettings: resizeSettings
@@ -320,7 +344,7 @@ gallery = ContentElement.extend({
 		dlgSettings.buttons['Cancel'] = function() {
 			this.closeDialog();
 		};
-				
+		
 		self.$imageDlg = OpenDialog(dlgSettings);
 
 		$('img.original', $editorArea).attr('src', self.imageData.path + '/' + picData.filename);
@@ -380,7 +404,15 @@ gallery = ContentElement.extend({
 			var aw;
 			if(aw = GetAnswer(data)) 
 				$('#' + self.containerId).html(aw);
+			
+				$('.gallery img.thumbnail', $('#' + self.containerId)).each(function() {
+					var rnd = Math.round(Math.random() * 100000);
+					$(this).attr('src', $(this).attr('src') + '?' + rnd);
+				});
 		});
+		
+		$(document).filedrop('destroy');
+		
 		return true;
 	},
 	

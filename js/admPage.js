@@ -3,7 +3,10 @@
 // Core.editPage required in core.js since we load admPages.js on demand :(
 
 /* Turns off the page editing interface */
-Core.endEdit = function(ignorePage) {
+// TODO: Important! Call endedit of all content elements!! (otherwise may not correctly unbind events e.g. on $(document))
+Core.endEdit = function(options) {
+	if (!options) options = {};
+
 	var unloadDragDrop = function() {
 		anego.editmode = false; 
 		
@@ -19,16 +22,17 @@ Core.endEdit = function(ignorePage) {
 	}
 	
 	/* When switching into an admin page, we don't have to load the old page again */
-	if (typeof ignorePage != 'undefined' || ignorePage) {
+	if (options.ignorePage) {
 		unloadDragDrop();
 	} else {
 		// Let Core.loadPage know that we are not in editmode anymore
 		anego.editmode = false; 
-		
+
 		Core.loadPage(Core.curPg,{
 			beforeContentLoaded: unloadDragDrop,
 			forceLoad: true,
-			updatePage: true
+			updatePage: true,
+			ok_callback: options.ok_callback
 		});
 		
 		// But leave it on until a page has been successfully loaded
@@ -86,7 +90,7 @@ function DragDropElements(contentElements) {
 			buttons: BTN_NONE,
 			autocollapse: false,
 			blocking: false,
-			close_callback: function() { Core.endEdit(false, this); }
+			close_callback: function() { Core.endEdit(); }
 		});
 		
 		/* Create element mini toolbar & bind events */	

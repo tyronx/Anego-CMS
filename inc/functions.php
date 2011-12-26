@@ -191,15 +191,18 @@ function CopyResized($file, $width = 0, $height = 0, $proportional = true, $outp
 		fastimagecopyresampled($image_resized, $image, 0, 0, 0, 0, $final_width, $final_height, $width_old, $height_old);
 	}
  
+	$filename = NULL;
 	switch ( strtolower($output) ) {
 		case 'browser':
 			$mime = image_type_to_mime_type($info[2]);
 			header("Content-type: $mime");
-			$output = NULL;
 			break;
 		case 'file':
-			if(strlen($newfile)) $output=$newfile;
-			else $output = preg_replace("/(?U)(.*)(\.\w+)$/","\\1$ext\\2",$file);
+			if(strlen($newfile)) {
+				$filename = $newfile;
+			} else {
+				$filename = preg_replace("/(?U)(.*)(\.\w+)$/","\\1$ext\\2",$file);
+			}
 			break;
 		case 'return':
 			return $image_resized;
@@ -210,21 +213,24 @@ function CopyResized($file, $width = 0, $height = 0, $proportional = true, $outp
 
 	switch ( $info[2] ) {
 		case IMAGETYPE_GIF:
-			imagegif($image_resized, $output);
+			imagegif($image_resized, $filename);
 			break;
 			
 		case IMAGETYPE_JPEG:
-			imagejpeg($image_resized, $output, 95);
+			imagejpeg($image_resized, $filename, 95);
 			break;
 			
 		case IMAGETYPE_PNG:
-			imagepng($image_resized, $output);
+			imagepng($image_resized, $filename);
 			break;
 			
 		default:
 			return false;
 	}
  
+	if(strtolower($output) == 'file')
+		return $filename;
+	
 	return true;
 }
 

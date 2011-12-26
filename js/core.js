@@ -1,3 +1,5 @@
+//setTimeout(function() { Core.editPage() }, 800);
+
 // Todo: Make this configurable
 var fancyBoxSettings = {
 	'cyclic'		: false,
@@ -208,7 +210,7 @@ function CoreFunctions() {
 				file = 'admin.php';
 				get = { a: newpage.id.substr(1), noheader: 1 };
 				$('#pageEditLink').parent().css('display','none');
-				if(anego.editmode) this.endEdit(true);
+				if(anego.editmode) Core.endEdit({ ignorePage: true });
 				this.selectPage(null); // Unselect selected page
 				break;
 				
@@ -261,6 +263,9 @@ function CoreFunctions() {
 			if(aw=GetAnswer(data)) {
 				if(animated) putLoadedText(aw);
 				loaded=true;
+
+				if(settings.ok_callback) 
+					settings.ok_callback(aw);
 			} else {
 				if(settings.fail_callback) 
 					settings.fail_callback(aw);

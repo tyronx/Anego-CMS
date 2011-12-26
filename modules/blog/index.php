@@ -286,7 +286,9 @@ class BlogManager {
 				
 			if(!mysql_affected_rows()) return $text.'<i>'.$lng['blog']['noblogentries'].'</i>';
 			$i=mysql_affected_rows();
-				
+			
+			$text.='<div class="blogElements">';
+			
 			while($row=mysql_fetch_array($res)) {
 				
 				if($cfg['fancyURLs'])
@@ -302,6 +304,9 @@ class BlogManager {
 				$text.='</div><hr></div>';
 				$i--;
 			}
+			
+			$text.='</div>';
+			
 			return $text;
 		}
 		
