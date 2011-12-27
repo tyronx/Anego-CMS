@@ -47,8 +47,8 @@ class gallery extends ContentElement {
 			while($pic = mysql_fetch_array($pics)) {
 				$preview = preg_replace("/(\.\w+)$/i", "_r\\1", $pic['filename']);
 				$str .= '<div class="pic">';
-				$str .= '<a rel="gallery'. $this->elementId .'" href="' . $this->path . $pic['filename'] . '" title="' . $pic['longdescription'] . '">
-						<img class="thumbnail" src="' . $this->path . $preview . '" alt="' . $pic['shortdescription'] . '"></a>';
+				$str .= '<a rel="gallery'. $this->elementId .'" href="' . $this->path . $pic['filename'] . '" title="' . $pic['description'] . '">
+						<img class="thumbnail" src="' . $this->path . $preview . '" alt="' . $pic['title'] . '"></a>';
 				$str .= '</div>';
 			}
 			$elemId = $this->elementId;
@@ -67,8 +67,8 @@ EOF;
 	}
 	
 	function savePicture() {
-		$longdesc = mysql_real_escape_string(@$_POST['longdescription']);
-		$shortdesc = mysql_real_escape_string(@$_POST['shortdescription']);
+		$desc = mysql_real_escape_string(@$_POST['description']);
+		$title = mysql_real_escape_string(@$_POST['title']);
 		$picid = intval(@$_POST['picid']);
 		
 		$q = 'SELECT filename FROM ' . $this->picTable() . ' WHERE idx=' . $picid;
@@ -81,8 +81,8 @@ EOF;
 		$pic = $_POST['resizeSettings'];
 	
 		$q = 'UPDATE ' . $this->picTable() . ' SET 
-			longdescription=\'' . $longdesc . '\', 
-			shortdescription=\'' . $shortdesc . '\',
+			description=\'' . $desc . '\', 
+			title=\'' . $title . '\',
 			prev_cropx=\'' . $pic['selection']['x'] . '\', 
 			prev_cropy=\'' . $pic['selection']['y'] . '\', 
 			prev_cropw=\'' . $pic['selection']['w'] . '\', 
@@ -95,7 +95,7 @@ EOF;
 		
 		$pic = $_POST['resizeSettings'];
 		
-		if ($pic['changed']) {
+		if ($pic['changed'] == 'true') {
 			if ($pic['selection']['w'] > 0) {
 				CopyResized($this->path . $filename, $pic['size']['w'], $pic['size']['h'], false, 'file', '_r', '', $pic['selection']);
 			} else {

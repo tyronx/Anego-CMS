@@ -3,11 +3,9 @@ gallery = ContentElement.extend({
 	$imageDlg: null,
 		
 	onInit: function() {
-		// Will be loaded only once (loadJavascript() takes care of that)
+		// Theses files will be loaded only once
 		Core.loadCSS('modules/gallery/jquery.Jcrop.css');
 		Core.loadCSS('styles/default/jui/jquery-ui.css');
-		
-		
 		Core.loadJavascript('ld.jui');
 		Core.loadJavascript('modules/gallery/jquery.filedrop.js');
 		Core.loadJavascript('modules/gallery/jquery.Jcrop.modified.js');
@@ -15,6 +13,16 @@ gallery = ContentElement.extend({
 		Core.loadJavascript('modules/gallery/jquery.imageEdit.js');
 		Core.loadJavascript('lib/jquery.mousewheel-3.0.4.pack.js');
 	},
+
+	galleryTemplate:
+			'<div class="galleryEditor">' +
+				'<div class="links">' + 
+					'<a class="GalAddFilesLink" href="#">Add files</a> | <a class="GalSettingsLink" href="#">Settings</a>' +
+				'</div>' + 
+				'<div class="gallery pictureGrid"></div>' +
+				'<div class="bothclear"></div>' +
+				'<button type="button" name="mew" class="btn_cancelrte" style="min-width:150px">' + lng_close + ' & Update page</button>' +
+			'</div>', 
 	
 	imgTemplate: 
 			'<div class="pic">'+
@@ -32,8 +40,8 @@ gallery = ContentElement.extend({
 	imgEditTemplate: 
 		'<div>' + 
 			'<table border="0"><tr>' + 
-				'<td>Short description (for <a href="http://en.wikipedia.org/wiki/Search_engine_optimization">SEO</a>)<br><input type="text" name="shortdescription"></td>' +
-				'<td style="padding-left: 20px;">Long description<br><input type="text" name="longdescription"></td>' +
+				'<td>Title (for <a href="http://en.wikipedia.org/wiki/Search_engine_optimization">SEO</a>)<br><input type="text" name="title"></td>' +
+				'<td style="padding-left: 20px;">Description<br><input type="text" name="description"></td>' +
 			'</tr></table>' + 
 			'<br>' +
 			//'<div class="tabBox">Original</div>' + 
@@ -83,6 +91,7 @@ gallery = ContentElement.extend({
 		}, function(data) {
 			if ((aw = GetAnswer(data)) != null) {
 				self.imageData = $.parseJSON(aw);
+				// This is just a default value
 				self.previewSize = {
 					w: 160,
 					h: 120
@@ -102,20 +111,15 @@ gallery = ContentElement.extend({
 						};
 				}
 				
-				var $galleryEditor = $('<div class="galleryEditor"></div>');
-				var $imageGrid = $('<div class="gallery pictureGrid"></div>');
+				var $galleryEditor = $(self.galleryTemplate);
+				var $imageGrid = $('.pictureGrid', $galleryEditor);
+				var $button = $('button', $galleryEditor);
 				
-				$container.html('<div style="text-align:left;"><a class="GalAddFilesLink" href="#">Add files</a> | <a class="GalSettingsLink" href="#">Settings</a></div>');
-				$container.append($galleryEditor);
+				$('.GalAddFilesLink', $galleryEditor).click(function() { return self.addFiles(); });
+				$('.GalSettingsLink', $galleryEditor).click(function() { return self.settings(); });
 				
-				$container.find('.GalAddFilesLink').click(function() { return self.addFiles(); });
-				$container.find('.GalSettingsLink').click(function() { return self.settings(); });
-
-				$galleryEditor.append($imageGrid);
+				$container.html($galleryEditor);
 				
-				var $button = $('<button type="button" name="mew" class="btn_cancelrte" style="min-width:150px">' + lng_close + ' & Update page</button>');
-				
-				$container.append($button);
 				$button.click(function() {
 					self.endEdit();
 					
@@ -136,27 +140,25 @@ gallery = ContentElement.extend({
 					$image = $(self.imgTemplate);
 					$('img', $image)
 						.attr('src', self.imageData.path + '/' + pic.filename_preview + '?' + rnd)
-						.attr('alt', pic.shortdescription);
+						.attr('alt', pic.title);
 					
 					$('.progressHolder', $image).remove();
 					$('.uploading', $image).remove();
 					
 					
 					$('a', $image)
-						.data('picData', pic)
-						.attr('title', pic.longdescription)
 						.click(function() {
 							// Opens the image editor dialog
 							self.openImageDialog($(this));
 							return false;
-						});
+						})
+						.data('picData', pic)
+						.attr('title', pic.description);
 
 					$imageGrid.append($image);
 				}
 				
-				$galleryEditor.append('<div class="bothclear"></div>');
-				
-				$('.pictureGrid', $container).sortable({
+				$imageGrid.sortable({
 					containment: 'parent'
 				});
 			}
@@ -164,7 +166,7 @@ gallery = ContentElement.extend({
 		
 		$(document).filedrop({
 			// The name of the $_FILES entry:
-			paramname:'pic',
+			paramname: 'pic',
 			data: { 
 				a: 'callce',           // send POST variables
 				fn: 'up',
@@ -176,7 +178,7 @@ gallery = ContentElement.extend({
 			maxfilesize: 4,
 			url: 'index.php',
 			
-			uploadFinished:function(i, file, response){
+			uploadFinished: function(i, file, response){
 				$img = $.data(file, 'preview');
 				
 				$img.addClass('done');
@@ -308,7 +310,7 @@ gallery = ContentElement.extend({
 			buttons: { }
 		};
 
-		dlgSettings.buttons['Crop, Resize & Save'] = function() {
+		dlgSettings.buttons['Save'] = function() {
 			var $selfDlg = this;
 			$selfDlg.waitResponse();
 			var aw;
@@ -321,17 +323,18 @@ gallery = ContentElement.extend({
 				pid: self.page_id,
 				elid: self.element_id,
 				picid: picData.idx,
-				longdescription: $('input[name="longdescription"]', self.$imageDlg).val(),
-				shortdescription: $('input[name="shortdescription"]', self.$imageDlg).val(),
+				description: $('input[name="description"]', self.$imageDlg).val(),
+				title: $('input[name="title"]', self.$imageDlg).val(),
 				resizeSettings: resizeSettings
 			}, function(data) {
 				if(aw = GetAnswer(data)) {
-					$('a', $previewImage).attr('title', $('input[name="longdescription"]', self.$imageDlg).val());
-					$('img', $previewImage).attr('alt', $('input[name="shortdescription"]', self.$imageDlg).val());
+					$('a', $previewImage).attr('title', $('input[name="description"]', self.$imageDlg).val());
+					$('img', $previewImage).attr('alt', $('input[name="title"]', self.$imageDlg).val());
 					
-					var rnd = Math.round(Math.random() * 100000);
-					
-					$('img', $previewImage).attr('src', $('img', $previewImage).attr('src').replace(/^(.*\.\w+)(\?.*)?$/, '$1?' + rnd) );
+					if(resizeSettings.changed) {
+						var rnd = Math.round(Math.random() * 100000);
+						$('img', $previewImage).attr('src', $('img', $previewImage).attr('src').replace(/^(.*\.\w+)(\?.*)?$/, '$1?' + rnd) );
+					}
 					
 					for(var i=0; i < self.imageData.pictures.length; i++) {
 						if(self.imageData.pictures[i].filename == picData.filename) {
@@ -376,44 +379,47 @@ gallery = ContentElement.extend({
 		self.$imageDlg = OpenDialog(dlgSettings);
 
 		$('img.original', $editorArea).attr('src', self.imageData.path + '/' + picData.filename);
-		$('input[name="longdescription"]', $dlgContent).val(picData.longdescription);
-		$('input[name="shortdescription"]', $dlgContent).val(picData.shortdescription);
+		$('input[name="description"]', $dlgContent)
+			.val(picData.description)
+			.keyup(function() {
+				$(this).data('edited', true);
+			});
+		$('input[name="title"]', $dlgContent)
+			.val(picData.title)
+			.data('edited', false)
+			.keyup(function() {
+				var $desc = $('input[name="description"]', $dlgContent);
+				if (! $desc.data('edited'))
+					$desc.val($(this).val());
+			});
 		
 		$('.imageContainer', $editorArea).css('width', containerSize.w + 'px');
 		$('.imageContainer', $editorArea).css('height', containerSize.h + 'px');
 		
+		var imageEditChange = false;
 		$('img.original', $editorArea).load(function() {
 			setTimeout(function() {
 				$editorArea.imageEdit({ 
-					//preview: {
-						currentSize: {
-							w: parseInt( parseInt(picData.prev_w) || $('img', $previewImage).width() ),
-							h: parseInt( parseInt(picData.prev_h) || $('img', $previewImage).height() )
-						},
-						originalSize: {
-					 		w: $('img.original', $editorArea).width(),
-							h: $('img.original', $editorArea).height()
-						},
-						crop: [
-							parseInt(picData.prev_cropx),
-							parseInt(picData.prev_cropy),
-							parseInt(picData.prev_cropx) + parseInt(picData.prev_cropw),
-							parseInt(picData.prev_cropy) + parseInt(picData.prev_croph),
-						]
-					//},
-					/*original: {
-						imageSize: {
-							w: $('img.original', $editorArea).width(),
-							h: $('img.original', $editorArea).height()
-						},
-						crop: [
-							picData.orig_cropx,
-							picData.orig_cropy,
-							picData.orig_cropw,
-							picData.orig_croph,
-						]
-					}*/
-					
+					currentSize: {
+						w: parseInt( parseInt(picData.prev_w) || $('img', $previewImage).width() ),
+						h: parseInt( parseInt(picData.prev_h) || $('img', $previewImage).height() )
+					},
+					originalSize: {
+						w: $('img.original', $editorArea).width(),
+						h: $('img.original', $editorArea).height()
+					},
+					crop: [
+						parseInt(picData.prev_cropx),
+						parseInt(picData.prev_cropy),
+						parseInt(picData.prev_cropx) + parseInt(picData.prev_cropw),
+						parseInt(picData.prev_cropy) + parseInt(picData.prev_croph),
+					],
+					change: function() {
+						if (! imageEditChange) {
+							$('input.dlgButton', self.$imageDlg).first().attr('value', 'Crop, Resize & Save');
+							imageEditChange = true;
+						}
+					}
 				});
 			}, 0);
 		});

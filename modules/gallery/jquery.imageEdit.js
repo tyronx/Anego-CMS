@@ -132,8 +132,10 @@
 				size.h = size.w * options.originalSize.prop;
 			}
 			
-			if(size.w != imageSize.w || size.h != imageSize.h)
+			if(size.w != imageSize.w || size.h != imageSize.h) {
 				valuesChanged = true;
+				if(options.change) options.change();
+			}
 			
 			imageSize = size;
 			
@@ -149,7 +151,8 @@
 				var sel = [select.x, select.y, select.x + select.w, select.y + select.h];
 				jcrop_api.setSelect(sel);
 				updateCurrentSelection(sel);
-				console.log(currentSelection);
+				
+				if(options.change) options.change();
 			}
 		}
 		
@@ -198,6 +201,7 @@
 			imageSize.w =  prop * options.originalSize.w;
 			imageSize.h = prop * options.originalSize.h;
 			valuesChanged = true;
+			if(options.change) options.change();
 			
 			updateImage();
 		}
@@ -325,6 +329,7 @@
 				$('.jcrop_selection', $editorArea).hide();
 			}
 			updateCurrentSelection([ sel.x, sel.y, (sel.x + sel.w), (sel.y + sel.h) ]);
+			if(options.change) options.change();
 		}
 		
     }
