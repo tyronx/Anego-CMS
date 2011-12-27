@@ -136,7 +136,7 @@ switch($_GET['a']) {
 		
 		$anego->AddJsModule("am");
 		//$anego->AddJavaScriptFile("lib/dragdrop.js");
-		$anego->AddFooter("\t<script type=\"text/javascript\">\n".$footer."\n\t</script>");
+		//$anego->AddFooter("\t<script type=\"text/javascript\">\n".$footer."\n\t</script>");
 		$anego->AddContent(PrintLinks());
 		$anego->display('index.tpl');
 		break;

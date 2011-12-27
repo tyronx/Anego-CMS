@@ -194,7 +194,7 @@ EOF;
 				$result['status'] = "501\n" . $lng_err_file_cantwrite; 
 				return json_encode($result);
 			}
-			if(! @chmod($this->path, 0664)) {
+			if(! @chmod($this->path, 0775)) {
 				$result['status'] = "501\n" . $lng_err_file_cantwrite; 
 				return json_encode($result);
 			}
@@ -204,7 +204,7 @@ EOF;
 		
 		if (validPictureFormat($_FILES['pic']['name'])) {
 			// Move original file to temp folder
-			if (! move_uploaded_file($_FILES['pic']['tmp_name'], $this->path . $newName)) {
+			if (! @move_uploaded_file($_FILES['pic']['tmp_name'], $this->path . $newName)) {
 				$result['status'] = "503\n" . sprintf(__('Cannot write file to folder %s. Forgot to set writing permissions?'), $this->path);
 				return json_encode($result);
 			}
@@ -268,7 +268,7 @@ EOF;
 		$originalSize = intval($_POST['originalSize']);
 		
 		if($previewSize && $originalSize) {
-			$q = 'UPDATE ' . $this->databaseTable() . ' SET original_default_size_id=$previewSize, preview_default_size_id=$originalSize WHERE idx=' . $this->elementId;
+			$q = 'UPDATE ' . $this->databaseTable() . ' SET original_default_size_id='.$originalSize.', preview_default_size_id='.$previewSize.' WHERE idx=' . $this->elementId;
 			$res = mysql_query($q) or BailSQL(__('Couldn\'t update gallery settings'), $q);
 		}
 	

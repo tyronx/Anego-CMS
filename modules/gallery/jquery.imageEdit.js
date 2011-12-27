@@ -232,7 +232,7 @@
 					y: imageSize.h / oldImageSize.h
 				}
 			
-				if(currentSelection[2] > 0) {
+				if(currentSelection[2] > currentSelection[0]) {
 					selection = [
 						currentSelection[0] * prop.x,
 						currentSelection[1] * prop.y,
@@ -321,10 +321,10 @@
 			if(sel.w > 0) {
 				$('.jcrop_selection', $editorArea).show();
 				$('.jcrop_selection_value', $editorArea).text('(' + sel.w + ', ' + sel.h + ') @ ('+ sel.x + ', ' + sel.y + ')');
-				updateCurrentSelection();
 			} else {
 				$('.jcrop_selection', $editorArea).hide();
 			}
+			updateCurrentSelection([ sel.x, sel.y, (sel.x + sel.w), (sel.y + sel.h) ]);
 		}
 		
     }

@@ -123,6 +123,12 @@ function CopyResized($file, $width = 0, $height = 0, $proportional = true, $outp
 	  $final_height = ( $height <= 0 ) ? $height_old : $height;
 	}
 	
+	// Only resize if the picture is actually bigger than the supplied size
+	if($width_old < $width && $height_old < $height) {
+		$final_width = $width_old;
+		$final_height = $height_old;
+	}
+	
 	switch ( $info[2] ) {
 	  case IMAGETYPE_GIF:
 		$image = imagecreatefromgif($file);
@@ -228,8 +234,10 @@ function CopyResized($file, $width = 0, $height = 0, $proportional = true, $outp
 			return false;
 	}
  
-	if(strtolower($output) == 'file')
+	if(strtolower($output) == 'file') {
+		@chmod($filename, 0664);
 		return $filename;
+	}
 	
 	return true;
 }

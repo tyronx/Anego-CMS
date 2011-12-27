@@ -20,12 +20,12 @@ gallery = ContentElement.extend({
 			'<div class="pic">'+
 				'<div class="imageHolder">'+
 					'<a href="#">'+
-					'<img />' + 
+						'<img />' + 
+						'<div class="progressHolder">'+
+							'<div class="progress"></div>'+
+						'</div>'+
 					'</a>'+
 					'<span class="uploading"></span>'+
-				'</div>'+
-				'<div class="progressHolder">'+
-					'<div class="progress"></div>'+
 				'</div>'+
 			'</div>',
 	
@@ -265,7 +265,7 @@ gallery = ContentElement.extend({
 	
 	openImageDialog: function($link) {
 		var self = this;
-		var containerSize = { w: 600, h: 390 };
+		var containerSize = { w: 400, h: 250 };
 		var picData = $link.data('picData');
 		var $previewImage = $link.parent().parent();
 		var $dlgContent = $(self.imgEditTemplate);

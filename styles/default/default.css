@@ -561,7 +561,21 @@ table.gal img { vertical-align:middle; padding:0px; }
 table.gal a { text-decoration: none; border:0; }
 
 div.gallery div.pic {
-	float:left;
+	float: left;
+	margin: 5px;
+}
+
+div.gallery div.pic a {
+	display: block;
+	min-width: 50px;
+	min-height: 50px;
+	border: 1px solid #DDD;
+	padding: 5px;
+}
+
+div.gallery div.pic img.thumbnail {
+	text-align: center;
+	vertical-align: middle;
 }
 
 div.galleryEditor {
@@ -570,11 +584,12 @@ div.galleryEditor {
 }
 
 
+
+
 .galleryEditor .pic {
 	/*width: 170px;
 	height: 130px;*/
 	float: left;
-	margin: 10px;
 	position: relative;
 	text-align: center;
 }
@@ -582,7 +597,7 @@ div.galleryEditor {
 .galleryEditor .pic img {
 	max-width: 240px;
 	max-height: 180px;
-	border:3px solid #fff;
+	/*border:3px solid #fff;*/
 	display: block;
 	
 	box-shadow:0 0 2px #000;
@@ -614,9 +629,10 @@ div.galleryEditor {
 	position: absolute;
 	background-color:#252f38;
 	height:12px;
-	width:100%;
-	left:0;
-	bottom: 0;
+	/*width:100%;*/
+	left: 6px;
+	right: 6px;
+	bottom: 6px;
 	
 	box-shadow:0 0 2px #000;
 	-webkit-box-shadow:0 0 2px #000;
