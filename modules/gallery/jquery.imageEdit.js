@@ -122,14 +122,25 @@
 
 		};
 		
-		this.setsize = function(size) {
+		this.setsize = function(size, proportional) {
 			if(size.w == 0 && size.h == 0) return;
+			
+			if(proportional != false && size.w != 0 && size.h != 0) {
+				if(options.originalSize.w > options.originalSize.h) {
+					size.w = Math.min(size.w, options.originalSize.w);
+					size.h = size.w / options.originalSize.prop;
+				} else {
+					size.h = Math.min(size.h, options.originalSize.h);
+					size.w = size.h * options.originalSize.prop;
+				}
+			}
 			
 			if(size.w == 0) {
 				size.w = size.h * options.originalSize.prop;
 			}
+			
 			if(size.h == 0) {
-				size.h = size.w * options.originalSize.prop;
+				size.h = size.w / options.originalSize.prop;
 			}
 			
 			if(size.w != imageSize.w || size.h != imageSize.h) {
@@ -172,7 +183,7 @@
 			imageSize = {
 				w: val,
 				h: val / options.originalSize.prop
-			}
+			};
 			
 			valuesChanged = true;
 			
@@ -188,7 +199,7 @@
 			imageSize = {
 				w: val * options.originalSize.prop,
 				h: val
-			}
+			};
 			
 			valuesChanged = true;
 			
@@ -217,9 +228,12 @@
 				.css('left', imgPos.x  + 'px')
 				.css('top', imgPos.y  + 'px');
 			
-			$('img.original', $editorArea)
-				.attr('width', imageSize.w)
-				.attr('height', imageSize.h);
+			$('img.original', $editorArea).each(function() {
+				$(this).css('width', imageSize.w);
+				$(this).css('height', imageSize.h);
+			});
+			
+			$('.imageContainer', $editorArea).imageDrag('updateScrollableArea');
 			
 			$('.dimensions input[name="prevx"]', $editorArea).val(Math.round(imageSize.w));
 			$('.dimensions input[name="prevy"]', $editorArea).val(Math.round(imageSize.h));

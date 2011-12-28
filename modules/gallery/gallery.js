@@ -190,12 +190,12 @@ gallery = ContentElement.extend({
 					$img.find('img').attr('src', response.preview);
 					$('a', $img)
 						.data('picData', response.pic)
-						.attr('title', response.pic.longdescription)
 						.click(function() {
 							// Opens the image editor dialog
 							self.openImageDialog($(this));
 							return false;
-						});
+						})
+						.attr('title', response.pic.description);
 				} else {
 					$img.remove();
 				}
@@ -489,6 +489,8 @@ gallery = ContentElement.extend({
 				}, function(data) {
 					dlg.endWait();
 					if(GetAnswer(data)) {
+						self.imageData.preview_default_size_id = $('select[name="previewSize"]', $settings).val();
+						self.imageData.original_default_size_id = $('select[name="originalSize"]', $settings).val();
 						dlg.closeDialog();
 					}
 				});

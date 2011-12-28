@@ -121,7 +121,7 @@ EOF;
 			'pictures' => array()
 		);
 		
-		$q = 'SELECT * FROM ' . $this->imageSizesTable();
+		$q = 'SELECT * FROM ' . $this->imageSizesTable() . ' ORDER BY width, height';
 		$res = mysql_query($q) or BailSQL(__('Couldn\'t read image sizes info from db'), $q);
 		while($row = mysql_fetch_array($res, MYSQL_ASSOC)) {
 			$files['sizes'][] = $row;

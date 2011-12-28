@@ -24,6 +24,9 @@
 			destroy : function( ) { 
 				$(this).data('imageDrag').destroy();
 				$(this).data('imageDrag', null);
+			},
+			updateScrollableArea: function() {
+				$(this).data('imageDrag').updateScrollableArea();
 			}
 		};
 
@@ -72,6 +75,11 @@
 			setScrollableArea();
 			this.enable();
 		};
+		
+		this.updateScrollableArea = function() {
+			setScrollableArea();
+		};
+
 		
 		function setScrollableArea() {
 			var cntDim = { w: $container.width(), h: $container.height() }

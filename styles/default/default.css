@@ -599,14 +599,11 @@ div.galleryEditor .links {
 }
 
 .galleryEditor .pic img {
-	max-width: 240px;
-	max-height: 180px;
 	/*border:3px solid #fff;*/
-	display: block;
-	
-	box-shadow:0 0 2px #000;
-	-webkit-box-shadow:0 0 2px #000;
-	-moz-box-shadow:0 0 2px #000;
+	padding: 0px;
+	box-shadow: 0 0 2px #000;
+	-webkit-box-shadow: 0 0 2px #000;
+	-moz-box-shadow: 0 0 2px #000;
 }
 
 .galleryEditor .imageHolder{
