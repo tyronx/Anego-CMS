@@ -146,22 +146,22 @@ function setSetting($name, $value) {
 		BailErr('Failed applying setings', $q);
 }
 
-if(!isset($settings['menu_scroll'])) $settings['menu_scroll']='0';
+if(!isset($settings['menu_scroll'])) $settings['menu_scroll'] = '0';
 
-$anego->AddJsPreload("\tanego.homepage=".HomePage().';');
-$anego->AddJsPreload("\tanego.menu_scroll=".$settings['menu_scroll'].";");
+$anego->AddJsPreload("\tanego.homepage=" . HomePage() . ';');
+$anego->AddJsPreload("\tanego.menu_scroll=" . $settings['menu_scroll'] . ";");
 
 if (isset($settings['keywords']) && strlen($settings['keywords'])) {
-	$anego->AddHeadHeader("\t".'<meta name="keywords" content="'.htmlentities(utf8_decode($settings['keywords'])).'">');
+	$anego->AddHeadHeader("\t" . '<meta name="keywords" content="' . htmlentities(utf8_decode($settings['keywords'])).'">');
 }
 
 if (isset($settings['description']) && strlen($settings['description'])) {
-	$anego->AddHeadHeader("\t".'<meta name="description" content="'.htmlentities(utf8_decode(str_replace("\n",' ',$settings['description']))).'">');
+	$anego->AddHeadHeader("\t" . '<meta name="description" content="' . htmlentities(utf8_decode(str_replace("\n",' ',$settings['description']))).'">');
 }
 
 $anego->assign('pagetitle', str_replace(array('<','>'),array('&lt;','&gt;'), $settings['pagetitle']));
-$anego->assign('loginok',LOGINOK);
-$anego->assign('editablePage',LOGINOK && basename($_SERVER['SCRIPT_NAME']) == 'index.php');
+$anego->assign('loginok', LOGINOK);
+$anego->assign('editablePage', LOGINOK && basename($_SERVER['SCRIPT_NAME']) == 'index.php');
 
 /**** Error handling ****/
 
@@ -173,11 +173,12 @@ $anego->assign('editablePage',LOGINOK && basename($_SERVER['SCRIPT_NAME']) == 'i
 }*/
 
 function Bail($msg,$no_header=0) {
-	ExitError($msg,"",0,0,$no_header);
+	ExitError($msg, "", 0, 0, $no_header);
 }
+
 // Bail after unsuccessfull SQL Query without header (only used when connecting to DB failed)
 function BailSQLn($msg,$q,$log_once=0) {
-	ExitError($msg,mysql_error()."\r\nQuery: '$q'",2,$log_once,true);
+	ExitError($msg, mysql_error() . "\r\nQuery: '$q'", 2, $log_once, true);
 }
 // Bail after unsuccessfull SQL Query with header
 function BailSQL($msg,$q,$log_once=0) {
@@ -188,7 +189,7 @@ function BailSQL($msg,$q,$log_once=0) {
 	ExitError($msg,mysql_error()."\r\nQuery: '$q'",2,$log_once);
 }
 // Normal Bail for non-Ajax Request
-function BailErr($msg,$log="",$log_once=0) {
+function BailErr($msg , $log="", $log_once=0) {
 	if(IS_AJAX) {
 		logError($msg);
 		exit("500\n$msg");
@@ -202,17 +203,20 @@ function logError($msg, $query = '') {
 		sprintf(__('<br>There was an error, I\'m sorry I couldnt execute your request. The respsonsible php script '.
 				   'told me: %s<br><br>A detailed error message has been logged.'),$msg));
 	
-	if(strlen($query))
-		$log=mysql_error()."\nQuery: '$query'";
+	$log = '';
+	if (strlen($query))
+		$log = mysql_error()."\nQuery: '$query'";
 
 	$fp = fopen('var/error.log','a');
-	fwrite($fp,"ID: n/a\n");
-	fwrite($fp,"Time: ".time()." (".@date("H:i d.m.Y").")\n");
-	fwrite($fp,"Error: logError(".str_replace("\n\n","\n",$msg).")\n");
-	if(strlen($log)) fwrite($fp,"Log: ".str_replace("\n\n","\n",$log)."\n");
-	fwrite($fp,'$_GET: '.serialize($_GET)."\n");
-	fwrite($fp,'$_POST: '.serialize($_POST)."\n");
-	fwrite($fp,"\n");
+	fwrite($fp, "ID: n/a\n");
+	fwrite($fp, "Time: ".time()." (".@date("H:i d.m.Y").")\n");
+	fwrite($fp, "Error: logError(".str_replace("\n\n","\n",$msg).")\n");
+	if (strlen($log)) {
+		fwrite($fp, "Log: ".str_replace("\n\n","\n",$log) . "\n");
+	}
+	fwrite($fp, '$_GET: '.serialize($_GET)."\n");
+	fwrite($fp, '$_POST: '.serialize($_POST)."\n");
+	fwrite($fp, "\n");
 	
 	fclose($fp);
 }

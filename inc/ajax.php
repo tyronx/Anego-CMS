@@ -192,43 +192,49 @@ switch($ac) {
 		exit("200\nok.");
 	
 	case 'delce':
-		if(!LOGINOK) exit("You need to log on first.");
+		if (!LOGINOK) exit("You need to log on first.");
 		
 		$mid = trim($_GET['mid']);
 		$elid = intval($_GET['elid']);
 		$pid = intval($_GET['pid']);
 		
-		if(!$elid) exit("300\nInvalid element id");
+		if (!$elid) {
+			exit("300\nInvalid element id");
+		}
 		
-		if(preg_match("#[^a-zA-Z0-9_-]+#",$mid))
+		if (preg_match("#[^a-zA-Z0-9_-]+#",$mid)) {
 			exit("300\nInvalid module id");
+		}
 		
 		$m = $pmg->getModules();
-		if(!isset($m[$mid]))
+		if (!isset($m[$mid]))
 			exit("300\nCan't find module of type '".$mid."'");
 			
 		include_once('modules/'.$mid.'/'.$mid.'.php');
 					
 		$ce = new $mid($pid);
-		if($ce->deleteElement($elid)) {
+		if ($ce->deleteElement($elid)) {
 			$q = "SELECT page_id, position FROM ".PAGE_ELEMENT." WHERE element_id=$elid AND module_id='$mid'";
-			$res=mysql_query($q) or 
-				BailErr("Failed getting page id",$q);
+			$res = mysql_query($q) or
+				BailSQL("Failed getting page id", $q);
+
 			list($page_id, $elpos) = mysql_fetch_array($res);
 
-
-			$q = "DELETE FROM ".PAGE_ELEMENT." WHERE element_id=$elid AND module_id='$mid'";
-			$res=mysql_query($q) or
-				BailErr("Failed deleting content element table",$q);
+			$q = "DELETE FROM " . PAGE_ELEMENT . " WHERE element_id=$elid AND module_id='$mid'";
+			$res = mysql_query($q) or
+				BailSQL("Failed deleting content element table", $q);
 				
-			$q = "UPDATE ".PAGE_ELEMENT." SET position=position-1 WHERE page_id=$page_id AND position>$elpos";
-			$res=mysql_query($q) or
-				BailErr("Failed decreasing position",$q);
+			if (mysql_affected_rows()) {
+				$q = "UPDATE " . PAGE_ELEMENT . " SET position=position-1 WHERE page_id=$page_id AND position>$elpos";
+				$res = mysql_query($q) or
+					BailSQL("Failed decreasing position", $q);
+			}
 			
 			$pmg->generatePage($page_id);
 			
 			exit("200\nok");
 		}
+		
 		exit("300\nmodule denied delete");
 	
 	// Print main menu

@@ -38,14 +38,7 @@ class blog extends ContentElement {
 		return <<<EOT
 		<script type="text/javascript">
 		$(function() {
-			$.get("modules/blog/",{a:'g',id:$elemId,editmode:(typeof anego.editmode == 'boolean' && anego.editmode==true)},function(data) {
-				var aw;
-				if(aw=GetAnswer(data)) {
-					$("#blogc_$elemId").html(aw);
-					Core.initPageContent();
-					$("#blogc_$elemId .blogElements").jPaginate({ items: 4 });
-				}
-			});
+			blogfuncs.initBlog($elemId);
 		});
 		</script>
 		<noscript>$noscript</noscript>

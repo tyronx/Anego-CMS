@@ -260,8 +260,8 @@ function CoreFunctions() {
 		
 		// Retrieve the actual page
 		$.get(file, get, function(data) {
-			if(aw=GetAnswer(data)) {
-				if(animated) putLoadedText(aw);
+			if (aw = GetAnswer(data)) {
+				if (animated) putLoadedText(aw);
 				loaded=true;
 
 				if(settings.ok_callback) 
@@ -399,7 +399,7 @@ function CoreFunctions() {
 			// Todo: Code this a bit cleaner
 			if(typeof data == 'undefined') {
 				$.get("index.php?a=gce&fgx="+page, function(data) {
-					if(aw=GetAnswer(data)) {
+					if (aw = GetAnswer(data)) {
 						data = jQuery.parseJSON(aw);
 						Core.loadJSONResult(data);
 						$('#content').html(data.content);
@@ -843,10 +843,20 @@ function BoundBy(x, minx, maxx) {
  * and error numbers should be given some actual meaning
  */
 function GetAnswer(text) {
-	if(text.substr(0,3)!='200') {
+	// If the response data is a json object, then the error code is stored in the status property
+	if (typeof text == "object") {
+		if (text.status.substr(0,3) != '200') {
+			alert(text.substr(4));
+			return null;
+		}
+		return text;
+	}
+	
+	if (text.substr(0,3) != '200') {
 		alert(text.substr(4));
 		return null;
 	}
+	
 	return text.substr(4);
 }
 
@@ -1154,7 +1164,7 @@ var ContentElement = Class.extend({
 		if(this.onInit) this.onInit();
 	},
 	
-	createElement: function(container, position, callback) {
+	createElement: function(container, position, successCallback, endeditCallback) {
 		var self = this;
 		
 		$.get('index.php', {
@@ -1170,20 +1180,23 @@ var ContentElement = Class.extend({
 				container.attr('id',self.module_id + "_" + data.id);
 				self.containerId = container.attr('id');
 				self.element_id = data.id;
-				self.startEdit(true);
+				self.startEdit({newlyCreated: true, onEndEdit: endeditCallback});
 				
-				callback(self.module_id + "_" + data.id);
+				successCallback(self.module_id + "_" + data.id);
 			}
 		});
 	},
 	
-	startEdit: function(newlyCreated) {
-		if(this.onStartEdit(newlyCreated)) {
+	startEdit: function(options) {
+		if(this.onStartEdit(options.newlyCreated)) {
+			this.endEditCallback = options.onEndEdit;
 			this.editing = true;
 			$('#'+this.containerId).removeClass('ceDraggable');
 			$('#'+this.containerId).addClass('ceEditing');
 			this.hideMiniToolbar = true;
+			return true;
 		}
+		return false;
 	},
 	
 	endEdit: function() {
@@ -1192,7 +1205,12 @@ var ContentElement = Class.extend({
 			$('#'+this.containerId).removeClass('ceEditing');
 			this.editing = false;
 			this.hideMiniToolbar = false;
+			
+			if(this.endEditCallback) this.endEditCallback($('#'+this.containerId));
+			
+			return true;
 		}
+		return false;
 	},
 	deleteElement: function(callback) {
 		$.get('index.php', {

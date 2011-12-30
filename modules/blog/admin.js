@@ -1,25 +1,40 @@
 blogfuncs = new blogFunctions();
 
-if(!jQuery().tinymce) Core.loadJavascript("ld.ap");
+if (! jQuery().tinymce) Core.loadJavascript("ld.ap");
 
-function blogFunctions() {	
+function blogFunctions() {
 	var myself = this;
 	var blogEntryLoaded = -1;
 	var loadingEntry =  false;
 	
+	this.initBlog = function(blog_id) {
+		$.get("modules/blog/", {
+			a: 'g',
+			id: blog_id,
+			editmode: (typeof anego.editmode == 'boolean' && anego.editmode == true)
+		}, function(data) {
+			var aw;
+			if(aw = GetAnswer(data)) {
+				$("#blogc_" + blog_id).html(aw);
+				Core.initPageContent();
+				$("#blogc_" + blog_id + " .blogElements").jPaginate({ start: 1, items: 4 });
+			}
+		});
+	}
+	
 	this.onloadPage = function(page) {
 		// When loading the blog entry, Core.curPg will not change so the 'edit page' link still works
 		// but then we need to take care that when the users presses the back button, the old page gets loaded again
-		if(page.type=='pg' && page.fullpath == anego.curPg && blogEntryLoaded!=-1) {
+		if (page.type == 'pg' && page.fullpath == anego.curPg && blogEntryLoaded != -1) {
 			blogEntryLoaded = -1;
 			// Be really careful when calling loadpage, as it will fire the loadPage event again, so make sure not to fall in a endless loop
-			Core.loadPage(location,{forceLoad:true});
+			Core.loadPage(location, { forceLoad: true });
 			return true;
 		}
 		
-		if(page.type=='blog') {
+		if (page.type == 'blog') {
 			// page.tail[0] is entry id, page.id is blog id
-			myself.loadEntry(null,page.tail[0],page.id);
+			myself.loadEntry(null, page.tail[0], page.id);
 			return true;
 		}
 		
@@ -29,7 +44,7 @@ function blogFunctions() {
 	
 	Core.addloadPageHook(this.onloadPage);
 	
-	this.newEntry=function(blog_id) {
+	this.newEntry = function(blog_id) {
 		OpenDialog({
 			title: lngBlog.newblog,
 			buttons: BTN_SAVECANCEL,
@@ -37,15 +52,19 @@ function blogFunctions() {
 			content: lngBlog.blogtitle + '<br><input style="width:90%;" type="text" id="newblogTitle"><br><br><textarea style="width:100%" id="newblogText"></textarea>',
 			ok_callback: function() {
 				var $self = this;
-				$('#im_pr').css('display','');
-				$('#dlgOK').attr('disabled','disabled');
+				$self.waitResponse();
 				
-				$.post('modules/blog/',{a:'cb',id:blog_id, title:$('#newblogTitle').attr('value'),content:$('#newblogText').tinymce().getContent()},function(data) {
+				$.post('modules/blog/', {
+					a: 'cb',
+					id: blog_id, 
+					title: $('#newblogTitle').attr('value'),
+					content: $('#newblogText').tinymce().getContent()
+				}, function(data) {
 					var aw;
-					if((aw=GetAnswer(data))) {
-						$('#blogadminbar_'+blog_id).after(aw);
-						$('#im_pr').css('display','none');
-						$('#dlgOK').removeAttr('disabled');
+					
+					$self.endWait();
+					if (aw = GetAnswer(data)) {
+						$('#blogadminbar_' + blog_id).after(aw);
 						$('#newblogText').tinymce().hide();
 						$self.closeDialog();
 					}
@@ -65,16 +84,17 @@ function blogFunctions() {
 			content: lngBlog.blogtitle+'<br><input style="width:90%;" type="text" id="editblogTitle" value="'+$('#blogElement_'+el_id+' .blogTitle').html()+'"><br><br><textarea style="width:100%" id="editblogText">'+$('#blogElement_'+el_id+' .blogContent').html()+'</textarea>',
 			ok_callback: function() {
 				var $self = this;
-				$('#im_pr').css('display','');
-				$('#dlgOK').attr('disabled','disabled');
+
+				$self.waitResponse();
 				
 				$.post('modules/blog/',{a:'ub',id:el_id, title:$('#editblogTitle').attr('value'),content:$('#editblogText').tinymce().getContent()},function(data) {
 					var aw;
-					if((aw=GetAnswer(data))) {
+					
+					$self.endWait();
+					if (aw = GetAnswer(data)) {
 						$('#blogElement_'+el_id+' .blogTitle').html($('#editblogTitle').attr('value'));
 						$('#blogElement_'+el_id+' .blogContent').html($('#editblogText').tinymce().getContent());
-						$('#im_pr').css('display','none');
-						$('#dlgOK').removeAttr('disabled');
+						
 						$('#editblogText').tinymce().hide();
 						$self.closeDialog();
 					}
@@ -105,19 +125,19 @@ function blogFunctions() {
 		});
 	}
 	
-	this.loadEntry = function(link_elem,el_id,blog_id) {
-		if(loadingEntry) return;
-		if(link_elem)
-			$(link_elem).attr('href','#blog'+blog_id+'/'+el_id);
+	this.loadEntry = function(link_elem, el_id, blog_id) {
+		if (loadingEntry) return;
+		if (link_elem)
+			$(link_elem).attr('href','#blog' + blog_id + '/' + el_id);
 		
 		var aw;
 		var loaded=false;
 		
 		/* Fade out text */
-		if(anego.animatePageLoad>0)
+		if(anego.animatePageLoad > 0)
 			$('#content').css({opacity: 1.0}).animate({opacity: 0.0}, anego.animatePageLoad, function() {
-				if(loaded) putLoadedText(aw);
-				loaded=true;
+				if (loaded) putLoadedText(aw);
+				loaded = true;
 			});
 
 		
@@ -125,13 +145,13 @@ function blogFunctions() {
 		$.get('modules/blog/',{a:'le',id:el_id}, function(data) {
 			loadingEntry = false;
 			var aw;
-			if(aw=GetAnswer(data)) {
+			if(aw = GetAnswer(data)) {
 				putLoadedText(aw);
 				loaded=true;
 			}
 		});
 		
-		blogEntryLoaded=el_id;
+		blogEntryLoaded = el_id;
 		
 		function putLoadedText(str) {
 			$('#content').html(str);
@@ -141,7 +161,7 @@ function blogFunctions() {
 				
 			Core.curPg = Core.pageInfo('blog/'+el_id);
 		}
-	}
+	};
 	
 	this.postComment = function(el_id) {
 		if($('#commentMail').attr('value').length > 0) {
@@ -156,45 +176,54 @@ function blogFunctions() {
 		$('#commentButton').attr('disabled','disabled');
 		$('#loadingIconSlot').addClass('loadingIcon');
 		
-		$.post('modules/blog/',{a:'wc',id:el_id,comment:$('#commentBody').attr('value'),name:$('#commentName').attr('value')},function(data) {			
-			var aw,cmts;
-			$('#commentButton').attr('disabled','');
-			$('#loadingIconSlot').removeClass('loadingIcon');
-			if(aw=GetAnswer(data)) {
-				// The first line is the comment counter
-				cmts = aw.substr(0,aw.indexOf("\n"));
-				$('#blogElement_'+el_id+' .commentCounter').html(cmts);
-				$('#blogElement_'+el_id+' .commentSection').prepend(aw.substr(cmts.length));
-				$('#commentBody').attr('value','');
-				$('#commentName').attr('value','');
-			}
+		$.post('modules/blog/',{ 
+				a: 'wc',
+				id: el_id,
+				comment: $('#commentBody').attr('value'),
+				name: $('#commentName').attr('value')
+			}, function(data) {
+				var aw,cmts;
+				$('#commentButton').attr('disabled','');
+				$('#loadingIconSlot').removeClass('loadingIcon');
+				if (aw = GetAnswer(data)) {
+					// The first line is the comment counter
+					cmts = aw.substr(0,aw.indexOf("\n"));
+					$('#blogElement_' + el_id + ' .commentCounter').html(cmts);
+					$('#blogElement_' + el_id + ' .commentSection').prepend(aw.substr(cmts.length));
+					$('#commentBody').attr('value','');
+					$('#commentName').attr('value','');
+				}
 		});
-	}
+	};
 	
-	this.deleteComment = function(cmt_id,blog_id) {
+	this.deleteComment = function(cmt_id, blog_id) {
 		OpenDialog({
-			title:lngBlog.deletecmt ,
-			content:lngBlog.rlydeletecmt ,
+			title: lngBlog.deletecmt,
+			content: lngBlog.rlydeletecmt,
 			ok_callback: function() {
 				var $self = this;
-				$.get('modules/blog/',{a:'dc',cmt_id:cmt_id,blog_id:blog_id},function(data) {
+				$.get('modules/blog/', {
+					a:'dc',
+					cmt_id: cmt_id,
+					blog_id: blog_id
+				},function(data) {
 					var aw;
-					if(aw=GetAnswer(data)) {
-						$('#blogCmt'+cmt_id).remove();
-						$('#blogElement_'+blog_id+' .commentCounter').html(aw);
+					if (aw = GetAnswer(data)) {
+						$('#blogCmt' + cmt_id).remove();
+						$('#blogElement_' + blog_id + ' .commentCounter').html(aw);
 						$self.closeDialog();
 					}
 				});
 			}
 		});
-	}
+	};
 	
 	this.tinyfy = function(el_id) {
 		var mcelang='en';
 		if(anego.language=='ger') /* language var defined by Anego */
 			mcelang='de';
 		
-		$('#'+el_id).tinymce({
+		$('#' + el_id).tinymce({
 			script_url : 'lib/tiny_mce/tiny_mce_gzip.php',
 			mode : 'none',
 			theme : "advanced",	
@@ -216,6 +245,5 @@ function blogFunctions() {
 			external_link_list_url : "modules/simpletext/linkList.js.php",
 			convert_urls : false
 		});
-	}
-
+	};
 }
