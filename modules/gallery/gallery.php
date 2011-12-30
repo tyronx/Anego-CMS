@@ -24,7 +24,8 @@ class gallery extends ContentElement {
 		'lp'	=> 'loadPictures',
 		'up'	=> 'uploadPicture',
 		'us'	=> 'updateSettings',
-		'dp'	=> 'deletePicture'
+		'dp'	=> 'deletePicture',
+		'mp'	=> 'movePicture'
 	);
 	
 	function databaseTable() { return $GLOBALS['cfg']['tablePrefix'].'pages_gallery'; }
@@ -48,7 +49,7 @@ class gallery extends ContentElement {
 				$preview = preg_replace("/(\.\w+)$/i", "_r\\1", $pic['filename']);
 				$str .= '<div class="pic">';
 				$str .= '<a rel="gallery'. $this->elementId .'" href="' . $this->path . $pic['filename'] . '" title="' . $pic['description'] . '">
-						<img class="thumbnail" src="' . $this->path . $preview . '" alt="' . $pic['title'] . '"></a>';
+						<img class="thumbnail" src="' . $this->path . $preview . '" alt="' . $pic['title'] . '" title="' . $pic['title'] . '"></a>';
 				$str .= '</div>';
 			}
 			$elemId = $this->elementId;
@@ -64,6 +65,58 @@ class gallery extends ContentElement {
 			<div class="bothclear"></div>
 EOF;
 		}
+	}
+	
+	function movePicture() {
+		$picid = intval(@$_POST['picid']);
+		$picPosLeft = intval(@$_POST['picPosLeft']);
+		$picPosRight = intval(@$_POST['picPosRight']);
+		
+		// No item on the left => put to begin
+		$newPos = 1;
+		
+		// No item on the right => put to the end
+		if (! $picPosRight) {
+			$q = 'SELECT max(position) FROM ' . $this->picTable() . ' WHERE gallery_id=' . $this->elementId;
+			$res = mysql_query($q) or BailSQL(__('Couldn\'t get max pos in db'), $q);
+			list($maxPos) = mysql_fetch_row($res);
+			
+			$newPos = $maxPos + 1;
+		}
+		
+		// Item on the left => put 1 higher
+		if ($picPosLeft) {
+			$newPos = $picPosLeft + 1;
+		}
+		
+		/* Start the move */
+		mysql_query("START TRANSACTION") or 
+			BailSQL(__('Couldn\'t start transaction'), "START TRANSACTION");
+		
+		// Get old position
+		$q = 'SELECT position FROM ' . $this->picTable() . ' WHERE idx=' . $picid;
+		$res=mysql_query($q) or BailSQL(__("Failed getting element pos"), $q);
+		list($oldpos) = mysql_fetch_array($res);
+		
+		// Cut it out
+		$q = 'UPDATE ' . $this->picTable() . ' SET position=position-1 WHERE gallery_id=' . $this->elementId . ' AND position>' . $oldpos;
+		mysql_query($q) or BailSQL(__("Failed cutting out element"), $q);
+		// If being moved forward, we also have to decrease that position
+		if ( $newPos > $oldpos ) $newPos--;
+
+		// Move all pictures on the right up a position
+		$q = 'UPDATE ' . $this->picTable() . ' SET position=position+1 WHERE position>=' . $newPos . ' AND gallery_id=' . $this->elementId;
+		$res = mysql_query($q) or BailSQL(__('Couldn\'t move images in db'), $q);
+		
+		// Finally update our element
+		$q = 'UPDATE ' . $this->picTable() . ' SET position=' . $newPos . ' WHERE idx=' . $picid;
+		$res = mysql_query($q) or BailSQL(__('Couldn\'t move image in db'), $q);
+
+		if (! mysql_query("COMMIT")) {
+			BailSQL(__("Couldn't commit change"),"COMMIT");
+		}
+		
+		return "200\nok";
 	}
 	
 	function savePicture() {
@@ -227,7 +280,10 @@ EOF;
 			
 			$q = 'SELECT max(position) FROM ' . $this->picTable() . ' WHERE gallery_id=' . $this->elementId;
 			$res = mysql_query($q) or BailSQL(__('Couldn\'t move images in db'), $q);
+			
 			list($maxPos) = mysql_fetch_row($res);
+			
+			$result['maxpos'] = $maxPos;
 			
 			$q = 'INSERT INTO ' . $this->picTable() . ' (gallery_id, position, filename) VALUES ';
 			$q.= "('" . $this->elementId . "','" . ($maxPos + 1) . "', '" . $newName . "')";

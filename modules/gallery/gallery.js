@@ -138,9 +138,11 @@ gallery = ContentElement.extend({
 					rnd = Math.round(Math.random() * 100000);
 					
 					$image = $(self.imgTemplate);
+					$image.data('position', pic.position);
 					$('img', $image)
 						.attr('src', self.imageData.path + '/' + pic.filename_preview + '?' + rnd)
-						.attr('alt', pic.title);
+						.attr('alt', pic.title)
+						.attr('title', pic.title);
 					
 					$('.progressHolder', $image).remove();
 					$('.uploading', $image).remove();
@@ -159,7 +161,24 @@ gallery = ContentElement.extend({
 				}
 				
 				$imageGrid.sortable({
-					containment: 'parent'
+					update: function(event, ui) {
+						var imgData = $('a', ui.item).data('picData');
+						
+						$.post('index.php',{
+							a: 'callce',
+							fn: 'mp',
+							mid: self.module_id,
+							pid: self.page_id,
+							elid: self.element_id,
+							picid: imgData.idx,
+							picPosLeft: ui.item.prev().data('position'),
+							picPosRight: ui.item.next().data('position')
+						}, function(data) {
+							if(aw = GetAnswer(data)) {
+								
+							}
+						});
+					}
 				});
 			}
 		});
@@ -275,8 +294,8 @@ gallery = ContentElement.extend({
 		
 		for(var i=0; i < self.imageData.sizes.length; i++) {
 			var size = self.imageData.sizes[i];
-			var $imgsize = $('<a href="#">' + size['width'] + 'x' + size['height'] + '</a>');
-			var $cropsize = $('<a href="#">' + size['width'] + 'x' + size['height'] + '</a>');
+			var $imgsize = $('<a class="imgSize" href="#">' + size['width'] + 'x' + size['height'] + '</a>');
+			var $cropsize = $('<a class="cropSize" href="#">' + size['width'] + 'x' + size['height'] + '</a>');
 			
 			$imgsize.data('size', { w: parseInt(size['width']), h: parseInt(size['height']) });
 			$('.defaultSizes', $dlgContent).append($imgsize);
@@ -329,7 +348,11 @@ gallery = ContentElement.extend({
 			}, function(data) {
 				if(aw = GetAnswer(data)) {
 					$('a', $previewImage).attr('title', $('input[name="description"]', self.$imageDlg).val());
-					$('img', $previewImage).attr('alt', $('input[name="title"]', self.$imageDlg).val());
+					
+					var title = $('input[name="title"]', self.$imageDlg).val();
+					$('img', $previewImage)
+						.attr('alt', title)
+						.attr('title', title);
 					
 					if(resizeSettings.changed) {
 						var rnd = Math.round(Math.random() * 100000);

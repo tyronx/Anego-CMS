@@ -73,6 +73,11 @@ function DragDropElements(contentElements) {
 	/* Editor window */
 	var out='<div class="draggableList">';
 
+	function rebindElementEvents(container) {
+		container.bind('mousemove.admPage', elementMouseMove);
+		container.bind('mousedown.admPage', elementMouseDown);
+	}
+
 	this.init = function() {
 		// Make sure #content is big enough to put something into
 		if(parseInt($('#content').css('min-height')) < 80 || parseInt($('#content').css('height') < 80))
@@ -106,9 +111,12 @@ function DragDropElements(contentElements) {
 				
 				if(targetElem != undefined) {
 					if(! targetElem.editing) {
-						targetElem.startEdit();
+						if(targetElem.startEdit({ onEndEdit: rebindElementEvents })) {
+							$(curEl).unbind('mousemove.admPage', elementMouseMove);
+							$(curEl).unbind('mousedown.admPage', elementMouseDown);
+						}
 					} else {
-						targetElem.endEdit()
+						targetElem.endEdit();
 					}
 					
 					if(targetElem.getHideMiniToolbar())
@@ -118,6 +126,7 @@ function DragDropElements(contentElements) {
 				}
 			});
 			
+
 			miniToolbar.append(imgBin);
 			imgBin.click(function() {
 				var res=confirm("Really delete?");
@@ -151,20 +160,14 @@ function DragDropElements(contentElements) {
 				$(curEl).offset({ top: p.top, left: p.left })
 				dx = event.pageX - p.left
 				dy = event.pageY - p.top;
+				
+				/* Track document wide mouse movements */
+				$(document)
+					.bind('mousemove.admPage', documentMouseMove)
+					.bind('mouseup.admPage', documentMouseUp);
 				return false;
 			});
 		}
-		
-		/* Track document wide mouse movements */
-		$(document).mousemove(function(event) {
-			mouseMoved(event);
-			if(!mouseDown)
-				if(curEl && !outerInside($(curEl),event.pageX,event.pageY)) { 
-					miniToolbar.css('display','none'); 
-					$(curEl).removeClass('ceBorder'); 
-					curEl=null; 
-				}
-		});
 		
 		/* Track #content wide mouse movement */
 		$('#content').mousemove(function(event) {
@@ -195,73 +198,83 @@ function DragDropElements(contentElements) {
 			}
 		});
 		
-		/* Mouse button released = new element dropped or existing element moved */
-		$(document).mouseup(function(event) {
-			if(!mouseDown) return;
-			mouseDown = 0;
-			// User moved a previously placed content element
-			if(movingCE) {
-				if($('#insertMarker').length>0) {
-					var mPos = markerPosition();
-
-					$(curEl).css('left','');
-					$(curEl).css('top','');
-					$(curEl).css('position','');
-					$(curEl).css('width','');
-					$(curEl).css('z-index','1');
-					$('#insertMarker').replaceWith(curEl);
-					$(oldEl).remove();
-					bindEvents(curEl);
-					var ret = splitID($(curEl).attr('id'));
-					
-					$.get('index.php?a=mce&mid='+ret.module_id+'&elid='+ret.elem_id+'&newpos='+mPos,
-						function(data) {
-							if(aw=GetAnswer(data)) {
-								// ok
-							} else {
-								// undo all
-							}
-						});
-				} else {				
-					if(oldEl!=undefined) {
-						$(curEl).remove();
-						$(oldEl).css('display','');
-					}
-				}
-				movingCE=0; 
-				oldEl=undefined;
-				return; 
-			}
-			
-			// Creating a new content element
-			if($('#insertMarker').length>0) {
-				// content element template "index"
-				var num = parseInt(curEl.attr('id').substr(prefix2.length));
-				var $container = $('<div class="contentElement ceDraggable"><img src="styles/default/img/progress_active.gif"></div>');
-				var markerPos = markerPosition();
-				
-				$('#insertMarker').replaceWith($container);
-				// Call to module
-				var obj;
-				eval("obj = new "+contentElements[num]['mid']+"('" + contentElements[num]['mid'] + "', " + Core.curPg.id + ");");
-				obj.createElement(
-					$container,
-					markerPos,
-					function(elmid) { pageElements[elmid]=obj; }
-				);
-				bindEvents($container);
-			}
-			
-			$(curEl).remove();
-		});
-		
-		
 		this.preparePage();
 	}; // end of init();
+	
+	/* Mouse button released = new element dropped or existing element moved */
+	function documentMouseUp(event) {
+		if(!mouseDown) return;
+		mouseDown = 0;
+
+		/* Track document wide mouse movements */
+		$(document)
+			.unbind('mousemove.admPage', documentMouseMove)
+			.unbind('mouseup.admPage', documentMouseUp);
+
+		// User moved a previously placed content element
+		if(movingCE) {
+			if($('#insertMarker').length>0) {
+				var mPos = markerPosition();
+
+				$(curEl).css('left','');
+				$(curEl).css('top','');
+				$(curEl).css('position','');
+				$(curEl).css('width','');
+				$(curEl).css('z-index','1');
+				$('#insertMarker').replaceWith(curEl);
+				$(oldEl).remove();
+				bindEvents(curEl);
+				var ret = splitID($(curEl).attr('id'));
+				
+				$.get('index.php?a=mce&mid='+ret.module_id+'&elid='+ret.elem_id+'&newpos='+mPos,
+					function(data) {
+						if(aw=GetAnswer(data)) {
+							// ok
+						} else {
+							// undo all
+						}
+					});
+			} else {				
+				if(oldEl!=undefined) {
+					$(curEl).remove();
+					$(oldEl).css('display','');
+				}
+			}
+			movingCE=0; 
+			oldEl=undefined;
+			
+			return; 
+		}
+		
+		// Creating a new content element
+		if($('#insertMarker').length>0) {
+			// content element template "index"
+			var num = parseInt(curEl.attr('id').substr(prefix2.length));
+			var $container = $('<div class="contentElement ceDraggable"><img src="styles/default/img/progress_active.gif"></div>');
+			var markerPos = markerPosition();
+			
+			$('#insertMarker').replaceWith($container);
+			// Call to module
+			var obj;
+			eval("obj = new "+contentElements[num]['mid']+"('" + contentElements[num]['mid'] + "', " + Core.curPg.id + ");");
+			obj.createElement(
+				$container,
+				markerPos,
+				function(elmid) { pageElements[elmid]=obj; },
+				rebindElementEvents
+			);
+			bindEvents($container);
+		}
+		
+		$(curEl).remove();
+	}
 	
 	this.destroy = function() {
 		$('.contentElement').unbind('.admPage');
 		$('.miniToolbar').remove();
+		$(document)
+			.unbind('mousemove.admPage', documentMouseMove)
+			.unbind('mouseup.admPage', documentMouseUp);
 	}
 	
 	this.preparePage = function() {
@@ -280,45 +293,60 @@ function DragDropElements(contentElements) {
 			var found = false;
 			for(var i = 0; i < contentElements.length; i++) {
 				module_id = contentElements[i]['mid'];
-				if(module_id == elInfo.module_id) {
+				if (module_id == elInfo.module_id) {
 					pageElements[$(this).attr('id')] = eval("new " + module_id + "('" + module_id + "', " + Core.curPg.id + ", '" + elInfo.elem_id + "');");
 					found = true;
 					break;
 				}
 			}
 			
-			if(!found) console.log("some content elements could not be loaded [insert proper error handling here (= don't make those elements editable + mark as such)]");
+			if (!found) console.log("some content elements could not be loaded [insert proper error handling here (= don't make those elements editable + mark as such)]");
 		});
 		
 		/* Set up events for already loaded content elemens */
 		bindEvents($('.contentElement'));
 	};
-	
+
+	function documentMouseMove(event) {
+		mouseMoved(event);
+		if (!mouseDown)
+			if (curEl && !outerInside($(curEl),event.pageX,event.pageY)) { 
+				miniToolbar.css('display','none'); 
+				$(curEl).removeClass('ceBorder'); 
+				curEl=null; 
+			}
+	}
 	
 	function mouseMoved(event) {
 		//document.getElementById('editpage').innerHTML=event.pageX + " / " + event.pageY;
-		if(mouseDown && curEl.length>0) {
-			var x = BoundBy(event.pageX+offsetX,2,$(document).width()-curEl.width()-4);
-			var y = BoundBy(event.pageY+offsetY,2,$(document).height()-curEl.height()-4);
-			if($(curEl).hasClass('ceTemplate')) curEl.offset({ top: y, left: x});
-			else curEl.offset({ top: y }) //, left: x
+		if (mouseDown && curEl.length > 0) {
+			var x = BoundBy(event.pageX+offsetX, 2, $(document).width() - curEl.width() - 4);
+			var y = BoundBy(event.pageY+offsetY, 2, $(document).height() - curEl.height() - 4);
 			
-			if((!inside($('#content'),event.pageX,event.pageY) && !inside($('#content'),event.pageX,event.pageY+50)) || inside(Core.pageEditDialog,event.pageX,event.pageY))
+			if($(curEl).hasClass('ceTemplate')) {
+				curEl.offset({ top: y, left: x});
+			} else {
+				curEl.offset({ top: y });
+			}
+			
+			if ((!inside($('#content'),event.pageX,event.pageY) && !inside($('#content'),event.pageX,event.pageY+50)) || inside(Core.pageEditDialog,event.pageX,event.pageY))
 				$('#insertMarker').remove();
 			
-		} else mouseDown=0;
+		} else {
+			mouseDown=0;
+		}
 	}
 	
 	// Called when the mouse is moved over a content element
 	function overContentElement(event, element) {
-		if(mouseDown) {
-			if(movingCE == 1) dragContentElement(event);
+		if (mouseDown) {
+			if (movingCE == 1) dragContentElement(event);
 			$('#insertMarker').remove();
 			$(element).after('<hr id="insertMarker" style="background-color:transparent; width:100%; height:10px; margin-top:10px; border:1px dashed red;">');			
 		} else  {
-			if(curEl != element) { miniToolbar.css('display','none'); $(curEl).removeClass('ceBorder'); }
+			if (curEl != element) { miniToolbar.css('display','none'); $(curEl).removeClass('ceBorder'); }
 			
-			if(pageElements[$(element).attr('id')] == undefined || pageElements[$(element).attr('id')].getHideMiniToolbar() != true) {
+			if (pageElements[$(element).attr('id')] == undefined || pageElements[$(element).attr('id')].getHideMiniToolbar() != true) {
 				miniToolbar.css('display','');
 				// offset() needed here because other parent elements might have position:absolute etc.
 				miniToolbar.offset({ 
@@ -334,8 +362,8 @@ function DragDropElements(contentElements) {
 	}
 	
 	function overContentElementOut(event, element) {
-		if(!mouseDown) {
-			if(!outerInside($(element),event.pageX,event.pageY)) {
+		if (!mouseDown) {
+			if (!outerInside($(element),event.pageX,event.pageY)) {
 				miniToolbar.css('display','none');
 				$(element).removeClass('ceBorder');
 				curEl = null;
@@ -364,24 +392,9 @@ function DragDropElements(contentElements) {
 	/* Set up events for already loaded content element(s) */
 	function bindEvents(el) {
 		/* Moving mouse over a content element */
-		el.bind('mousemove.admPage', function(event) {
-			overContentElement(event,this);
-			mouseMoved(event);
-			return false;
-		});
-		
+		el.bind('mousemove.admPage', elementMouseMove);
 		/* Start dragging a content element */
-		el.bind('mousedown.admPage', function() {
-			if($(this).hasClass('ceDraggable')) {
-				curEl = this; 
-				// Make sure its visible
-				$(curEl).css('z-index','999');
-				movingCE=1; 
-				mouseDown=true;
-				miniToolbar.css('display','none');
-				return false;
-			}
-		});
+		el.bind('mousedown.admPage', elementMouseDown);
 		
 		/* Higlight placed content elements when hovering over with mouse and put toolbar */
 		el.bind('mouseenter.admPage', function (event) { 
@@ -390,6 +403,30 @@ function DragDropElements(contentElements) {
 		el.bind('mouseleave.admPage', function (event) { 
 			overContentElementOut(event,this); 
 		});
+	}
+	
+	function elementMouseMove(event) {
+		overContentElement(event,this);
+		mouseMoved(event);
+		return false;
+	}
+	
+	function elementMouseDown(event) {
+		if($(this).hasClass('ceDraggable')) {
+			curEl = this; 
+			// Make sure its visible
+			$(curEl).css('z-index','999');
+			movingCE=1; 
+			mouseDown=true;
+			miniToolbar.css('display','none');
+
+			/* Track document wide mouse movements */
+			$(document)
+				.bind('mousemove.admPage', documentMouseMove)
+				.bind('mouseup.admPage', documentMouseUp);
+
+			return false;
+		}
 	}
 	
 	function markerPosition() {

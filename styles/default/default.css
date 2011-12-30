@@ -332,7 +332,7 @@ table.gal img {
 .ceEditing {
 	background-color:#F5F5F5;
 	color:#4B4A4A;
-	padding:5px;
+	padding: 3px;
 	border:1px solid #C1C3C6;
 }
 
@@ -567,15 +567,14 @@ div.gallery div.pic {
 
 div.gallery div.pic a {
 	display: block;
-	min-width: 50px;
-	min-height: 50px;
-	border: 1px solid #DDD;
+	border: 1px solid gray;
 	padding: 5px;
 }
 
 div.gallery div.pic img.thumbnail {
 	text-align: center;
 	vertical-align: middle;
+	padding: 0px;
 }
 
 div.galleryEditor {

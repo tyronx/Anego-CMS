@@ -122,7 +122,9 @@
 
 		};
 		
-		this.setsize = function(size, proportional) {
+		this.setsize = function(newsize, proportional) {
+			var size = $.extend({}, newsize);
+
 			if(size.w == 0 && size.h == 0) return;
 			
 			if(proportional != false && size.w != 0 && size.h != 0) {

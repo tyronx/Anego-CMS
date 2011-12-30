@@ -112,8 +112,6 @@
 			$mover.addClass('grabCursor');
 
 			$mover.bind('mousedown.imageDrag', imageDragMouseDown);
-			$(document).bind('mouseup.imageDrag', imageDragMouseUp);
-			$(document).bind('mousemove.imageDrag', imageDragMouseMove);
 		};
 		
 		this.disable = function() {
@@ -131,6 +129,10 @@
 			start_x = Math.round(e.pageX - $container.offset().left) - imgPos.x; 
 			start_y = Math.round(e.pageY - $container.offset().top) - imgPos.y;
 
+			$(document)
+				.bind('mouseup.imageDrag', imageDragMouseUp)
+				.bind('mousemove.imageDrag', imageDragMouseMove);
+
 			return false;
 		}
 		
@@ -142,6 +144,10 @@
 			if(options.onDragComplete) {
 				options.onDragComplete(imgPos);
 			}
+			
+			$(document)
+				.unbind('mouseup.imageDrag', imageDragMouseUp)
+				.unbind('mousemove.imageDrag', imageDragMouseMove);
 			
 			return false;
 		}
