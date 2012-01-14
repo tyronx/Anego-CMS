@@ -84,6 +84,7 @@ function CoreFunctions() {
 	
 	this.openDialogs = Array();
 	this.dialogId = 1;
+	this.contentElementModules = null;
 	
 	/* Pages are identified by a type followed by an identifier and may then nest infinitely seperated by slashes
 	  e.g. pg34, pgad, blog23, blog23/item123/screenshot1/8
@@ -379,37 +380,46 @@ function CoreFunctions() {
 	this.editPage = function(page, data) {
 		var aw;
 		
-		if(!page) page = Core.curPg.id;
+		if (!page) {
+			page = Core.curPg.id;
+		}
+		if (!data) {
+			data = Core.contentElementModules;
+		}
 		
 		anego.editmode = true;
 
 		/* Dragdrop initialized -> only reinitalize for the contents */
-		if(Core.dragdrop) {
+		if (Core.dragdrop) {
 			Core.dragdrop.preparePage();
 			return;
 		}
 		
-		if(typeof DragDropElements == "undefined") 
-			Core.loadJavascript('ld.ap.ad'+anego.language);
+		if (typeof DragDropElements == "undefined") 
+			Core.loadJavascript('ld.ap.ad' + anego.language);
 		
 		$(document).ready(function() {
 			$('#pageEditLink').html(lngMain.doneedit_page);
 			$('#pageEditLink').attr('href','javascript:Core.endEdit()');
 			
 			// Todo: Code this a bit cleaner
-			if(typeof data == 'undefined') {
-				$.get("index.php?a=gce&fgx="+page, function(data) {
+			var initEdit = function(data) {
+				Core.dragdrop = new DragDropElements(data.modules);
+				Core.dragdrop.init();
+				Core.contentElementModules = data;
+			};
+			
+			if (! data) {
+				$.get("index.php?a=gce&fgx=" + page, function(data) {
 					if (aw = GetAnswer(data)) {
 						data = jQuery.parseJSON(aw);
+						// Loads js & css files associated with this response
 						Core.loadJSONResult(data);
-						$('#content').html(data.content);
-						Core.dragdrop = new DragDropElements(data.modules);
-						Core.dragdrop.init();
+						initEdit(data);
 					}
 				});
 			} else {
-				Core.dragdrop = new DragDropElements(data.modules);
-				Core.dragdrop.init();
+				initEdit(data);
 			}
 		});
 	}
@@ -638,7 +648,7 @@ function OpenDialog(settings) {
 		});
 	} else {
 		if (settings.buttons != BTN_NONE) {
-			if (settings.buttons != BTN_CLOSE)	
+			if (settings.buttons != BTN_CLOSE)
 				$buttons.append('<input type="button" class="dlgOK" value="' + btn1 + '"> ');
 			$buttons.append('<input type="button" class="dlgCancel" value="' + btn2 + '">');
 		}
@@ -648,6 +658,8 @@ function OpenDialog(settings) {
 	$('.dlgBtnContainer', $dlgBox).append($buttons);
 	$("#inactive").append($dlgBox);
 	
+	// Focus the first field
+	$('input').first().focus();
 	
 	/* settings.blocking defines wether the user is still 
 	 * allowed to interact with the site or not (blocking or non blocking dialog) 
@@ -727,6 +739,8 @@ function OpenDialog(settings) {
 			$('.dlgTitle', $dlgBox).css('backgroundColor', headerColor);
 			$('.dlgContent', $dlgBox).show();
 			$('.dlgSep', $dlgBox).show();
+			
+			jQuery.cookie('dialogCollapseState-' + settings.title, false);
 		};
 		
 		var collapse = function() {
@@ -735,6 +749,8 @@ function OpenDialog(settings) {
 			$('.dlgTitle', $dlgBox).css('backgroundColor','transparent');
 			$('.dlgContent', $dlgBox).hide();
 			$('.dlgSep', $dlgBox).hide();
+			
+			jQuery.cookie('dialogCollapseState-' + settings.title, true);
 		};
 
 		/* Button callbacks */
@@ -755,6 +771,7 @@ function OpenDialog(settings) {
 			if($dlgBox.close_callback != undefined)
 				$dlgBox.close_callback();
 		});
+		
 		$('.dlgMBtn', $dlgBox).click(function() {
 			settings.collapse = !settings.collapse;
 			if(settings.collapse) {
@@ -765,7 +782,7 @@ function OpenDialog(settings) {
 				expand();
 			}
 		});
-
+		
 		/* Drag and Drop functionality */
 		
 		$('.dlgTitle', $dlgBox).mousedown(function(event) {
@@ -794,6 +811,10 @@ function OpenDialog(settings) {
 		var boxColor = $dlgBox.css('backgroundColor');
 		var headerColor = $('.dlgTitle', $dlgBox).css('backgroundColor');
 		
+		if (jQuery.cookie('dialogCollapseState-' + settings.title)) {
+			$('.dlgMBtn', $dlgBox).trigger('click');
+		}
+
 		/* Autocollapse feature */
 		if(settings.autocollapse) {
 			$dlgBox.mouseover(collapse);

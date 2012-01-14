@@ -55,24 +55,26 @@ richtext = ContentElement.extend({
 				title : "Two columns",
 				src : "lib/tiny_mce/templates/2column.htm",
 				description : "A template that defines two colums, each one with a title, and some text."
-			},
-			{
+			}, {
 				title : "Left side bar",
 				src : "lib/tiny_mce/templates/leftsidebar.htm",
 				description : "A 2 column template with a bar on the left side."
-			},
-			{
+			}, {
 				title : "Right side bar",
 				src : "lib/tiny_mce/templates/rightsidebar.htm",
 				description : "A 2 column template with a bar on the right side."
-			},
-			{
+			}, {
 				title : "Text and Table",
 				src : "lib/tiny_mce/templates/texttable.htm",
 				description : "A title with some text and a table."
 			}
-		]
-			
+		];
+		
+		// Per style defined templates
+		if(typeof tinymceTemplates != 'undefined') {
+			templates = templates.concat(tinymceTemplates);
+		}
+		
 		var mcelang='en';
 		if(anego.language=='ger') /* language var defined by Anego */
 			mcelang='de';
@@ -91,6 +93,7 @@ richtext = ContentElement.extend({
 			theme_advanced_statusbar_location : "bottom",
 			theme_advanced_resizing : true,
 			theme_advanced_font_sizes : "7pt,8pt,9pt,10pt,11pt,12pt,13pt,14pt,15pt,17pt,19pt,21pt,23pt,25pt",
+			theme_advanced_styles : "Gray Frame=grayframe;Small padding right=smallpadright;Small padding left=smallpadleft",
 			language : mcelang, 
 			advlink_styles: "Spam Protected E-Mail Address=hiddenEmail",
 			paste_text_use_dialog: true,

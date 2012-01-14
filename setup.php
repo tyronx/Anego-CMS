@@ -118,9 +118,9 @@ div#padder {
 	else { echo $bad; $configGood=false; }
 	echo '(php.ini) GD2 extension<br>';
 
-	if(extension_loaded ('json')) echo $good;
+	/*if(extension_loaded ('json')) echo $good;
 	else { echo $bad; $configGood=false; }
-	echo '(php.ini) JSON extension (included in php 5.2 and above)<br>';
+	echo '(php.ini) JSON extension (included in php 5.2 and above)<br>';*/
 
 	if($cfg['fancyURLs']) {
 	?>
@@ -242,24 +242,7 @@ div#padder {
 			<?php
 						if(isset($_GET['a']) && $_GET['a']=='indb') {
 							if(file_exists('tables.sql')) {
-								$sql=file('tables.sql');
-								$installOK=true;
-								$statement='';
-								foreach($sql as $line) {
-									if($cfg['tablePrefix']!='anego_' && preg_match('/CREATE/',$line))
-										$line=str_replace('anego_',$cfg['tablePrefix'],$line);
-									
-									$statement.=$line;
-									
-									if(preg_match("/;$/",$line))
-										if(!@mysql_query($statement)) {
-											echo '<b>Automatic creation of tables failed, please create them manually (use tables.sql file)</b><br>';
-											echo '<span class="err">(Error was \''.mysql_error().'\')</span><br>';
-											$installOK=false;
-											break;
-										} else $statement='';
-								}
-								if($installOK) echo 'Tables created.<br>';
+								if(createTables()) echo 'Tables created.<br>';
 							} else {
 								echo '<b>Can\'t create tables, tables.sql file missing</b><br>';
 								$installOK=false;
@@ -359,4 +342,29 @@ function CheckWriteableRec($f) {
 	}
 	return true;
 }
+
+function createTables() {
+	global $cfg;
+	
+	$sql=file('tables.sql');
+	$statement='';
+	foreach($sql as $line) {
+		if($cfg['tablePrefix']!='anego_' && preg_match('/CREATE/',$line))
+			$line=str_replace('anego_',$cfg['tablePrefix'],$line);
+		if($cfg['tablePrefix']!='anego_' && preg_match('/INSERT INTO/',$line))
+			$line=str_replace('anego_',$cfg['tablePrefix'],$line);
+		
+		$statement.=$line;
+		
+		if(preg_match("/;$/",$line))
+			if(!@mysql_query($statement)) {
+				echo '<b>Automatic creation of tables failed, please create them manually (use tables.sql file)</b><br>';
+				echo '<span class="err">(Error was \''.mysql_error().'\')</span><br>';
+				return false;
+				break;
+			} else $statement='';
+	}
+	return true;
+}
+
 ?>

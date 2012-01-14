@@ -1,17 +1,22 @@
 settingsFunctions = function() {
 	/* General settings code */
+	
+	// Install module
 	this.install = function(name) {
 		$.get('admin.php',{a:'im',name:name},function(data) {
 			if(GetAnswer(data)) {
-				$('#'+name+'_installed').html('<span class="modLink" onclick="settings.uninstall(\''+name+'\')">'+lng_deactivate+'</span>');
+				$('#'+name+'_installed').html('<span class="modLink" onclick="settings.uninstall(\''+name+'\')">'+lng_deactivate+'</span>');	
+				Core.contentElementModules = null;
 			}
 		});
 	}
 
+	// Uninstall module
 	this.uninstall = function(name) {
 		$.get('admin.php',{a:'uim',name:name},function(data) {
 			if(GetAnswer(data)) {
 				$('#'+name+'_installed').html('<span class="modLink" onclick="settings.install(\''+name+'\')">'+lng_activate+'</span>');
+				Core.contentElementModules = null;
 			}
 		});
 	}

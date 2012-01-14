@@ -68,6 +68,7 @@ simpletext = ContentElement.extend({
 			theme_advanced_statusbar_location : "bottom",
 			theme_advanced_resizing : true,
 			theme_advanced_font_sizes : "7pt,8pt,9pt,10pt,11pt,12pt,13pt,14pt,15pt,17pt,19pt,21pt,23pt,25pt",
+			theme_advanced_styles : "Gray Frame=grayframe;Small padding right=smallpadright;Small padding left=smallpadleft",
 			language : mcelang,
 			advlink_styles: "Spam Protected E-Mail Address=hiddenEmail",
 			paste_text_use_dialog: true,

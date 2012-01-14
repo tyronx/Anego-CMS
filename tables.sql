@@ -187,8 +187,8 @@ CREATE TABLE IF NOT EXISTS `anego_pages_gallery` (
 CREATE TABLE IF NOT EXISTS `anego_pages_gallerypicture` (
   `idx` int(11) NOT NULL AUTO_INCREMENT,
   `gallery_id` int(11) NOT NULL,
-  `shortdescription` varchar(255) NOT NULL,
-  `longdescription` text NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `description` text NOT NULL,
   `position` int(11) NOT NULL,
   `filename` varchar(250) NOT NULL,
   `orig_cropx` smallint(6) NOT NULL,
