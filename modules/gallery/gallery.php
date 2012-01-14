@@ -33,7 +33,7 @@ class gallery extends ContentElement {
 	function imageSizesTable() { return $GLOBALS['cfg']['tablePrefix'].'image_sizes'; }
 	
 	function __construct($pageId, $elementId = 0) {
-		$this->path = FILESROOT.'gallery/' . $elementId . '/';
+		$this->path = FILESROOT . 'gallery/' . $elementId . '/';
 		
 		// Module id is equivalent to classname
 		parent::__construct(get_class($this), $pageId, $elementId);
@@ -45,10 +45,16 @@ class gallery extends ContentElement {
 		} else {
 			$str = '<div class="gallery">';
 			$pics = $this->pictures();
+			
+			$q = 'SELECT sizes.width as width, sizes.height as height FROM ' . $this->imageSizesTable() . ' as sizes, ' . $this->databaseTable() . ' as gallery WHERE 
+				 sizes.idx=gallery.preview_default_size_id AND gallery.idx = '. $this->elementId;
+			$res = mysql_query($q) or BailSQL('Couldn\'t retrieve preview image sizes', $q);
+			list($w, $h) = mysql_fetch_array($res);
+
 			while($pic = mysql_fetch_array($pics)) {
 				$preview = preg_replace("/(\.\w+)$/i", "_r\\1", $pic['filename']);
 				$str .= '<div class="pic">';
-				$str .= '<a rel="gallery'. $this->elementId .'" href="' . $this->path . $pic['filename'] . '" title="' . $pic['description'] . '">
+				$str .= '<a style="width:' . $w . 'px; height:' . $h . 'px;" rel="gallery'. $this->elementId .'" href="' . $this->path . $pic['filename'] . '" title="' . $pic['description'] . '">
 						<img class="thumbnail" src="' . $this->path . $preview . '" alt="' . $pic['title'] . '" title="' . $pic['title'] . '"></a>';
 				$str .= '</div>';
 			}
@@ -242,13 +248,20 @@ EOF;
 		}
 		
 		// Create gallery directory if not created yet
-		if(! is_dir($this->path)) {
-			if(! @mkdir($this->path)) {
-				$result['status'] = "501\n" . $lng_err_file_cantwrite; 
+		if (! is_dir(FILESROOT . 'gallery/')) {
+			if (! @mkdir(FILESROOT . 'gallery/')) {
+				$result['status'] = "502\n" . __('Can\'t create directory ' . FILESROOT . 'gallery. Missing writing permissions?'); 
 				return json_encode($result);
 			}
-			if(! @chmod($this->path, 0775)) {
-				$result['status'] = "501\n" . $lng_err_file_cantwrite; 
+		}
+		
+		if (! is_dir($this->path)) {
+			if (! @mkdir($this->path)) {
+				$result['status'] = "502\n" . __('Can\'t create directory ' . $this->path . '. Missing writing permissions?'); 
+				return json_encode($result);
+			}
+			if (! @chmod($this->path, 0775)) {
+				$result['status'] = "502\n" . __('Can\'t create directory ' . $this->path . '. Missing writing permissions?');
 				return json_encode($result);
 			}
 		}

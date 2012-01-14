@@ -1,5 +1,5 @@
 <?
-if (isset($_GET['a']) || isset($_POST['a'])) {	
+if (isset($_GET['a']) || isset($_POST['a'])) {
 	$cdir = getcwd();
 	// Get the includes right
 	chdir('../../');
@@ -7,7 +7,7 @@ if (isset($_GET['a']) || isset($_POST['a'])) {
 	// Now set it back
 	chdir($cdir);
 	/* load language file */
-	include($language.'.php');
+	include($language . '.php');
 	
 	new BlogManager();
 }
@@ -35,9 +35,15 @@ class BlogManager {
 			// get blog entries
 			case 'g':
 				$id = intval($_GET['id']);
-				$t = $this->blogEntries($id);
+				
+				$blogs = $this->blogEntries($id);
+				$nav = $this->navigation($id);
+				
 				echo "200\n";
-				echo $t;
+				echo json_encode(array(
+					'blogs' => $blogs,
+					'navigation' => $nav));
+				
 				break;
 				
 			// load entry (ajax call)
@@ -63,11 +69,14 @@ class BlogManager {
 					list($pageId) = mysql_fetch_row($res);
 					$anego->curPg = $pageId;
 					
+					AdminBar(-1);
+					
 					$anego->AddContent($this->blogEntry($id, true));
-					$anego->appendJSFile('modules/blog/$language.js');
+					$anego->appendJSFile('modules/blog/' . $language . '.js');
 					$anego->appendJSFile('modules/blog/admin.js');
 					$anego->display('index.tpl');
 				}
+				
 				// v == view blog
 				if($_GET['data'][0] == 'v') {
 					$id = intval(substr($_GET['data'], 1));
@@ -79,7 +88,7 @@ class BlogManager {
 					$anego->curPg = $pageId;
 					
 					$anego->AddContent($this->blogEntries($id));
-					$anego->appendJSFile("modules/blog/$language.js");
+					$anego->appendJSFile('modules/blog/' . $language . '.js');
 					$anego->appendJSFile('modules/blog/admin.js');
 					$anego->display('index.tpl');
 				}
@@ -227,6 +236,7 @@ class BlogManager {
 		}
 	}
 	
+	/*** Display a single blog entry ****/
 	function blogEntry($entry_id, $fullview=false) {
 		global $lng, $cfg;
 		
@@ -247,8 +257,8 @@ class BlogManager {
 			$link = '?a=lm&id='.$row['idx'];
 		}
 		
-		$text.='<div class="blogElement" id="blogElement_'.$row['idx'].'"><span class="blogDate">'.date('d.m.Y H:i',$row['date']).'</span>';
-		$text.='<a class="blogLink" href="'.$link.'" onclick="blogfuncs.loadEntry(this,'.$row['idx'].')"><h1 class="blogTitle">'.$row['title'].'</h1></a><div class="blogContent">'.$row['entry'].'</div>'; 
+		$text .= '<div class="blogElement" id="blogElement_'.$row['idx'].'"><span class="blogDate">'.date('d.m.Y H:i',$row['date']).'</span>';
+		$text .= '<a class="blogLink" href="'.$link.'" onclick="blogfuncs.loadEntry(this,'.$row['idx'].')"><h1 class="blogTitle">'.$row['title'].'</h1></a><div class="blogContent">'.$row['entry'].'</div>'; 
 		
 		if ($fullview) {
 			if(LOGINOK && !$this->readonly) $text.='<div class="blogSummary"><div><img src="styles/default/img/cleardot.gif" class="imgEdit icon" onclick="blogfuncs.editEntry('.$row['idx'].',true)"><img src="styles/default/img/cleardot.gif" class="imgBin icon" onclick="blogfuncs.deleteEntry('.$row['idx'].',true)"></div></div>';
@@ -269,6 +279,11 @@ class BlogManager {
 			$text.='</div>';
 		}
 		$text.='<hr></div>';
+		
+		if ($fullview) {
+			$text = '<div class="contentElement"><div class="blog" id="blogc_' . $row['blog_id'] . '">' . $text . '</div>';
+			$text .= '<div class="blogNaviBox" id="blognav_' . $row['blog_id'] . '">' . $this->navigation($row['blog_id']) . '</div></div>';
+		}
 		
 		return $text;
 	}
@@ -292,48 +307,72 @@ class BlogManager {
 		
 		return $cmts.'</div>';
 	}
+	
+	function navigation($blog_id) {
+		global $cfg;
+		
+		if ($cfg['fancyURLs']) {
+			$linkBase = 'mdblog-l';
+		} else {
+			$linkBase = '?a=lm&id=';
+		}
 
-	function blogEntries($blog_id) {
-			global $lng, $cfg;
-			$text = '';
+		$q = 'SELECT * FROM '.$this->blogTable.' WHERE blog_id='.$blog_id.' ORDER BY date DESC';
+		$res = mysql_query($q) or
+			BailErr($lng['blog']['bloggetfail'],$q);
 			
-			if (LOGINOK && !$this->readonly) {
-				$text='<div id="blogadminbar_'.$blog_id.'" align="right"><a href="#" onclick="blogfuncs.newEntry('.$blog_id.'); return false;">'.$lng['blog']['new_entry'].'</a></div>';
-			}
-			
-			$q = 'SELECT * FROM '.$this->blogTable.' WHERE blog_id='.$blog_id.' ORDER BY date DESC';
-			$res = mysql_query($q) or
-				BailErr($lng['blog']['bloggetfail'],$q);
-				
-				
-			if (! mysql_affected_rows()) {
-				return $text.'<i>'.$lng['blog']['noblogentries'].'</i>';
-			}
-			$i = mysql_affected_rows();
-			
-			$text.='<div class="blogElements">';
-			
-			while ($row = mysql_fetch_array($res)) {
-				
-				if ($cfg['fancyURLs']) {
-					$link = 'mdblog-l'.$row['idx'];
-				} else {
-					$link = '?a=lm&id='.$row['idx'];
-				}
-			
-				$text.='<div class="blogElement" id="blogElement_'.$row['idx'].'"><span class="blogDate">'.date('d.m.Y H:i',$row['date']).'</span>';
-				$text.='<a class="blogLink" name="blog'.$i.'" href="'.$link.'" onclick="blogfuncs.loadEntry(this,'.$row['idx'].','.$blog_id.')"><h1 class="blogTitle">'.$row['title'].'</h1></a><div class="blogContent">'.$row['entry'].'</div>';
-				$text.='<div class="blogSummary"><p><small><a href="'.$link.'" onclick="blogfuncs.loadEntry(this,'.$row['idx'].','.$blog_id.')">'.$row['comments'].' '.(($row['comments']==1)?$lng['blog']['blog_comment']:$lng['blog']['blog_comments']).'</a></small></p>';
-				if (LOGINOK && !$this->readonly) $text.='<div><img src="styles/default/img/cleardot.gif" class="imgEdit icon" onclick="blogfuncs.editEntry('.$row['idx'].')"><img src="styles/default/img/cleardot.gif" class="imgBin icon" onclick="blogfuncs.deleteEntry('.$row['idx'].')"></div>';
-				$text.='<div class="blogComments"></div>';
-				$text.='</div><hr></div>';
-				$i--;
-			}
-			
-			$text.='</div>';
-			
-			return $text;
+		$text = '<div class="blogNavigation">';
+
+		while ($row = mysql_fetch_array($res)) {
+			$text .= '<p><a href="' . $linkBase . $row['idx'] . '">' . $row['title'] . '</a></p>';
 		}
 		
+		$text .= '</div>';
+		
+		return $text;
 	}
+
+	function blogEntries($blog_id) {
+		global $lng, $cfg;
+		$text = '';
+		
+		if (LOGINOK && !$this->readonly) {
+			$text='<div id="blogadminbar_'.$blog_id.'" align="right"><a href="#" onclick="blogfuncs.newEntry('.$blog_id.'); return false;">'.$lng['blog']['new_entry'].'</a></div>';
+		}
+		
+		$q = 'SELECT * FROM '.$this->blogTable.' WHERE blog_id='.$blog_id.' ORDER BY date DESC';
+		$res = mysql_query($q) or
+			BailErr($lng['blog']['bloggetfail'],$q);
+			
+			
+		if (! mysql_affected_rows()) {
+			return $text . '<i>' . $lng['blog']['noblogentries'] . '</i>';
+		}
+		
+		$i = mysql_affected_rows();
+		
+		$text.='<div class="blogElements">';
+		
+		while ($row = mysql_fetch_array($res)) {
+			
+			if ($cfg['fancyURLs']) {
+				$link = 'mdblog-l'.$row['idx'];
+			} else {
+				$link = '?a=lm&id='.$row['idx'];
+			}
+		
+			$text.='<div class="blogElement" id="blogElement_'.$row['idx'].'"><span class="blogDate">'.date('d.m.Y H:i',$row['date']).'</span>';
+			$text.='<a class="blogLink" name="blog'.$i.'" href="'.$link.'" onclick="blogfuncs.loadEntry(this,'.$row['idx'].','.$blog_id.')"><h1 class="blogTitle">'.$row['title'].'</h1></a><div class="blogContent">'.$row['entry'].'</div>';
+			$text.='<div class="blogSummary"><p><small><a href="'.$link.'" onclick="blogfuncs.loadEntry(this,'.$row['idx'].','.$blog_id.')">'.$row['comments'].' '.(($row['comments']==1)?$lng['blog']['blog_comment']:$lng['blog']['blog_comments']).'</a></small></p>';
+			if (LOGINOK && !$this->readonly) $text.='<div><img src="styles/default/img/cleardot.gif" class="imgEdit icon" onclick="blogfuncs.editEntry('.$row['idx'].')"><img src="styles/default/img/cleardot.gif" class="imgBin icon" onclick="blogfuncs.deleteEntry('.$row['idx'].')"></div>';
+			$text.='<div class="blogComments"></div>';
+			$text.='</div><hr></div>';
+			$i--;
+		}
+		
+		$text.='</div>';
+		
+		return $text;
+	}
+}
 ?>

@@ -15,7 +15,14 @@ function blogFunctions() {
 		}, function(data) {
 			var aw;
 			if(aw = GetAnswer(data)) {
-				$("#blogc_" + blog_id).html(aw);
+				response = $.parseJSON(aw);
+				
+				$("#blogc_" + blog_id).html(response.blogs);
+				$("#blognav_" + blog_id).html(response.navigation);
+				/*$("#blognav_" + blog_id + ' a').each(function() {
+					$(this).attr('href', $(this).attr('href').replace(/^.*(\d+)$/, '#'));
+				});*/
+				
 				Core.initPageContent();
 				$("#blogc_" + blog_id + " .blogElements").jPaginate({ start: 1, items: 4 });
 			}
@@ -142,10 +149,10 @@ function blogFunctions() {
 
 		
 		loadingEntry = true;
-		$.get('modules/blog/',{a:'le',id:el_id}, function(data) {
+		$.get('modules/blog/', {a:'le',id:el_id}, function(data) {
 			loadingEntry = false;
 			var aw;
-			if(aw = GetAnswer(data)) {
+			if (aw = GetAnswer(data)) {
 				putLoadedText(aw);
 				loaded=true;
 			}
@@ -154,7 +161,13 @@ function blogFunctions() {
 		blogEntryLoaded = el_id;
 		
 		function putLoadedText(str) {
-			$('#content').html(str);
+			response = $.parseJSON(str);
+			
+			//$("#blogc_" + blog_id).html(response.blogs);
+			//$("#blognav_" + blog_id).html(response.navigation);
+
+			$("#blogc_" + blog_id).html(str);
+			
 			// Fade in text
 			if(anego.animatePageLoad>0) 
 				$('#content').css({opacity: 0.0}).animate({opacity: 1.0}, anego.animatePageLoad);	

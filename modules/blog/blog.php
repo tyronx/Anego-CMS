@@ -42,7 +42,8 @@ class blog extends ContentElement {
 		});
 		</script>
 		<noscript>$noscript</noscript>
-		<div id="blogc_$elemId"></div>
+		<div class="blog" id="blogc_$elemId"></div>
+		<div class="blogNaviBox" id="blognav_$elemId"></div>
 EOT;
 	}
 	

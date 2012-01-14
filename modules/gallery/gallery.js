@@ -155,6 +155,8 @@ gallery = ContentElement.extend({
 							return false;
 						})
 						.data('picData', pic)
+						.css('width', self.previewSize.w)
+						.css('height', self.previewSize.h)
 						.attr('title', pic.description);
 
 					$imageGrid.append($image);
