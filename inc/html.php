@@ -524,11 +524,15 @@ class Anego extends Smarty {
 						BailSQL($GLOBALS['lng_failedchildermain'].$row['name'],$q);
 
 					if(mysql_affected_rows()) {
-						$sitem.='<div style="' . (($cfg['submenuStyle']=='visible')?'':'display:none;')  . '" class="subsubitems">';
+						$subsubitems = '';
+						$menuOpen = $cfg['submenuStyle']=='visible' || $this->curPg == $row2['idx'];
 						while($row3 = mysql_fetch_array($res3)) {
-							if($row3['idx']==$this->curPg) $childSelected=true;
-							$sitem.='<div class="subsubitem">'.$this->MenuItemLink($row3)."</div>";
+							if($row3['idx']==$this->curPg) $childSelected = true;
+							$subsubitems.='<div class="subsubitem">'.$this->MenuItemLink($row3)."</div>";
+							$menuOpen = $menuOpen || ($this->curPg == $row3['idx']);
 						}
+						$sitem.='<div style="' . ($menuOpen?'':'display:none;')  . '" class="subsubitems">';
+						$sitem.=$subsubitems;
 						$sitem.='</div>';
 					}
 					//}
