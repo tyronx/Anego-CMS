@@ -1,8 +1,11 @@
 adminMenu = new AdminMenuFunctions();
 
 $(document).ready(function() {
-	$('.menuTree').livequery(function() {
-		$(this).sortableTree({ moved: adminMenu.nodeMoved }); 
+	$('.treeDiv').livequery(function() {
+		$('.menuTree').sortableTree({ 
+			moved: adminMenu.nodeMoved,
+			ignoreEventsOnElem: 'img.smallimgBin'
+		}); 
 	});
 });
 
@@ -14,7 +17,7 @@ function AdminMenuFunctions() {
 			targetNode:targetNode, 
 			position:position 
 		}, function(data) { 
-			printLinks(data); 
+			printLinks(data, 'moved'); 
 		});
 	}
 
@@ -53,7 +56,7 @@ function AdminMenuFunctions() {
 				intopage: intopage
 			}, function(data) {
 				$dlg.closeDialog();
-				printLinks(data);
+				printLinks(data, 'add');
 			});
 		};
 
@@ -67,9 +70,9 @@ function AdminMenuFunctions() {
 				'<span class="pglink">' + 
 					lng_filename + ': <input type="text" name="filename"><br><br>' + 
 				'</span>' +
-				'<input type="checkbox" name="menu" value="1" checked> ' + lng_showinmenu + '<br>' +
-				'<input type="checkbox" name="admin" value="1"> ' + lng_notvisible + '<br>' +
-				'<input type="checkbox" name="nolink" value="1"> ' + lng_notpage +
+				'<input type="checkbox" name="menu" id="editPageMenu" value="1" checked> <label for="editPageMenu">' + lng_showinmenu + '</label><br>' +
+				'<input type="checkbox" name="admin" id="editPageAdmin" value="1"> <label for="editPageMenu">' + lng_notvisible + '</label><br>' +
+				'<input type="checkbox" name="nolink" id="editPageNolink" value="1"> <label for="editPageMenu">' + lng_notpage + '</label>' +
 			'</div>');
 		
 		$('input[name="isfile"]', $cnt).change(function() {
@@ -98,6 +101,8 @@ function AdminMenuFunctions() {
 				});
 			}
 		});
+		
+		return false;
 	}
 
 	this.renamePage = function(page_id, page_name, page_info, vis, subpoint, file) {
@@ -116,22 +121,24 @@ function AdminMenuFunctions() {
 		var pageLink = 'index.php?p=' + page_id;
 		if (anego.pageLoad == 'ajax') pageLink = '#pg' + page_id;
 		
-		var $cnt = (
-			'<div class="renamePageDlgContent">' + 
-				lng_rename + ':<br>' + 
-				'<input type="text" name="name" size="35" value="' + page_name.replace(/\"/g,"&quot;") + '">' +
-				'<br><br>' + lng_pageinfo + ':<br>'+
-				'<input type="text" size="35" name="info" value="' + page_info.replace(/\"/g,"&quot;") + '">' +
-				'<br><br>' +
-				'<input type="checkbox" name="isfile" value="1"' + ch4 + '> ' + lng_link2file + '<br>' +
-				'<span class="pglink" style="' + fileDsp + '">' +
-					lng_filename + ': <input type="text" name="filename" value="' + file + '"><br><br>' +
-				'</span>' +
-				'<input type="checkbox" name="menu" value="1"'+ch1+'> ' + lng_showinmenu + '<br>' +
-				'<input type="checkbox" name="admin" value="1"'+ch2+'> ' + lng_notvisible +
-			'</form>' +
-			'<div class="toPage">' +
-				'<a href="' + pageLink + '">' + lng_topage + '</a>' +
+		var $cnt = $(
+			'<div>' +
+				'<div class="renamePageDlgContent">' + 
+					lng_rename + ':<br>' + 
+					'<input type="text" name="name" size="35" value="' + page_name.replace(/\"/g,"&quot;") + '">' +
+					'<br><br>' + lng_pageinfo + ':<br>'+
+					'<input type="text" size="35" name="info" value="' + page_info.replace(/\"/g,"&quot;") + '">' +
+					'<br><br>' +
+					'<input type="checkbox" name="isfile" value="1"' + ch4 + '> ' + lng_link2file + '<br>' +
+					'<span class="pglink" style="' + fileDsp + '">' +
+						lng_filename + ': <input type="text" name="filename" value="' + file + '"><br><br>' +
+					'</span>' +
+					'<input type="checkbox" name="menu" id="editPageMenu" value="1" '+ch1+'> <label for="editPageMenu">' + lng_showinmenu + '</label><br>' +
+					'<input type="checkbox" name="admin" id="editPageAdmin" value="1" '+ch2+'> <label for="editPageMenu">' + lng_notvisible + '</label><br>' +
+
+				'<div class="toPage">' +
+					'<a href="' + pageLink + '">' + lng_topage + '</a>' +
+				'</div>' +
 			'</div>');
 		
 		var $dlg = OpenDialog({
@@ -165,7 +172,7 @@ function AdminMenuFunctions() {
 					filename: fname
 				}, function(data) {
 					$dlg.closeDialog();
-					printLinks(data);
+					printLinks(data, 'renamed');
 				});
 			}
 		});
@@ -173,6 +180,7 @@ function AdminMenuFunctions() {
 		$('input[name="isfile"]', $cnt).change(function() {
 			$(this).parent().find('.pglink').toggle();
 		});
+		
 		$('.toPage a', $cnt).click(function() {
 			$dlg.closeDialog();
 		});
@@ -183,11 +191,13 @@ function AdminMenuFunctions() {
 		printLinks(req.responseText);
 	}
 
-	function printLinks(data) {
+	function printLinks(data, type) {
 		var aw;
 		if(aw = GetAnswer(data)) {
 			// Todo: remove reloading the content, instead just apply changes to node directly 
-			$('#content').html(aw);
+			if(type != 'moved') {
+				$('#content').html(aw);
+			}
 			
 			$.post('index.php?a=mainmenu','',function(data) {
 				$("#menu").html(data);

@@ -53,7 +53,7 @@
 					listElements[listElements.length]=this;
 				});
 				
-				bindElementEvents($(tree).find('li span'));
+				bindElementEvents($(tree).find('li'));
 				
 				$(document).mousemove(onMouseMove);
 				$(document).mouseup(onMouseUp);
@@ -66,23 +66,23 @@
 			};
 		
 			function onMouseMove(event) {
-				if(mouseDownOn!=null) {
+				if (mouseDownOn != null) {
 					dragger.html($(mouseDownOn).clone());
 					dragger.prepend(draggerIcon);
 					dragger.css('display','');
 					draggedAwayListNode = $(mouseDownOn).parent();
 					draggedAwayListNode.css('display','none');
-					mouseDownOn=null;
+					mouseDownOn = null;
 					dragging=true;
 				}
 				
 				if(dragging) {
-					var ov=isOverElement(event.pageX,event.pageY);
+					var ov = isOverElement(event.pageX,event.pageY);
 					var ovEl;
 					var dy;
 					dragger.offset({left:event.pageX+5,top:event.pageY+15});
 
-					if(ov!=-1) {
+					if(ov != -1) {
 						dy = event.pageY - $(listElements[ov]).offset().top;
 						ovEl = $(listElements[ov]).find('span.listEl');
 						
@@ -109,8 +109,9 @@
 						}
 						
 						//dragger.html(dropAt+' '+draggedAwayListNode.find('span.listEl').html());
-					} else
+					} else {
 						dragger.find('img.iconDrop').attr('class','iconDrop iconDropNo');
+					}
 					
 					if(ov==-1 && event.pageY > $(tree).offset().top + $(tree).innerHeight()) {
 						$(tree).addClass('insertBelow');
@@ -119,15 +120,16 @@
 						
 						//dragger.html(dropAt+' '+draggedAwayListNode.find('span.listEl').html());
 						
-					} else 
-					if(ov==-1 && event.pageY < $(tree).offset().top) {
-						$(tree).addClass('insertAbove');
-						dropAt = 'top';
-						dragger.find('img.iconDrop').attr('class','iconDrop iconDropOver');
 					} else {
-						$(tree).removeClass('insertBelow');
-						$(tree).removeClass('insertAbove');
-						
+						if(ov==-1 && event.pageY < $(tree).offset().top) {
+							$(tree).addClass('insertAbove');
+							dropAt = 'top';
+							dragger.find('img.iconDrop').attr('class','iconDrop iconDropOver');
+						} else {
+							$(tree).removeClass('insertBelow');
+							$(tree).removeClass('insertAbove');
+							
+						}
 					}
 					
 					if(ov != overElement && overElement!=-1) {
@@ -138,6 +140,8 @@
 					
 					overElement = ov;
 				}
+				
+				return false;
 			}
 			
 			function onMouseUp(event) {
@@ -152,7 +156,7 @@
 				
 				$(listElements[overElement]).find('span.listEl').removeClass('insertIn');
 				$(listElements[overElement]).find('span.listEl').removeClass('insertBelow');
-				$(listElements[overElement]).find('span.listEl').removeClass('insertAbove');				
+				$(listElements[overElement]).find('span.listEl').removeClass('insertAbove');
 				
 				if(draggedAwayListNode) {
 					/* No place to drop found, put it back */
@@ -219,7 +223,7 @@
 					atElDiv.removeClass('insertIn');
 					$(tree).removeClass('insertBelow');
 					
-					bindElementEvents(newNode.find('span'));
+					bindElementEvents(newNode);
 					dragger.css('display','none');
 					draggedAwayListNode=null;
 
@@ -258,10 +262,25 @@
 			}
 			
 			function bindElementEvents(el) {
-				el.mousedown(function() {
-					mouseDownOn = this;
+				el.mousedown(function(event) {
+					if (options.ignoreEventsOnElem) {
+						$el = $(this).find(options.ignoreEventsOnElem);
+						if ($el.length > 0) {
+							$eloff = $el.offset();
+							if (inside(event.pageX, $eloff.left, $eloff.left + $el.width())
+							 && inside(event.pageY, $eloff.top, $eloff.top + $el.height())) {
+								 return false;
+							 }
+						}
+					}
+					
+					mouseDownOn = $(this).find('span');
 					return false;
 				});
+			}
+			
+			function inside(val, x1, x2) {
+				return val >= x1 && val <= x2;
 			}
 		}
 	}

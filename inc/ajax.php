@@ -40,7 +40,7 @@ switch($ac) {
 		// Delievers ce modules, page content and page elements of this page
 		$json = $pmg->contentElementModules($p);
 		// required js files
-		$json['js'] = pageEditJs($p);
+		$json['js'] = pageEditJs();
 		
 		exit("200\n".json_encode($json));
 	
@@ -63,7 +63,7 @@ switch($ac) {
 		
 		include_once('modules/'.$mid.'/'.$mid.'.php');
 
-		// Yay, PHP5.3 goodness <3
+		// Create new instance of this module
 		$ce = new $mid($page); //eval("return new ".$mid."();");
 		
 		if($json = $ce->createElement($position)) {

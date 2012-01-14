@@ -150,10 +150,10 @@ class PageManager {
 			BailErr("Failed getting page content for editing",$q);
 		$row = mysql_fetch_array($res);
 		
-		if(isset($row['content_prepared'][0])) // faster than strlen()
+		/*if(isset($row['content_prepared'][0])) // faster than strlen()
 			$ret['content'] = $row['content_prepared'];
 		else 
-			$ret['content'] = $this->generatePage($page_id);
+			$ret['content'] = $this->generatePage($page_id);*/
 		
 		
 		$ret['title'] = $row['name'];
