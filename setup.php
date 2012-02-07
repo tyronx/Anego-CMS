@@ -88,8 +88,12 @@ div#padder {
 		<li><b>Configure PHP / Server</b><br>
 <?php
 	include('default.conf.php');
-	include('conf.inc.php');
-
+	if(file_exists('conf.inc.php')) {
+		include('conf.inc.php');
+	} else {
+		define("STYLE","nothing");
+	}
+	
 	$good = '<img src="styles/default/img/tick.png" alt="ok"> ';
 	$warn = '<img src="styles/default/img/warning.png" alt="warning"> ';
 	$bad  = '<img src="styles/default/img/cross.png" alt="bad"> ';
@@ -170,68 +174,92 @@ div#padder {
 		<?php
 				$err = '';
 				$icon = $good;
+				$sql_link=false;
+				
 				if(!file_exists('conf.inc.php')) {
 					$icon = $bad;
 					$err = 'conf.inc.php not found. You can use conf.sample.inc.php as template';
-				}
-				echo $icon.'Config file'.$err.'<br>';
-		
-				$sql_link=false;
-				if(file_exists('conf.inc.php'))
-					$sql_link=@mysql_connect(HOST,SQLUSER,SQLPASS);
-				
-				if (isset($_GET['a']) && $_GET['a'] == 'crdb') {
-					if( @mysql_query('CREATE DATABASE IF NOT EXISTS '.$_POST['dbname']))
-						echo '<b>Database \''.$_POST['dbname'].'\' created.</b> You have to add it to the conf.inc.php to be recognized by Setup.<br>';
-					else echo '<b>Couldn\'t create database, please create it manually.</b><span class="err">Error was \''.mysql_error().'\'</span><br>';
-				}
-				
-				$icon = $good;
-				$err = '';
-				if (! $sql_link) { 
-					$icon = $bad;
-					$err = ' <span class="err">- couldn\'t connect to database</span>'; 
+					echo $icon.'Config file '.$err.'<br>';
 				} else {
-					if(!@mysql_select_db(SQLDB)) { 
-						$sql_link=0;
-						$icon=$bad;
-						$err=' <span class="err">- connected but couldn\'t select database (create a database with name: <form style="display:inline;" action="setup.php?a=crdb" method="post"><input type="text" size="10" name="dbname"> <input type="submit" value="Create">)</form></span>'; 
+					if(file_exists('conf.inc.php'))
+						$sql_link=@mysql_connect(HOST,SQLUSER,SQLPASS);
+					
+					if (isset($_GET['a']) && $_GET['a'] == 'crdb') {
+						if( @mysql_query('CREATE DATABASE IF NOT EXISTS '.$_POST['dbname']))
+							echo '<b>Database \''.$_POST['dbname'].'\' created.</b> You have to add it to the conf.inc.php to be recognized by Setup.<br>';
+						else echo '<b>Couldn\'t create database, please create it manually.</b><span class="err">Error was \''.mysql_error().'\'</span><br>';
+					}
+					
+					$icon = $good;
+					$err = '';
+					if (! $sql_link) { 
+						$icon = $bad;
+						$err = ' <span class="err">- couldn\'t connect to database</span>'; 
+					} else {
+						if(!@mysql_select_db(SQLDB)) { 
+							$sql_link=0;
+							$icon=$bad;
+							$err=' <span class="err">- connected but couldn\'t select database (create a database with name: <form style="display:inline;" action="setup.php?a=crdb" method="post"><input type="text" size="10" name="dbname"> <input type="submit" value="Create">)</form></span>'; 
+						}
+					}
+					
+					echo $icon.'MySQL Info'.$err.'<br>';
+					$err='';
+					
+					if (file_exists('styles/'.STYLE.'/templates/index.tpl')) {
+						echo $good.'Page design';
+					} else {
+						echo $bad.'Page design <span class="err">- \'styles/'.STYLE.'/templates/index.tpl not found.\'</span>';
+					}
+					echo '<br>';
+					
+
+					// Inform about domain
+					$domain = 'http://'.$_SERVER['SERVER_NAME'].(($_SERVER['SERVER_PORT']!=80)?':'.$_SERVER['SERVER_PORT']:'');
+					if($domain[strlen($domain)-1]!='/') $domain.='/';
+					
+					if ($domain == $cfg['domain']) {
+						echo $warn;
+						echo 'No domain supplied. Will be using <i>' . $domain . '</i>';
+						echo '<div style="padding-left:20px;">from server configuration. Please configure <i>$cfg[\'domain\']</i> if this is incorrect. Wrong domain settings e.g. might prevent the TinyMCE from being loaded</div>';
+					}
+					
+					// Check if we are in the server root directory - if not, anego needs to know about this
+					$path = dirname($_SERVER['REQUEST_URI']).'/';
+					// dirname adds backslashes in windows O.o
+					if(preg_match('/Windows/i', php_uname("s"))) 
+						$path = str_replace('\\','/',$path);
+
+					if($path[0] == '/') {
+						$path = substr($path,1);
+					}
+					if($cfg['path'][0] == '/') {
+						$cfg['path'] = substr($cfg['path'], 1);
+					}
+					
+					if($path == $cfg['path']) {
+						echo $good;
+					} else { 
+						echo $warn;
+						$err = '<div style="padding-left:20px;">Your Path settings might be incorrect. Try adding the following line to conf.inc.php:<div class="box">$cfg[\'path\']=\''.$path.'\';</div>';
+					}
+					echo 'Anego path'.$err;
+					
+					echo '<br>';
+					// Default salt
+					if($cfg['hash_salt'] == 'Vw_0Q3Z,e;y_!xyGo+tI' || strlen($cfg['hash_salt']) < 15) {
+						echo $warn;
+						if(strlen($cfg['hash_salt']) < 15) {
+							echo "Your hash salt is very short.<br>";
+							echo '<div style="padding-left:20px;">How about something longer like this: '. genPwd(35) . '</div>';
+						} else {
+							echo 'You are using the default hash salt. Please add following (or similar) line to your config:<br>';
+							echo '<div style="padding-left:20px;"><div class="box">$cfg[\'hash_salt\'] = \'' . genPwd(35) . '\';</div>';
+						}
+					} else {
+						echo $good . 'Custom hash salt';
 					}
 				}
-				
-				echo $icon.'MySQL Info'.$err.'<br>';
-				$err='';
-				
-				if (file_exists('styles/'.STYLE.'/templates/index.tpl')) {
-					echo $good.'Page design';
-				} else {
-					echo $bad.'Page design <span class="err">- \'styles/'.STYLE.'/templates/index.tpl not found.\'</span>';
-				}
-				echo '<br>';
-				
-				
-				// Check if we are in the server root directory - if not, anego needs to know about this
-				$url = parse_url($cfg['domain']);
-				$path = dirname($_SERVER['REQUEST_URI']).'/';
-				// dirname adds backslashes in windows O.o
-				if(preg_match('/Windows/i', php_uname("s"))) 
-					$path = str_replace('\\','/',$path);
-
-				if($path[0] == '/') {
-					$path = substr($path,1);
-				}
-				if($url['path'][0] == '/') {
-					$url['path'] = substr($url['path'],1);
-				}
-				
-				if($path == $url['path']) {
-					echo $good;
-				} else { 
-					echo $warn;
-					//$sql_link=0;
-					$err='<div style="padding-left:20px;">Your Path settings might be incorrect. Try adding the following line to conf.inc.php:<div class="box">$cfg[\'domain\'].=\''.$path.'\';</div>';
-				}
-				echo 'Anego path'.$err;
 								
 		?>
 				</li>
@@ -312,10 +340,10 @@ div#padder {
 					</li>
 					<li><b>Delete setup.php and tables.sql</b></li>
 					<?php
-						if($tablesOK && count($user_accounts)) {
+						if($tablesOK && isset($user_accounts) && count($user_accounts)) {
 							$link='admin.php?a=pgad';
 							if($cfg['pageLoad']=='ajax' && $cfg['fancyURLs']) $link='#admpgad';
-							echo '<li><b>All done.</b> <a href="'.$cfg['domain'].$link.'">Enjoy setting up your freshly installed Anego CMS!</a><br>Start by creating your first page in the menu</li>';
+							echo '<li><b>All done.</b> <a href="'.$cfg['domain'].$cfg['path'].$link.'">Enjoy setting up your freshly installed Anego CMS!</a><br>Start by creating your first page in the menu</li>';
 						}
 				
 				}
@@ -332,10 +360,39 @@ div#padder {
 </html>
 
 <?php
+
+function seedRand() {
+	// seed with microseconds
+	function make_seed()
+	{
+	  list($usec, $sec) = explode(' ', microtime());
+	  return (float) $sec + ((float) $usec * 100000);
+	}
+	mt_srand(make_seed());
+}
+
+function genPwd($len) {
+	seedRand();
+	
+	$pwd="";
+	$chars = "!@#$%^&*()_+-=<>[]{}|;:,.?";
+    
+	while(strlen($pwd)<$len) {
+		switch(mt_rand(0,3)) { 
+			case 0: $pwd.=chr(mt_rand(65,90)); break;
+			case 1: $pwd.=chr(mt_rand(97,122)); break;
+			case 2: $pwd.=chr(mt_rand(48,57)); break;
+			case 3: $pwd.=$chars{mt_rand(0,strlen($chars)-1)}; break;
+		}
+	}
+    
+    return $pwd;
+}
+
 function CheckWriteableRec($f) {
 	$dir=opendir($f);
 	while($file=readdir($dir)) {
-		if($file=='.' || $file=='..') continue;
+		if($file=='.' || $file=='..' || $file=='.htaccess' || $file=='.gitignore') continue;
 		if(!is_writeable($f.'/'.$file)) return false;
 		if(is_dir($f.'/'.$file))
 			if(!CheckWriteableRec($f.'/'.$file)) return false;
