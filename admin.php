@@ -1,7 +1,8 @@
 <?
+//error_reporting(E_ALL);
 include("core.php");
 
-$anego->assign('pagetitle', __('Anego CMS') . " - Admin");
+$anego->assign('pagetitle', $settings['pagetitle'] . " - Admin");
 
 // Load admin related js language file - core.php loads this already...?
 //if(!isset($_GET['noheader'])) {
@@ -9,9 +10,36 @@ $anego->assign('pagetitle', __('Anego CMS') . " - Admin");
 //}
 
 
-if(!LOGINOK && (!isset($_GET['a']) || $_GET['a']!='li')) {
-	if(isset($_GET['noheader']) && $_GET['noheader']) $lib='Core.loadJavascript(\'ld.lo\');';
-	else $lib='';
+if(!LOGINOK) {
+	$message = '';
+	/* Login */
+	if (@$_GET['a'] == 'li') {
+		/*
+			client_response = sha256(pass)
+			database_pass = sha256(salt+sha256(passwd))
+			sha256(salt + client_response) == db_pass
+		*/
+		$saltedPw = hash('sha256',$cfg['hash_salt'].$_POST['response']);
+		if (ValidAuth($_POST['username'], $saltedPw)) {
+			setcookie(
+				$cfg['cookieName'], 
+				strtolower($_POST['username']) . "," . $saltedPw, ($_POST['staysigned']==1) ? (time()+$cfg['cookieTime']*3600) : 0
+			);
+			//if(isset($_SERVER['HTTP_REFERER']))
+			//	$anego->Reload($_SERVER['HTTP_REFERER']);
+			//else 
+			$anego->Reload($cfg['domain']);
+			
+		} else {
+			$message = __('Wrong username or password');
+		}
+	}
+
+	if (isset($_GET['noheader']) && $_GET['noheader']) {
+		$lib = 'Core.loadJavascript(\'ld.lo\');';
+	} else {
+		$lib = '';
+	}
 	
 	$lng_adminWelcome = __('Anego CMS Administration Area');
 	$lng_name = __('Name');
@@ -20,6 +48,8 @@ if(!LOGINOK && (!isset($_GET['a']) || $_GET['a']!='li')) {
 	$lng_login = __('Login');
 	$lng_pleaseuser = __('Please enter your user name.');
 	$lng_pleasepass = __('Please enter your password.');
+	
+	$lng_javascript = __('It seems like you have Javascript disabled. You will not be able to administrate Anego or even log on without it.');
 	
 	
 	$logon = <<<EOT
@@ -30,8 +60,11 @@ if(!LOGINOK && (!isset($_GET['a']) || $_GET['a']!='li')) {
 			<input type="text" name="username"><br><br>
 			$lng_pass<br>
 			<input type="password" name="password"><br>
-			<input type="checkbox" name="staysigned" value="1" checked="checked"> $lng_sign<br><br>
-			<div align="right"><input type="button" onclick="login()" name="submit" value="$lng_login"></div>
+			<input type="checkbox" name="staysigned" value="1" checked="checked"> $lng_sign<br>
+			<input type="button" onclick="login()" name="submit" value="$lng_login">
+			<div class="warning">$message</div>
+			<div id="javascriptwarning" class="warning">$lng_javascript</div>
+			<div class="bothclear"></div>
 		</form>
 		</div></div>
 		<form id="submitForm" action="admin.php?a=li" method="post" accept-charset="UTF-8">
@@ -40,6 +73,8 @@ if(!LOGINOK && (!isset($_GET['a']) || $_GET['a']!='li')) {
 		<input type="hidden" name="staysigned" value="0">
 		</form>
 		<script type="text/javascript">
+			document.getElementById('javascriptwarning').style.display = 'none';
+			
 			$lib
 			function login() {
 				var loginForm = document.getElementById("loginForm");
@@ -89,26 +124,6 @@ $anego->assign('action',1);
 switch($_GET['a']) {
 
 	/****** Page loads or ajax page loads ******/
-	
-	/* Login */
-	case 'li':
-		/*
-			client_response = sha256(pass)
-			database_pass = sha256(salt+sha256(passwd))
-			sha256(salt + client_response) == db_pass
-		*/
-		$saltedPw = hash('sha256',$cfg['hash_salt'].$_POST['response']);
-		if(ValidAuth($_POST['username'],$saltedPw)) {
-			setcookie($cfg['cookieName'],strtolower($_POST['username']).",".$saltedPw,($_POST['staysigned']==1)?(time()+$cfg['cookieTime']*3600):0);
-			//if(isset($_SERVER['HTTP_REFERER']))
-			//	$anego->Reload($_SERVER['HTTP_REFERER']);
-			//else 
-			$anego->Reload($cfg['domain']);
-		} else {
-			$anego->AddContent(__('Wrong password or username'));
-			$anego->display('index.tpl');
-		}
-		break;
 	
 	/* Logout */
 	case 'lo':
@@ -184,12 +199,6 @@ switch($_GET['a']) {
 		else 
 			if(UserRole() < Role::Admin) Bail(__('No permission to access this page, sorry.'));
 			
-		if(isset($_POST['Save'])) {
-			mysql_query('REPLACE INTO '.SETTINGS.' (name,value) VALUES (\'firstpage\',\''.$_POST['homepage'].'\')');
-			mysql_query('REPLACE INTO '.SETTINGS.' (name,value) VALUES (\'pagetitle\',\''.$_POST['pagetitle'].'\')');
-			mysql_query('REPLACE INTO '.SETTINGS.' (name,value) VALUES (\'keywords\',\''.$_POST['keywords'].'\')');
-			mysql_query('REPLACE INTO '.SETTINGS.' (name,value) VALUES (\'description\',\''.$_POST['description'].'\')');
-		}
 		$s=array();
 		$res = mysql_query("SELECT * FROM ".SETTINGS);
 		while($row=mysql_fetch_array($res))
@@ -198,6 +207,7 @@ switch($_GET['a']) {
 		ob_start();
 ?>
 		<div id="adminpage" class="adminstyles">
+			<form name="generalsettings" onsubmit="return false">
 			<h2><?=__('Settings')?></h2>
 			<div id="tabs">
 				<ul>
@@ -205,7 +215,6 @@ switch($_GET['a']) {
 					<li><a href="#tabs-2"><?=__('Modules')?></a></li>
 				</ul>
 				<div id="tabs-1">
-					<form action="admin.php?a=setg&g=1" method="POST" accept-charset="UTF-8">
 					<?=__('Home page (The Page which the visitor gets to see first)')?><br>
 					<select name="homepage">					
 			<?
@@ -224,7 +233,8 @@ switch($_GET['a']) {
 					<textarea type="text" cols="60" style="width:100%" rows="3" name="keywords"><?=@$s['keywords']?></textarea>
 					<br><br><?=__('Website description (e.g. displayed in the google search results, without newlines)')?><br>
 					<textarea name="description" rows="3" cols="60" style="width:100%"><?=@$s['description']?></textarea>
-					<br><br><input type="submit" name="Save" value="<?=__('Save settings')?>"></form>
+					<br><br><input type="button" name="Save" value="<?=__('Save settings')?>">
+					<img src="<?=$cfg['path']?>styles/default/img/progress_active.gif" class="ajaxLoad">
 				</div>
 				<div id="tabs-2">
 					<table id="modulesTable" class="grid" style="width:100%">
@@ -232,6 +242,7 @@ switch($_GET['a']) {
 					</table>
 				</div>
 			</div>
+			</form>
 		</div>
 		<script type="text/javascript">
 			$(document).ready(function() {
@@ -264,7 +275,20 @@ switch($_GET['a']) {
 
 
 	/****** AJAX Callback handlers ******/
+	
+	case 'savesetg':
+		if(UserRole() < Role::Admin) BailErr(__('No permission to access this page, sorry.'));
 		
+		// Unfortunately can only be done one by one
+		mysql_query('REPLACE INTO '.SETTINGS.' (name,value) VALUES (\'firstpage\',\'' . mysql_real_escape_string($_POST['homepage'])  . '\')');
+		mysql_query('REPLACE INTO '.SETTINGS.' (name,value) VALUES (\'pagetitle\',\'' . mysql_real_escape_string($_POST['pagetitle']) . '\')');
+		mysql_query('REPLACE INTO '.SETTINGS.' (name,value) VALUES (\'keywords\',\'' . mysql_real_escape_string($_POST['keywords']) . '\')');
+		mysql_query('REPLACE INTO '.SETTINGS.' (name,value) VALUES (\'description\',\'' . mysql_real_escape_string($_POST['description']) . '\')');
+		
+		exit("200\n");
+
+		break;
+	
 	/* Load modules list */
 	case 'lm':
 		if(UserRole() < Role::Admin) Bail(__('No permission to access this page, sorry.'));
@@ -323,7 +347,7 @@ switch($_GET['a']) {
 	
 	// Add page
 	case 'ap':
-		if(UserRole() < Role::ProMod) Bail(__('No permission to access this page, sorry.'));
+		if (UserRole() < Role::ProMod) Bail(__('No permission to access this page, sorry.'));
 		
 		$subm = intval($_POST['subm']);
 		$nolink = intval($_POST['nolink']);
@@ -335,7 +359,7 @@ switch($_GET['a']) {
 		$par = 0;
 			
 		
-		if(! $intopage) {
+		if (! $intopage) {
 			// Add page to the bottom of the root tree
 			$q = "SELECT MAX(position) as pos FROM ".PAGES." WHERE parent_idx=0 AND menu='".$menu."'";
 			$res = mysql_query($q) or
@@ -366,21 +390,29 @@ switch($_GET['a']) {
 			$par = $row['idx'];
 		}
 		
-		if(isset($_POST['filename']))
+		if (isset($_POST['filename'])) {
 			$fname = $_POST['filename'];
-		else $fname='';
-		
-		if(get_magic_quotes_gpc()) {
-			$_POST['name']=stripslashes($_POST['name']);
-			$_POST['info']=stripslashes($_POST['info']);
-			$_POST['menu']=stripslashes($_POST['menu']);
-			$fname=stripslashes($fname);
+		} else {
+			$fname='';
 		}
-		$_POST['name']=mysql_real_escape_string($_POST['name']);
-		$_POST['info']=mysql_real_escape_string($_POST['info']);
-		$fname=mysql_real_escape_string($fname);
+		
+		if (get_magic_quotes_gpc()) {
+			$_POST['name'] = stripslashes($_POST['name']);
+			$_POST['info'] = stripslashes($_POST['info']);
+			$_POST['url'] = stripslashes($_POST['url']);
+			$_POST['menu'] = stripslashes($_POST['menu']);
+			$fname = stripslashes($fname);
+		}
+		$_POST['name'] = mysql_real_escape_string($_POST['name']);
+		$_POST['info'] = mysql_real_escape_string($_POST['info']);
+		$_POST['url'] = mysql_real_escape_string($_POST['url']);
+		
+		$fname = mysql_real_escape_string($fname);
 				
-		$q = "INSERT INTO ".PAGES." (name, info, date, parent_idx, file, visibility, position, subpoint,nolink,content,menu) VALUES ('".$_POST['name']."','".$_POST['info']."',".time().",'".$par."','".$fname."','".$vis."','".$pos."','$subm','$nolink','','".$menu."')";
+		$q = "INSERT INTO ".PAGES . 
+			 " (name, url, info, date, parent_idx, file, visibility, position, subpoint,nolink,content,menu) VALUES " .
+			 " ('".$_POST['name']."','".$_POST['url']."','".$_POST['info']."',".time().",'".$par."','".$fname."','".$vis."','".$pos."','$subm','$nolink','','".$menu."')";
+		
 		mysql_query($q) or
 			BailErr(__('Failed inserting new page'),$q);
 		
@@ -397,6 +429,8 @@ switch($_GET['a']) {
 		if(!preg_match("/^node(\d+)$/",$_GET['targetNode'],$match)) exit("400\nProgramming error: wrong target node");
 		$targetNodeId = intval($match[1]);
 		
+		if($movingNodeId == $targetNodeId && $_GET['position'] == 'inside') exit("400\nProgramming error: dropped node == target node");
+		
 		$q = "SELECT idx,name,position,parent_idx,menu FROM ".PAGES." WHERE idx=$movingNodeId";
 		$res=mysql_query($q) or
 			BailErr(__('Failed moving page'),$q);
@@ -406,8 +440,12 @@ switch($_GET['a']) {
 		$res=mysql_query($q) or
 			BailErr(__('Failed moving page'),$q);
 		$targetNode = mysql_fetch_array($res);
-			
-			
+		
+		// Prevent moving an element into its direct child
+		if($targetNode['parent_idx'] == $movingNodeId) {
+			exit("400\nProgramming error: trying to move page into its subpage");
+		}
+		
 		/* Start the move */
 		mysql_query("START TRANSACTION") or 
 			BailErr('Couldn\'t start transaction',"START TRANSACTION");
@@ -488,7 +526,7 @@ switch($_GET['a']) {
 
 	// Update page
 	case 'rp':
-		if(UserRole() < Role::ProMod) Bail(__('No permission to access this page, sorry.'));
+		if (UserRole() < Role::ProMod) Bail(__('No permission to access this page, sorry.'));
 		
 		$id=intval($_POST['page_id']);
 		
@@ -497,6 +535,7 @@ switch($_GET['a']) {
 		if(get_magic_quotes_gpc()) {
 			$_POST['name']=stripslashes($_POST['name']);
 			$_POST['info']=stripslashes($_POST['info']);
+			$_POST['url']=stripslashes($_POST['url']);
 			$_POST['filename']=stripslashes($_POST['filename']);
 		}
 
@@ -504,7 +543,14 @@ switch($_GET['a']) {
 		$subm = intval($_POST['subm']);
 		//$nolink = intval($_POST['nolink']);
 			
-		$q = "UPDATE ".PAGES." SET name='".mysql_real_escape_string($_POST['name'])."', info='".mysql_real_escape_string($_POST['info'])."',file='".mysql_real_escape_string($_POST['filename'])."', visibility='".$vis."', subpoint='".$subm."' WHERE idx='$id'";
+		$q = "UPDATE ".PAGES." SET " . 
+			"name='".mysql_real_escape_string($_POST['name'])."', " .
+			"info='".mysql_real_escape_string($_POST['info'])."', " .
+			"url='".mysql_real_escape_string($_POST['url'])."', " .
+			"file='".mysql_real_escape_string($_POST['filename'])."', " .
+			"visibility='".$vis."', " . 
+			"subpoint='".$subm."' WHERE idx='$id'";
+
 		mysql_query($q) or
 			BailErr(__('Failed renaming page'),$q);
 			
@@ -664,7 +710,7 @@ function PrintLinks() {
 	ob_start();
 
 	echo '<div class="treeDiv"><b>' . __('Main menu') . '</b><br>';
-	PrintLinksRec(0, MENU_MAIN,true);
+	PrintLinksRec(0, MENU_MAIN, true);
 	echo '</div>';
 
 	if($cfg['minorMenu']) {
@@ -679,11 +725,11 @@ function PrintLinks() {
 }
 
 function PrintLinksRec($parent, $menu, $first=0) {
-	global $defIcons,$cfg;
+	global $defIcons, $cfg;
 	
 	$q = "SELECT * FROM ".PAGES." WHERE parent_idx=$parent AND menu='".$menu."' ORDER BY position";
 	$res=mysql_query($q) or
-		BailSQLn(__('Could\'nt read pages for menu'),$q);
+		BailSQLn(__('Couldn\'t read pages for menu'),$q);
 	
 	$id='1';
 	if($first) $id='0';
@@ -692,7 +738,8 @@ function PrintLinksRec($parent, $menu, $first=0) {
 
 	if ($first) {
 		echo '<div class="innertreeDiv">';
-		echo "<img alt=\"\" title=\"" . __('New page') ."\" class=\"adp\" src=\"".$defIcons['add']."\"> <a href=\"javascript:adminMenu.addPage(0,'$menu',$id)\">" . __('New page') ."</a>"; 
+		echo "<img alt=\"\" title=\"" . __('New page') ."\" class=\"adp\" src=\"".$defIcons['add']."\">";
+		echo " <a href=\"javascript:adminMenu.addPage(0,'$menu',$id)\">" . __('New page') ."</a>"; 
 	
 		if($menu == MENU_MAIN)
 			echo '<ul id="tree_major" class="menuTree">';
@@ -702,12 +749,12 @@ function PrintLinksRec($parent, $menu, $first=0) {
 	
 	$numRows=mysql_affected_rows();
 	if(!$numRows && $first) {
-		echo "</ul>";
+		echo "</ul></div>";
 		return;
 	}
 	
 	$j=0;
-	while($row=mysql_fetch_array($res)) {
+	while($row = mysql_fetch_array($res)) {
 		$j++;
 		$link = "index.php?p=".$row['idx'];
 		
@@ -716,12 +763,24 @@ function PrintLinksRec($parent, $menu, $first=0) {
 		if($row['visibility']!=3) $name="<i>".$name."</i>";
 		
 		echo '<li id="node'.$row['idx'].'">';
-		if($j==$numRows)
-			echo '<img src="styles/default/img/cleardot.gif" class="listImg last"><span class="listEl">';
-		else echo '<img src="styles/default/img/cleardot.gif" class="listImg"><span class="listEl">';
-		echo "<a id=\"adm".$row['idx']."\" href=\"javascript:adminMenu.renamePage(".$row['idx'].",'".addslashes(htmlentities($row['name'],ENT_COMPAT,'UTF-8'))."','".addslashes(htmlentities($row['info'],ENT_COMPAT,'UTF-8'))."',".$row['visibility'].",".$row['subpoint'].",'".$row['file']."')\">$name</a> ";
+		if($j==$numRows) {
+			echo '<img src="' . $cfg['path'] . 'styles/default/img/cleardot.gif" class="listImg last"><span class="listEl">';
+		} else {
+			echo '<img src="' . $cfg['path'] . 'styles/default/img/cleardot.gif" class="listImg"><span class="listEl">';
+		}
+		
+		echo "<a id=\"adm".$row['idx']."\" href=\"javascript:adminMenu.renamePage(" . 
+			$row['idx'] . ",'" . 
+			addslashes(htmlentities($row['name'], ENT_COMPAT,'UTF-8')) . "','" . 
+			addslashes(htmlentities(@$row['url'], ENT_COMPAT,'UTF-8')) . "','" . 
+			addslashes(htmlentities(@$row['info'], ENT_COMPAT,'UTF-8')) . "'," . 
+			$row['visibility'] . "," . 
+			$row['subpoint'] . ",'" . 
+			$row['file'] . "')\">$name</a> ";
+		
 		echo '</span>';
-		echo "<a href=\"javascript:adminMenu.delPage(".$row['idx'].")\"><img class=\"adp smallIcon smallimgBin\" alt=\"". __('Delete Page') ."\" title=\"". __('Delete Page') ."\" src=\"styles/default/img/cleardot.gif\"></a>\n";
+		echo "<a href=\"javascript:adminMenu.delPage(".$row['idx'].")\">";
+		echo "<img class=\"adp smallIcon smallimgBin\" alt=\"". __('Delete Page') ."\" title=\"". __('Delete Page') ."\" src=\"" . $cfg['path'] . "styles/default/img/cleardot.gif\"></a>\n";
 		PrintLinksRec($row['idx'], $menu);
 		echo "</li>\n\n";
 		
