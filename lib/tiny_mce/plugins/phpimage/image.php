@@ -22,6 +22,12 @@ require 'inc/functions.php';
 // Some language strings
 require 'lang/'.$language.'.php';
 
+if(substr($cfg['domain'], -1) == '/' && $cfg['path'][0] == '/') {
+	$cfg['domain'] = substr($cfg['domain'], 0, strlen($cfg['domain'])-1);
+}
+
+$cfg['domain'] .= $cfg['path'];
+
 if (!LoggedOn())
 	exit("300\nYou are not logged on. Please log in as admin to upload a picture");
 

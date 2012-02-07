@@ -40,7 +40,7 @@
 							<td class="column1"><label for="linklisthref">{#advlink_dlg.list}</label></td>
 							<td colspan="2" id="linklisthrefcontainer"><select id="linklisthref"><option value=""></option></select></td>
 						</tr>
-						<tr>
+						<tr id="anchorlistrow">
 							<td class="column1"><label for="anchorlist">{#advlink_dlg.anchor_names}</label></td>
 							<td colspan="2" id="anchorlistcontainer"><select id="anchorlist"><option value=""></option></select></td>
 						</tr>
@@ -200,8 +200,27 @@
 
 						<tr>
 							<td><label id="rellabel" for="rel">{#advlink_dlg.rel}</label></td>
-							<td><input type="text" id="rel" name="rel" /> 
-									
+							<td><select id="rel" name="rel"> 
+									<option value="">{#not_set}</option> 
+									<option value="lightbox">Lightbox</option> 
+									<option value="alternate">Alternate</option> 
+									<option value="designates">Designates</option> 
+									<option value="stylesheet">Stylesheet</option> 
+									<option value="start">Start</option> 
+									<option value="next">Next</option> 
+									<option value="prev">Prev</option> 
+									<option value="contents">Contents</option> 
+									<option value="index">Index</option> 
+									<option value="glossary">Glossary</option> 
+									<option value="copyright">Copyright</option> 
+									<option value="chapter">Chapter</option> 
+									<option value="subsection">Subsection</option> 
+									<option value="appendix">Appendix</option> 
+									<option value="help">Help</option> 
+									<option value="bookmark">Bookmark</option>
+									<option value="nofollow">No Follow</option>
+									<option value="tag">Tag</option>
+								</select> 
 							</td>
 						</tr>
 
