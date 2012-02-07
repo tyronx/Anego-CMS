@@ -3,9 +3,9 @@
 <head>
 	<meta http-equiv="Content-Style-Type" content="text/css">
 	<title>{$pagetitle}</title>
-	<link rel="stylesheet" href="styles/default/default.css" type="text/css" media="screen">
-	<link rel="stylesheet" href="styles/anego/text.css" type="text/css" media="screen">
-	<link rel="stylesheet" href="styles/anego/design.css" type="text/css" media="screen">
+	<link rel="stylesheet" href="{$basepath}styles/default/default.css" type="text/css" media="screen">
+	<link rel="stylesheet" href="{$basepath}styles/anego/text.css" type="text/css" media="screen">
+	<link rel="stylesheet" href="{$basepath}styles/anego/design.css" type="text/css" media="screen">
 {$header}
 </head>
 

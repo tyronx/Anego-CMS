@@ -14,75 +14,22 @@ require "inc/html.php";
 
 /**** Basic Checks ****/
 
+if(substr($cfg['domain'], -1) == '/' && $cfg['path'][0] == '/') {
+	$cfg['domain'] = substr($cfg['domain'], 0, strlen($cfg['domain'])-1);
+}
+
+$cfg['domain'] .= $cfg['path'];
+
+/* Only available from PHP 5.2 and onward */
 if (!function_exists('json_encode')) {
-	//echo 'Warning: json_encode() not Available. Image Upload might not work properly (old PHP Version?)';
-	function json_encode( $data ) {           
-		if( is_array($data) || is_object($data) ) { 
-			$islist = is_array($data) && ( empty($data) || array_keys($data) === range(0,count($data)-1) ); 
-			
-			if( $islist ) { 
-				$json = '[' . implode(',', array_map('json_encode', $data) ) . ']'; 
-			} else { 
-				$items = Array(); 
-				foreach( $data as $key => $value ) { 
-					$items[] = json_encode("$key") . ':' . json_encode($value); 
-				} 
-				$json = '{' . implode(',', $items) . '}'; 
-			} 
-		} elseif( is_string($data) ) { 
-			# Escape non-printable or Non-ASCII characters. 
-			# I also put the \\ character first, as suggested in comments on the 'addclashes' page. 
-			$string = '"' . addcslashes($data, "\\\"\n\r\t/" . chr(8) . chr(12)) . '"'; 
-			$json    = ''; 
-			$len    = strlen($string); 
-			# Convert UTF-8 to Hexadecimal Codepoints. 
-			for( $i = 0; $i < $len; $i++ ) { 
-				
-				$char = $string[$i]; 
-				$c1 = ord($char); 
-				
-				# Single byte; 
-				if( $c1 <128 ) { 
-					$json .= ($c1 > 31) ? $char : sprintf("\\u%04x", $c1); 
-					continue; 
-				} 
-				
-				# Double byte 
-				$c2 = ord($string[++$i]); 
-				if ( ($c1 & 32) === 0 ) { 
-					$json .= sprintf("\\u%04x", ($c1 - 192) * 64 + $c2 - 128); 
-					continue; 
-				} 
-				
-				# Triple 
-				$c3 = ord($string[++$i]); 
-				if( ($c1 & 16) === 0 ) { 
-					$json .= sprintf("\\u%04x", (($c1 - 224) <<12) + (($c2 - 128) << 6) + ($c3 - 128)); 
-					continue; 
-				} 
-					
-				# Quadruple 
-				$c4 = ord($string[++$i]); 
-				if( ($c1 & 8 ) === 0 ) { 
-					$u = (($c1 & 15) << 2) + (($c2>>4) & 3) - 1; 
-				
-					$w1 = (54<<10) + ($u<<6) + (($c2 & 15) << 2) + (($c3>>4) & 3); 
-					$w2 = (55<<10) + (($c3 & 15)<<6) + ($c4-128); 
-					$json .= sprintf("\\u%04x\\u%04x", $w1, $w2); 
-				} 
-			} 
-		} else { 
-			# int, floats, bools, null 
-			$json = strtolower(var_export( $data, true )); 
-		} 
-		return $json; 
-	} 
+	require 'inc/json_encode.php';
 }
 	
-if (!file_exists('styles/'.STYLE.'/templates/index.tpl'))
-	exit("File 'styles/".STYLE."/templates/index.tpl' not found. Missing or mistyped style name?");
+if (! file_exists('styles/' . STYLE . '/templates/index.tpl'))
+	exit("File 'styles/" . STYLE . "/templates/index.tpl' not found. Missing or mistyped style name?");
 
-if (isset($_REQUEST['_SESSION'])) die("Get lost Muppet!");
+/* Do not allow tampering with Session/Cookie variables */
+if (isset($_REQUEST['_SESSION']) || isset($_REQUEST['_COOKIE'])) die("Get lost Muppet!");
 
 /**** Setup code for the design ****/
 
@@ -117,7 +64,7 @@ function i10n_smarty($source, $template) {
 
 /**** Table constants ****/
 
-if($language=='ger') {
+if ($language == 'ger') {
 	define("PAGES",$cfg['tablePrefix']."pages_ger");
 	define("SETTINGS",$cfg['tablePrefix']."settings_ger");
 	define("PAGE_ELEMENT",$cfg['tablePrefix']."pages_element_ger");
@@ -130,24 +77,24 @@ if($language=='ger') {
 // Main HTML output handler
 $anego = new Anego(STYLE);
 $anego->assign('language',$language);
-if(strpos($_SERVER['HTTP_USER_AGENT'],'MSIE')) {
-	$anego->assign('browser','ie');
+if (strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE')) {
+	$anego->assign('browser', 'ie');
 } else {
-	$anego->assign('browser','non-ie');
+	$anego->assign('browser', 'non-ie');
 }
 
 // Todo: Some of these icons are not needed anymore
 $defIcons = array(
-	'add'=>'styles/default/img/add.png',
-	'del'=>'styles/default/img/delBig.png',
-	'drag'=>'styles/default/img/drag.png',
-	'linkpic'=>'styles/default/img/linkPic.png',
-	'folder'=>'styles/default/img/folder.png',
-	'file'=>'styles/default/img/file.png',
-	'loading'=>'styles/default/img/progress_active.gif',
-	'edit'=>'styles/default/img/pencil.png',
-	'editB'=>'styles/default/img/pencilB.png',
-	'delB'=>'styles/default/img/del.png'
+	'add' => $cfg['path'] . 'styles/default/img/add.png',
+	'del' => $cfg['path'] . 'styles/default/img/delBig.png',
+	'drag' => $cfg['path'] . 'styles/default/img/drag.png',
+	'linkpic' => $cfg['path'] . 'styles/default/img/linkPic.png',
+	'folder' => $cfg['path'] . 'styles/default/img/folder.png',
+	'file' => $cfg['path'] . 'styles/default/img/file.png',
+	'loading' => $cfg['path'] . 'styles/default/img/progress_active.gif',
+	'edit' => $cfg['path'] . 'styles/default/img/pencil.png',
+	'editB' => $cfg['path'] . 'styles/default/img/pencilB.png',
+	'delB' => $cfg['path'] . 'styles/default/img/del.png'
 );
 
 // Tells the loader to load all default javascript files
@@ -162,6 +109,7 @@ $anego->AddJsPreload("\tanego.fancyURLs=".($cfg['fancyURLs']?'1':'0').";");
 $anego->AddJsPreload("\tanego.submenuStyle='".$cfg['submenuStyle']."';");
 $anego->AddJsPreload("\tanego.animatePageLoad=".$cfg['ajaxloadFadeTimer'].";");
 $anego->AddJsPreload("\tanego.pageLoad='".$cfg['pageLoad']."';");
+$anego->AddJsPreload("\tanego.path='" . $cfg['path'] . "';");
 
 /***** Init database, etc. *****/ 
 
@@ -190,7 +138,7 @@ if(!@mysql_select_db(SQLDB)) {
 
 $s=array();
 // Todo: Reduce to the needed settings (dont retrieve all)
-$q="SELECT * FROM ".SETTINGS;
+$q = "SELECT * FROM ".SETTINGS;
 $res = mysql_query($q) or
 	BailSQLn(__('A database query failed.'),$q); 
 while($row = mysql_fetch_array($res))
@@ -202,13 +150,16 @@ if (!isset($settings['pagetitle']))
 function getSetting($name) {
 	return $settings[$name];
 }
+
 function setSetting($name, $value) {
 	$q = 'REPLACE INTO '.SETTINGS.' (name,value) VALUES (\'' . $name . '\', \'' . $value . '\')';
 	mysql_query($q) or
 		BailErr('Failed applying setings', $q);
 }
 
-if(!isset($settings['menu_scroll'])) $settings['menu_scroll'] = '0';
+if (! isset($settings['menu_scroll'])) {
+	$settings['menu_scroll'] = '0';
+}
 
 $anego->AddJsPreload("\tanego.homepage=" . HomePage() . ';');
 $anego->AddJsPreload("\tanego.menu_scroll=" . $settings['menu_scroll'] . ";");
@@ -224,6 +175,7 @@ if (isset($settings['description']) && strlen($settings['description'])) {
 $anego->assign('pagetitle', str_replace(array('<','>'),array('&lt;','&gt;'), $settings['pagetitle']));
 $anego->assign('loginok', LOGINOK);
 $anego->assign('editablePage', LOGINOK && basename($_SERVER['SCRIPT_NAME']) == 'index.php');
+$anego->assign('basepath', $cfg['path']);
 
 /**** Error handling ****/
 
@@ -306,8 +258,8 @@ function ExitError($msg,$ToLog="", $severity=0, $log_once=0, $no_header=0) {
 			$log = file_get_contents('var/error.log');
 			$entries = explode("\n\n",$log);
 			
-			foreach($entries as $entry) 
-				if(intval(substr($entry,4,8)) == $log_once)
+			foreach($entries as $entry) {
+				if(intval(substr($entry,4,8)) == $log_once) {
 					if(time()-intval(substr($entry,strpos($entry,"\n")+6,strpos($entry,"("))) < 3600) {
 						//if($GLOBALS['sql_link'] && $no_header==0) {
 						if(!$no_header) {
@@ -317,28 +269,32 @@ function ExitError($msg,$ToLog="", $severity=0, $log_once=0, $no_header=0) {
 						}
 						exit();
 					}
-				
-			
+				}
+			}
 		}
 		
 		$fp = fopen('var/error.log','a');
 		// if you change 'ID :' or 'Time: ' prefix, also change the substr the lines above!
-		fwrite($fp,"ID: ".$log_once."\r\n");
-		fwrite($fp,"Time: ".time()." (".@date("H:i d.m.Y").")\r\n");
-		fwrite($fp,"Error: ".str_replace("\r\n\r\n","\r\n",$msg)."\r\n");
-		if(strlen($ToLog)) fwrite($fp,"Log: ".str_replace("\r\n\r\n","\r\n",$ToLog)."\r\n");
-		if($severity==2) {
-			fwrite($fp,'$_GET: '.serialize($_GET)."\r\n");
-			fwrite($fp,'$_POST: '.serialize($_POST)."\r\n");	
+		fwrite($fp,"ID: " . $log_once . "\r\n");
+		fwrite($fp,"Time: " . time() . " (" . @date("H:i d.m.Y") . ")\r\n");
+		fwrite($fp,"Error: ". str_replace("\r\n\r\n", "\r\n", $msg) . "\r\n");
+		
+		if (strlen($ToLog)) {
+			fwrite($fp, "Log: " . str_replace("\r\n\r\n","\r\n",$ToLog) . "\r\n");
 		}
 		
-		fwrite($fp,"\r\n");
+		if ($severity == 2) {
+			fwrite($fp, '$_GET: ' . serialize($_GET) . "\r\n");
+			fwrite($fp, '$_POST: ' . serialize($_POST) . "\r\n");
+		}
+		
+		fwrite($fp, "\r\n");
 		fclose($fp);
 	}
 	
 	$anego->AddJsPreload("\tanego.error=true;");
 	
-	if(isset($GLOBALS['sql_link']) && $GLOBALS['sql_link'] && $no_header==0 && !defined('DISPLAY_ATTEMPTED')) {
+	if (isset($GLOBALS['sql_link']) && $GLOBALS['sql_link'] && $no_header==0 && !defined('DISPLAY_ATTEMPTED')) {
 		$anego->AddContent($mymsg);
 		$anego->Display('index.tpl');
 		//$anego->bail('index.tpl');
@@ -353,9 +309,19 @@ function ExitError($msg,$ToLog="", $severity=0, $log_once=0, $no_header=0) {
 /******* Page display *******/
 /* Determine which page to show - returns the current page to be shown */
 function CurrentPage() {
-	if(isset($_GET['p']) && intval($_GET['p'])>0) $p=intval($_GET['p']);
+	$p = 0;
+	// Integer page?
+	if (intval(@$_GET['p'])) {
+		$p = intval($_GET['p']);
+	}
+	// Named page?
+	if ( preg_match("/^[\w\d\-]{2,}$/", @$_GET['p'])) {
+		$p = $_GET['p'];
+	}
+	
 	// No particular page? Show startpage
-	else $p = HomePage();
+	if (! $p) $p = HomePage();
+	
 	return $p;
 }
 
@@ -376,12 +342,12 @@ function HomePage() {
 			BailSQLn(__('Failed getting settings data'),$q);
 		list($p) = mysql_fetch_array($res);
 		// Not even a page available? Damn.
-		if(mysql_affected_rows()==0) $p=-1;
+		if (mysql_affected_rows() == 0) $p = -1;
 	}
 	
 	define('HOMEPAGE',$p);
 	
-	return $p;
+	return intval($p);
 }
 
 /* Admin links */
@@ -394,17 +360,17 @@ function AdminBar($p) {
 			$anego->AddLink("<a href=\"javascript:Core.editPage()\" id=\"pageEditLink\">" . __('Edit page') . "</a>");
 			
 		if($cfg['pageLoad'] == 'ajax') {
-			$anego->AddLink("<a href=\"admin?a=pgad\" onclick=\"$(this).attr('href','#adm/pgad'); Core.loadPage('adm/pgad');\">" . __('Edit Menu') . "</a>");
-			$anego->AddLink("<a href=\"admin?a=filad\" onclick=\"$(this).attr('href','#adm/filad'); Core.loadPage('adm/filad');\">" . __('Manage files') . "</a>");
+			$anego->AddLink('<a href="' . $cfg['path'] . 'admin/pgad">' . __('Edit Menu') . '</a>');
+			$anego->AddLink('<a href="' . $cfg['path'] . 'admin/filad">' . __('Manage files') . '</a>');
 			
 			if($userRole>=Role::Admin) 
-				$anego->AddLink("<a href=\"admin?a=setg\" onclick=\"$(this).attr('href','#adm/setg'); Core.loadPage('adm/setg');\">" . __('Settings') . "</a>");
+				$anego->AddLink('<a href="' . $cfg['path'] . 'admin/setg">' . __('Settings') . '</a>');
 		} else {
-			$anego->AddLink("<a href=\"admin?a=pgad\">" . __('Edit Menu') . "</a>");
-			$anego->AddLink("<a href=\"admin?a=filad\">" . __('Manage files') . "</a>");
+			$anego->AddLink('<a href="' . $cfg['path'] . 'admin/pgad">' . __('Edit Menu') . '</a>');
+			$anego->AddLink('<a href="' . $cfg['path'] . 'admin/filad">' . __('Manage files') . '</a>');
 			
 			if($userRole>=Role::Admin) 
-				$anego->AddLink("<a href=\"admin?a=setg\">" . __('Settings') . "</a>");
+				$anego->AddLink('<a href="' . $cfg['path'] . 'admin/setg">' . __('Settings') . '</a>');
 		}
 	}
 }
@@ -413,33 +379,44 @@ function AdminBar($p) {
 function PrintPage($p) {
 	global $anego, $cfg;
 	
-	$anego->curPg = $p;
-	$anego->AddJsPreload("\tanego.curPg='pg$p';");
-	
-	AdminBar($p);
-	
 	if($p==-1) {
 		$anego->AddContent(__('<i>No start page set up yet. Please check your settings.</i>'));
 		$anego->display('index.tpl');
 		exit();
 	}
-
+	
 	/********* Get page content ********/
-	$q = "SELECT name, file, content, content_prepared FROM ".PAGES." WHERE idx=$p ".(!LOGINOK?"AND (visibility&1)=1":"")."";
+	$selection = '';
+	if (is_numeric($p)) {
+		$selection = "idx='$p'";
+	} else {
+		$selection = "url='" . mysql_real_escape_string($p) . "'";
+	}
+
+	$q = "SELECT idx, name, file, content, content_prepared FROM ".PAGES." WHERE " . $selection . ' ' . (!LOGINOK?"AND (visibility&1)=1":"");
+	
 	$res = mysql_query($q) or
 		BailSQL("Failed getting page data for page $p<br>",$q);
 	$row = mysql_fetch_array($res);
-
+	
+	AdminBar($row['idx']);
+	
 	if(!mysql_affected_rows()) {
 		$anego->AddContent(__('Page nonexistant or no permission to see it'));
 		$anego->display('index.tpl');
 		exit();
 	}
 	
+	$anego->curPg = $row['idx'];
+	$anego->AddJsPreload("\tanego.curPg = 'pages/" . $row['idx'] . "';");
+	
+	
+
+	
 	$anego->assign('pagetitle', $row['name'] . " - " . $anego->get_template_vars('pagetitle'));
 	$anego->assign('pagename', $row['name']);
 	
-	$js = pageLoadJs($p);
+	$js = pageLoadJs($row['idx']);
 	if (count($js))
 		$anego->AddJsPreload("\tanego.pageJS=new Array('" . implode("','",$js) . "');");
 	

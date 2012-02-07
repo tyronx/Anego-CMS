@@ -4,12 +4,16 @@
 	# Javascript loader
 	RewriteRule ^ld(.*)$  jsld.php?g=$1
 	# Load page
-	RewriteRule ^pg(.*)$  index.php?p=$1
+	RewriteRule ^pages/(.*)$  index.php?p=$1
 	RewriteRule ^admin$ admin.php
+	RewriteRule ^admin/([^?]+)(\?.+)?$ admin.php?a=$1&$2
 	RewriteRule ^admin-pg(.*)$ admin.php?p=$1
 	RewriteRule ^md(.*)-(.*)$ modules/$1/?a=rc&data=$2
-	
+	# mod_rewrite test
 	RewriteRule ^rwcheck$  index.php?rewrite=1
+	
+	RewriteCond $1 !^(admin\.php|index\.php|setup\.php|jsld\.php|files|js|tmp|modules|lang|lib|styles)
+	RewriteRule ^(.+)$ index.php/?p=$1 [L]
 	
 	# Block GET requests that contain /etc/
 	RewriteCond %{REQUEST_URI} (ftp|https?):|/etc/ [NC,OR]

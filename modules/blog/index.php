@@ -142,7 +142,7 @@ class BlogManager {
 				echo $c . ' ' . (($cmts == 1)?$lng['blog']['blog_comment']:$lng['blog']['blog_comments']) . "\n";
 				
 				echo '<div class="blogComment" id="blogCmt'.$cmt_id.'"><p>';
-				if(LOGINOK) echo '<img src="styles/default/img/cleardot.gif" class="smallIcon smallimgBin" onclick="blogfuncs.deleteComment('.$cmt_id.','.$id.')">';
+				if(LOGINOK) echo '<img src="' . $cfg['path'] . 'styles/default/img/cleardot.gif" class="smallIcon smallimgBin" onclick="blogfuncs.deleteComment('.$cmt_id.','.$id.')">';
 				echo '<b>' . sprintf($lng['blog']['said'], htmlentities($_POST['name'])) . '</b></p><p>' . htmlentities($_POST['comment']) . '</p>';
 				echo '<p><span class="blogCommentDate">' . date('F d Y H:i', time()) . '</span></p></div><br>';
 				
@@ -261,11 +261,11 @@ class BlogManager {
 		$text .= '<a class="blogLink" href="'.$link.'" onclick="blogfuncs.loadEntry(this,'.$row['idx'].')"><h1 class="blogTitle">'.$row['title'].'</h1></a><div class="blogContent">'.$row['entry'].'</div>'; 
 		
 		if ($fullview) {
-			if(LOGINOK && !$this->readonly) $text.='<div class="blogSummary"><div><img src="styles/default/img/cleardot.gif" class="imgEdit icon" onclick="blogfuncs.editEntry('.$row['idx'].',true)"><img src="styles/default/img/cleardot.gif" class="imgBin icon" onclick="blogfuncs.deleteEntry('.$row['idx'].',true)"></div></div>';
+			if(LOGINOK && !$this->readonly) $text.='<div class="blogSummary"><div><img src="' . $cfg['path'] . 'styles/default/img/cleardot.gif" class="imgEdit icon" onclick="blogfuncs.editEntry('.$row['idx'].',true)"><img src="' . $cfg['path'] . 'styles/default/img/cleardot.gif" class="imgBin icon" onclick="blogfuncs.deleteEntry('.$row['idx'].',true)"></div></div>';
 			$text.='<h1 style="padding-top:20px; clear:both;">'.$lng['blog']['post_comment'].'</h1>';			
 			$text.='<textarea rows="6" cols="50" id="commentBody"></textarea><br><p>'.$lng['blog']['comment_as'].'<input id="commentName" type="text"><input type="hidden" name="email" value="" id="commentMail"></p>';
 			//$text.='<p><table border="0"><tr><td><button id="commentButton" type="button" onclick="blogfuncs.postComment('.$entry_id.')">'.$lng['blog']['submit_comment'].'</button></td><td id="loadingIconSlot"></td></tr></table></p>';
-			$text.='<p><button id="commentButton" type="button" onclick="blogfuncs.postComment('.$entry_id.')">'.$lng['blog']['submit_comment'].'</button> <img src="styles/default/img/cleardot.gif" id="loadingIconSlot"></p>';
+			$text.='<p><button id="commentButton" type="button" onclick="blogfuncs.postComment('.$entry_id.')">'.$lng['blog']['submit_comment'].'</button> <img src="' . $cfg['path'] . 'styles/default/img/cleardot.gif" id="loadingIconSlot"></p>';
 			
 			$text.='<h3 class="commentCounter" style="padding-top:20px; clear:both;">'.$row['comments']." ".(($row['comments']==1)?$lng['blog']['blog_comment']:$lng['blog']['blog_comments'])."</h3>";
 			if ($row['comments']>0) {
@@ -275,7 +275,7 @@ class BlogManager {
 			}
 		} else {
 			$text.='<div class="blogSummary"><p><small><a href="'.$link.'" onclick="blogfuncs.loadEntry('.$entry_id.')">'.$row['comments'].' '.(($row['comments']==1)?$lng['blog']['blog_comment']:$lng['blog']['blog_comments']).'</a></small></p>';		
-			if(LOGINOK && !$this->readonly) $text.='<div><img src="styles/default/img/cleardot.gif" class="imgEdit icon" onclick="blogfuncs.editEntry('.$row['idx'].',true)"><img src="styles/default/img/cleardot.gif" class="imgBin icon" onclick="blogfuncs.deleteEntry('.$row['idx'].',true)"></div>';
+			if(LOGINOK && !$this->readonly) $text.='<div><img src="' . $cfg['path'] . 'styles/default/img/cleardot.gif" class="imgEdit icon" onclick="blogfuncs.editEntry('.$row['idx'].',true)"><img src="' . $cfg['path'] . 'styles/default/img/cleardot.gif" class="imgBin icon" onclick="blogfuncs.deleteEntry('.$row['idx'].',true)"></div>';
 			$text.='</div>';
 		}
 		$text.='<hr></div>';
@@ -289,7 +289,7 @@ class BlogManager {
 	}
 	
 	function entryComments($entry_id) {
-		global $lng;
+		global $lng, $cfg;
 		
 		$q = "SELECT * FROM ".$this->cmtTable." WHERE element_id=$entry_id";
 		$res = mysql_query($q) or
@@ -300,7 +300,7 @@ class BlogManager {
 		$cmts='<div class="commentSection">';
 		while ($row = mysql_fetch_array($res)) {
 			$cmts.='<div class="blogComment" id="blogCmt'.$row['idx'].'"><p>';
-			if (LOGINOK) $cmts.='<img src="styles/default/img/cleardot.gif" class="smallIcon smallimgBin" onclick="blogfuncs.deleteComment('.$row['idx'].','.$entry_id.')">';
+			if (LOGINOK) $cmts.='<img src="' . $cfg['path'] . 'styles/default/img/cleardot.gif" class="smallIcon smallimgBin" onclick="blogfuncs.deleteComment('.$row['idx'].','.$entry_id.')">';
 			$cmts.='<b>'.sprintf($lng['blog']['said'],$row['user']).'</b></p><p>'.$row['comment'].'</p>';
 			$cmts.='<p><span class="blogCommentDate">'.date('F d Y H:i',$row['date']).'</span></p><br></div>';
 		}
@@ -364,7 +364,7 @@ class BlogManager {
 			$text.='<div class="blogElement" id="blogElement_'.$row['idx'].'"><span class="blogDate">'.date('d.m.Y H:i',$row['date']).'</span>';
 			$text.='<a class="blogLink" name="blog'.$i.'" href="'.$link.'" onclick="blogfuncs.loadEntry(this,'.$row['idx'].','.$blog_id.')"><h1 class="blogTitle">'.$row['title'].'</h1></a><div class="blogContent">'.$row['entry'].'</div>';
 			$text.='<div class="blogSummary"><p><small><a href="'.$link.'" onclick="blogfuncs.loadEntry(this,'.$row['idx'].','.$blog_id.')">'.$row['comments'].' '.(($row['comments']==1)?$lng['blog']['blog_comment']:$lng['blog']['blog_comments']).'</a></small></p>';
-			if (LOGINOK && !$this->readonly) $text.='<div><img src="styles/default/img/cleardot.gif" class="imgEdit icon" onclick="blogfuncs.editEntry('.$row['idx'].')"><img src="styles/default/img/cleardot.gif" class="imgBin icon" onclick="blogfuncs.deleteEntry('.$row['idx'].')"></div>';
+			if (LOGINOK && !$this->readonly) $text.='<div><img src="' . $cfg['path'] . 'styles/default/img/cleardot.gif" class="imgEdit icon" onclick="blogfuncs.editEntry('.$row['idx'].')"><img src="' . $cfg['path'] . 'styles/default/img/cleardot.gif" class="imgBin icon" onclick="blogfuncs.deleteEntry('.$row['idx'].')"></div>';
 			$text.='<div class="blogComments"></div>';
 			$text.='</div><hr></div>';
 			$i--;

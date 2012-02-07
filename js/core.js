@@ -1,5 +1,9 @@
 //setTimeout(function() { Core.editPage() }, 800);
 
+function __(str) {
+	return str;
+}
+
 // Todo: Make this configurable
 var fancyBoxSettings = {
 	'cyclic'		: false,
@@ -64,6 +68,23 @@ $(document).ready(function() {
 	}
 	if (anego.pageLoad == 'ajax')
 		Core.ajaxifyMenu();
+	
+	
+	$.postOriginal = $.post;
+	$.getOriginal = $.get;
+	
+	$.get = function(url, data, success, datatype) {
+		if(! url.match(/^http:/))
+			url = anego.path + url;
+		return $.getOriginal(url, data, success, datatype);
+	};
+	
+	$.post = function(url, data, success, datatype) {
+		if(! url.match(/^http:/))
+			url = anego.path + url;
+		
+		return $.postOriginal(url, data, success, datatype);
+	};
 });
 
 
@@ -79,57 +100,47 @@ function CoreFunctions() {
 	var loadedCSSFiles = Array();
 	
 	var loadHooks = Array();
-	// anego.curPg is fullpath string, Core.curPg is splitted object containing usfull infos about the current page
+	// Core.curPg is splitted object containing usfull infos about the current page
 	var curPg;
 	
 	this.openDialogs = Array();
 	this.dialogId = 1;
 	this.contentElementModules = null;
 	
-	/* Pages are identified by a type followed by an identifier and may then nest infinitely seperated by slashes
-	  e.g. pg34, pgad, blog23, blog23/item123/screenshot1/8
-	  This function splits each segment into a more readable js-object
-  	*/
-	this.pageInfo=function(page) {
-		var pginfo = {};
-		var result = /^([a-zA-Z_]+)(\d+|\/[a-zA-Z_]+)(\/(.*))?/.exec(page)
-		// No anchor means we need to load the home page
-		if(! page)
-			return {
-				valid: true,
-				type: 'pg',
-				id: anego.homepage,
-				head: 'pg' + anego.homepage,
-				tail: '',
-				root: true,
-				fullpath: 'pg' + anego.homepage
-			}
-			
-		if(! result) return { valid: false, fullpath: page };
+	this.splitURL = function(url) {
+		if(typeof url == "object") return url;
+		if(typeof url != "string") return null;
 		
-		pginfo = {
-			valid: true,
-			type: result[1],
-			id: result[2],
-			head: result[1] + '/' + result[2],
-			tail: result[4],
-			fullpath: page
+		var result = url.split('/');
+		
+		// #pages/123 or #pages/contact
+		result.isPage =  result.length > 1 && (result[0] == 'pages' || result[0] == 'admin');
+		
+		if(result.isPage) {
+			result.pageId = result[1];
 		}
-
-		if(pginfo.type!='pg' && pginfo.type!='adm' && (typeof anego.directLoad == 'undefined' || !anego.directLoad.contains(pginfo.type))) 
-			pginfo.valid=false;
 		
-		return pginfo;
+		result.fullpath = anego.path + '#' + url;
+		
+		// Remove hashtag
+		if(result[0][0] == '#') {
+			result[0] = result[0].substr(1);
+		}
+		
+		return result;
 	}
 	
-	this.curPg = this.pageInfo(anego.curPg);
+	this.curPg = this.splitURL(anego.curPg);
 	
 	this.initPageContent=function() {
 		/* Email defuscator tool */
 		$('.hiddenEmail').defuscate();
 		/* Links to pages on the same site that are made with tinymce/etc. need to be converted */
-		if(anego.pageLoad=='ajax')
-			$('#content a').attr('href',function(idx,attr) { return attr.replace(/^pg(\d+)/g,'#pg$1'); } );
+		if(anego.pageLoad=='ajax') {
+			$('#content a').attr('href',function(idx,attr) { 
+				return attr.replace(/^(pages\/.+)/g, '#$1'); 
+			} );
+		}
 		/* Default zoomable picture links */
 		this.lightbox($('a.zoomable'));
 	}
@@ -140,13 +151,33 @@ function CoreFunctions() {
 	
 	/* Fix degraded links for ajax loading */
 	this.ajaxifyMenu=function() {
-		if(anego.editmode) {
-			$('.mainnav li a').attr('href',function(idx,attr) { return attr.replace(/admin-(pg\d+)/g,'admin#$1'); });
-			$("#minornav li a").attr('href',function(idx,attr) { return attr.replace(/admin-(pg\d+)/g,'admin#$1'); });
+		if(anego.editmode && anego.pageLoad != 'ajax') {
+			var replace = function(idx, attr) {
+				return attr.replace(/admin-(pg\d+)/g,'admin#$1');
+			}
+			
+			$('.mainnav a').attr('href', replace);
+			$(".minornav a").attr('href', replace);
 		} else {
-			$('.mainnav li a').attr('href',function(idx,attr) { return attr.replace(/pg(\d+)/g,'#pg$1'); } );
-			$("#minornav li a").attr('href',function(idx,attr) { return attr.replace(/pg(\d+)/g,'#pg$1'); } );
+			var replace = function(idx, attr) {
+				if($(this).hasClass('urlalias')) {
+					var pt = new RegExp(anego.path + '(.*)');
+					return attr.replace(pt, anego.path + '#pages/$1');
+				}
+
+				var pt = new RegExp(anego.path + 'pages/(\\d+)');
+				return attr.replace(pt, anego.path + '#pages/$1');
+			}
+			
+			$('.mainnav a').attr('href', replace);
+			$(".minornav a").attr('href', replace);
 		}
+		
+		// Ajaxify admin menu
+		var adminRegex = new RegExp('^' + anego.path + '(admin/.+)$');
+		$('ul.adminnav li a').attr('href', function(idx, attr) {
+			return attr.replace(adminRegex,'#$1');
+		});
 	}
 	
 	// Changes the language to lang and reloads the page
@@ -156,29 +187,28 @@ function CoreFunctions() {
 	}
 
 	/* Loads a page. Parameter:
-	 * newpage: must be a valid pageInfo object like the ones created by pageInfo()
+	 * url: must be a valid url object like the ones created by splitURL()
 	 * settings: {
 	 *  beforeContentLoaded: callback when the content has been loaded but not inserted into the page yet
 	 *  afterContentLoaded: callback when the page is loaded and content is inserted.
 	 *  forceLoad: Ignores some checks to force reload the page on Core.EndEdit()
 	*/
-	this.loadPage=function(newpage,settings) {
+	this.loadPage = function(url, settings) {
 		if(typeof settings != 'object')
 			settings = new Object();
 		
-		if(typeof newpage != 'object')
-			newpage = Core.pageInfo(newpage);
-		
-		if(! newpage.valid) return false;
-		
+		if(typeof url != 'object')
+			url = Core.splitURL(url);
+
+		if(! url.isPage) return false;
 		/*  RSH calls loadPage() too => don't make requests twice */
-		if(loadingPage!=null) return false;
-		loadingPage = newpage.fullpath;
+		if (loadingPage != null) return false;
+		loadingPage = url.fullpath;
 		
 		//$('#name').html('b');
 			
 		for(var i=0; i<loadHooks.length; i++)
-			if(loadHooks[i](newpage)) {
+			if(loadHooks[i](url.fullpath)) {
 				loadingPage=null;
 				return false;
 			}
@@ -186,7 +216,7 @@ function CoreFunctions() {
 		//$('#name').append('c');
 		
 		/* Don't load same page (also seems to be buggy in ie if loaded twice).*/
-		if(newpage.fullpath == Core.curPg.fullpath && (typeof settings.forceLoad == 'undefined' || settings.forceLoad == false)) {
+		if(Core.curPg && url.fullpath == Core.curPg.fullpath && (typeof settings.forceLoad == 'undefined' || settings.forceLoad == false)) {
 			loadingPage = null;
 			return false;
 		}
@@ -201,33 +231,39 @@ function CoreFunctions() {
 			loadingPage=null;
 			return false;
 		}
+		
+		//$('#name').append('e');
 
 		var file='index.php';
 		var get;
 		var pgId;
-
-		switch(newpage.type) {
-			case 'adm':
+		
+		switch(url[0]) {
+			case 'admin':
 				file = 'admin.php';
-				get = { a: newpage.id.substr(1), noheader: 1 };
+				get = { a: url[1], noheader: 1 };
 				$('#pageEditLink').parent().css('display','none');
-				if(anego.editmode) Core.endEdit({ ignorePage: true });
-				this.selectPage(null); // Unselect selected page
+				
+				if(anego.editmode) {
+					Core.endEdit({ ignorePage: true });
+				}
+				
+				this.selectPageInMenu(null); // Unselect selected page
 				break;
 				
-			case 'pg':
+			case 'pages':
 				if($('#pageEditLink').length == 0) {
 					$('ul.adminnav').prepend('<li><a href="javascript:Core.editPage()" id="pageEditLink">' + lngMain.edit_page + '</a></li>');
 				} else {
 					$('#pageEditLink').parent().css('display','');
 				}
 				
-				this.selectPage(newpage);
+				this.selectPageInMenu(url);
 				
-				get = {a: 'p', p: newpage.id};
+				get = { a: 'p', p: url.pageId };
 				
 				if (anego.editmode)
-					get = {a: 'gce', fgx: newpage.id};
+					get = { a: 'gce', fgx: url.pageId };
 					
 				if (settings.updatePage)
 					get.updatePage = 1;
@@ -241,7 +277,7 @@ function CoreFunctions() {
 				return false;	
 		}
 		
-		//$('#name').append('e');
+		//$('#name').append('f');
 		
 		var animated = false,loaded = false;
 		var aw;	
@@ -296,7 +332,9 @@ function CoreFunctions() {
 			if(anego.animatePageLoad>0) 
 				$('#content').css({opacity: 0.0}).animate({opacity: 1.0}, anego.animatePageLoad);
 				
-			Core.curPg = newpage;
+			Core.curPg = url;
+			Core.curPg.pageId = data.pageId;
+			
 			loadingPage=null;
 			
 			// Callback function from loadPage() parameter
@@ -328,11 +366,11 @@ function CoreFunctions() {
 	
 	/* Overwrite this method if needed */
 	// Adds the correct "selected" css classes and shows menuitems where needed
-	this.selectPage = function(page) {
+	this.selectPageInMenu = function(page) {
 		if(anego.submenuStyle == 'visible') return;
 		
 		var el = null;
-		if(page != null) el = $('#menu .mainnav li a[onclick="Core.loadPage(\'' + page.fullpath + '\')"]').parent();
+		if(page != null) el = $('#menu .mainnav li a[href="' + page.fullpath + '"]').parent();
 		
 		// If this is a child of a child we just need to make sure its visible
 		if(el != null && el.hasClass('subsubitem')) {
@@ -369,7 +407,7 @@ function CoreFunctions() {
 		} else {
 			// Select new page
 			// jQuery rocks. Seriously.
-			$('#menu .mainnav li a[onclick="Core.loadPage(\'' + page.fullpath + '\')"]').parents('li').first().addClass('navSelected');
+			$('#menu .mainnav li a[href="' + page.fullpath + '"]').parents('li').first().addClass('navSelected');
 			$('#menu .mainnav li.navSelected .subnavbox').show();
 		}
 	}
@@ -404,7 +442,24 @@ function CoreFunctions() {
 			
 			// Todo: Code this a bit cleaner
 			var initEdit = function(data) {
-				Core.dragdrop = new DragDropElements(data.modules);
+				Core.dragdrop = new DragDropElements({
+					container: "#content",
+					modules: data.modules,
+					onMove: function(ret, mPos) {
+						$.get('index.php', {
+							a: 'mce',
+							mid: ret.module_id,
+							elid: ret.elem_id,
+							newpos: mPos
+						}, function(data) {
+							if(aw=GetAnswer(data)) {
+								// ok
+							} else {
+								// undo all
+							}
+						});
+					}
+				});
 				Core.dragdrop.init();
 				Core.contentElementModules = data;
 			};
@@ -429,23 +484,22 @@ function CoreFunctions() {
 		if(! newLocation && !firstLoad) return firstLoad=true;
 		firstLoad = true;
 		
-		var newpage = Core.pageInfo(newLocation);
+		var url = Core.splitURL(newLocation);
 
-		if(newpage.invalid) return;
-		
-		if(newpage.type == 'adm') {
-			Core.loadPage(newpage);
+		if(url[0] == 'admin') {
+			Core.loadPage(url);
 			// We'll call the load page hooks in loadpage
 			return;
-		}
-		else if(newpage.type == 'pg') {
-			Core.loadPage(newpage);
-			// We'll call the load page hooks in loadpage
-			return;
+		} else {
+			if(url.isPage) {
+				Core.loadPage(url);
+				// We'll call the load page hooks in loadpage
+				return;
+			}
 		}
 		
-		for(var i=0; i<loadHooks.length; i++)
-			loadHooks[i](newpage);
+		for(var i=0; i < loadHooks.length; i++)
+			loadHooks[i](url);
 	}
 	
 	// Through this function, custom page loading events can be implemented
@@ -469,11 +523,11 @@ function CoreFunctions() {
 					toLoad.push(file[i]);
 			
 			if(toLoad.length>0)
-				$('head').append('<script type="text/javascript" src="ld.'+toLoad.join('.')+'"></script>');
+				$('head').append('<script type="text/javascript" src="' + anego.path + 'ld.' + toLoad.join('.') + '"></script>');
 			
 			loadedJsFiles=loadedJsFiles.concat(toLoad);
 		} else {
-			$('head').append('<script type="text/javascript" src="'+file+'"></script>');
+			$('head').append('<script type="text/javascript" src="' + anego.path + file+'"></script>');
 			loadedJsFiles[loadedJsFiles.length]=file;
 		}
 	}
@@ -482,7 +536,7 @@ function CoreFunctions() {
 	this.loadCSS = function(file) {
 		if(loadedCSSFiles.contains(file)) return;
 		
-		$('head').append('<link rel="stylesheet" href="'+file+'" type="text/css" media="screen">');	
+		$('head').append('<link rel="stylesheet" href="' + anego.path + file + '" type="text/css" media="screen">');	
 		loadedCSSFiles.push(file);
 	}
 	

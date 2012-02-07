@@ -237,7 +237,7 @@ function blogFunctions() {
 			mcelang='de';
 		
 		$('#' + el_id).tinymce({
-			script_url : 'lib/tiny_mce/tiny_mce_gzip.php',
+			script_url : anego.path + 'lib/tiny_mce/tiny_mce_gzip.php',
 			mode : 'none',
 			theme : "advanced",	
 			plugins : "advimagescale,advlink,contextmenu,paste,inlinepopups,phpimage",
@@ -254,7 +254,7 @@ function blogFunctions() {
 			paste_text_use_dialog: true,
 			accessibility_warnings : false,
 			button_tile_map : true,
-			content_css : "styles/"+anego.style+"/text.css", /* style var defined by Anego */
+			content_css : anego.path + "styles/" + anego.style + "/text.css", /* style var defined by Anego */
 			external_link_list_url : "modules/simpletext/linkList.js.php",
 			convert_urls : false
 		});

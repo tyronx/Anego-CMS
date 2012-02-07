@@ -4,6 +4,10 @@ include("core.php");
 
 header('Content-type: text/javascript');
 
+if (! LOGINOK) {
+	exit(');');
+}
+
 echo 'var tinyMCELinkList=new Array(';
 $res2=mysql_query("SELECT idx,name FROM ".PAGES);
 $i=0;

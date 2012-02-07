@@ -39,7 +39,9 @@ function Gallery($root="",$dtype=DTYPE_NORMAL, $rows=-1, $cols=-1, $width=-1, $h
 	$url=$_SERVER['REQUEST_URI'];
 	
 	
-	if($cfg['fancyURLs']) $url=preg_replace('/pg([0-9]+)/','index.php?p=\\1',$url);
+	if ($cfg['fancyURLs']) {
+		$url=preg_replace('/pages\/([0-9]+)/','index.php?p=\\1',$url);
+	}
 	
 	$url=parse_url($url);
 		
@@ -50,8 +52,8 @@ function Gallery($root="",$dtype=DTYPE_NORMAL, $rows=-1, $cols=-1, $width=-1, $h
 		else 
 			if($query[strlen($query)-1]!='&') $query.="&";
 	} else {
-		$query=$url['query'];
-		if(strlen($url['query'])) $query.="&";
+		$query=@$url['query'];
+		if(strlen(@$url['query'])) $query.="&";
 	}
 	
 	if(basename($url['path'])=='admin.php') $base_url = "http://".$_SERVER['HTTP_HOST'].$url['path']."?a=filad&fgx=";
@@ -67,9 +69,14 @@ function Gallery($root="",$dtype=DTYPE_NORMAL, $rows=-1, $cols=-1, $width=-1, $h
 	if(isset($_GET['fgx'])) {
 		// Absolute paths are frowned upon
 		if(strlen($_GET['fgx']) && $_GET['fgx'][0]=='/') $_GET['fgx']='';
-		$path=$root."/".$_GET['fgx'];
+		$path = $root . "/" . $_GET['fgx'];
 	}
 	else $path="";
+	
+	/*print_r($_GET);
+	print_r($_SERVER);
+	print_r($_REQUEST);*/
+	
 	//echo "root: $root<br>";
 	$path = SimplifyPath($path);
 	//echo "<br>path is $path<Br>";
@@ -110,7 +117,7 @@ function Gallery($root="",$dtype=DTYPE_NORMAL, $rows=-1, $cols=-1, $width=-1, $h
 	}
 	
 	if($dtype!=DTYPE_NORMAL && $dtype!=DTYPE_IMGANDFOLDERS) {
-		echo '<div align="center">'.$GLOBALS['lng_youarehere'].' ';
+		echo '<div align="center">' . __('You are here:') . ' ';
 				
 		$folders = explode("/",$path);
 		$f="";
@@ -130,7 +137,7 @@ function Gallery($root="",$dtype=DTYPE_NORMAL, $rows=-1, $cols=-1, $width=-1, $h
 	echo "\n\t\t\t".'<table align="center" cellpadding="0" cellspacing="0" class="gal">'."\n";
 
 	if(!count($files)) {
-		echo "<tr><td style=\"width:".$width."px; height:".$height."px;\">".$GLOBALS['lng_show']." </td>";
+		echo "<tr><td style=\"width:".$width."px; height:".$height."px;\">" . __('Sorry, nothing to show') . " </td>";
 		
 	} else {
 		sort($files);
@@ -138,7 +145,7 @@ function Gallery($root="",$dtype=DTYPE_NORMAL, $rows=-1, $cols=-1, $width=-1, $h
 		$vars['width']=$width;
 		$vars['height']=$height;
 		$vars['base_url']=$base_url;
-		$vars['path']=$path;
+		$vars['path']=$cfg['path'] . $path;
 		
 		//$galnumber = rand(0,1000);
 		
@@ -390,46 +397,55 @@ class Anego extends Smarty {
 	
 	// Puts together all required header stuff
 	function prepare() {
+		global $cfg;
 		// general header
-		if(count($this->header_general))
-			$header=implode("\n",$this->header_general);
-		else $header='';
+		if (count($this->header_general)) {
+			$header = implode("\n", $this->header_general);
+		} else {
+			$header = '';
+		}
+		
 		// css
 		$css = "";
-		if(count($this->header_css)) 
+		if (count($this->header_css)) {
 			foreach($this->header_css as $cssfile)
-				$css.="\t".'<link rel="stylesheet" href="'.$cssfile.'" type="text/css" media="screen">'."\n";
+				$css.="\t".'<link rel="stylesheet" href="' . $cfg['domain'] . $cssfile . '" type="text/css" media="screen">'."\n";
+		}
 		// javascript
 		$js = "";
-		if(count($this->header_jspreload))
+		if (count($this->header_jspreload)) {
 			foreach($this->header_jspreload as $script)
 				$js.="$script\n";
-		
-		$jsfiles = "";
-		if(count($this->header_prependjs))
-			foreach($this->header_prependjs as $path)
-				$jsfiles.="\t<script type=\"text/javascript\" src=\"$path\"></script>\n";
-		if(strlen($this->header_jsmodules)) {
-			if($GLOBALS['cfg']['fancyURLs'])
-				$jsfiles.="\t<script type=\"text/javascript\" src=\"ld".$this->header_jsmodules."\"></script>\n";
-			else 
-				$jsfiles.="\t<script type=\"text/javascript\" src=\"jsld.php?g=".$this->header_jsmodules."\"></script>\n";
 		}
-		if(count($this->header_appendjs))
+		$jsfiles = "";
+		if (count($this->header_prependjs)) {
+			foreach($this->header_prependjs as $path)
+				$jsfiles.="\t<script type=\"text/javascript\" src=\"" . $cfg['domain'] . "$path\"></script>\n";
+		}
+		if (strlen($this->header_jsmodules)) {
+			if($GLOBALS['cfg']['fancyURLs'])
+				$jsfiles.="\t<script type=\"text/javascript\" src=\"" . $cfg['domain'] . "ld".$this->header_jsmodules."\"></script>\n";
+			else 
+				$jsfiles.="\t<script type=\"text/javascript\" src=\"" . $cfg['domain'] . "jsld.php?g=".$this->header_jsmodules."\"></script>\n";
+		}
+		
+		if(count($this->header_appendjs)) {
 			foreach($this->header_appendjs as $path)
-				$jsfiles.="\t<script type=\"text/javascript\" src=\"$path\"></script>\n";
+				$jsfiles.="\t<script type=\"text/javascript\" src=\"" . $cfg['domain'] . "$path\"></script>\n";
+		}
 		
-		
-		if(file_exists('styles/'.$this->curStyle.'/custom.js'))
-			$jsfiles .= "\t<script type=\"text/javascript\" src=\"styles/".$this->curStyle."/custom.js\"></script>\n";
-		
+		if (file_exists('styles/'.$this->curStyle.'/custom.js')) {
+			$jsfiles .= "\t<script type=\"text/javascript\" src=\"" . $cfg['domain'] . "styles/".$this->curStyle."/custom.js\"></script>\n";
+		}
 		
 		$this->assign('header',$css."\t".'<script type="text/javascript">'."\n".$js."\t".'</script>'."\r\n".$jsfiles.$header);
 		// footer
 		$ft = "";
-		if(count($this->footer))
+		if (count($this->footer)) {
 			foreach($this->footer as $code)
 				$ft.="$code\n";
+		}
+		
 		$this->assign('footer',$ft);
 		// admin menu
 		//if(count($this->admin_links))
@@ -441,13 +457,21 @@ class Anego extends Smarty {
 	
 	// Reload page
 	function Reload($file="") {
-		if(preg_match("/^http/",$file)) { header("Location: $file");  exit(); }
+		if (preg_match("/^http/", $file)) { 
+			header("Location: $file");
+			exit(); 
+		}
 			
-		if(!strlen($file)) $file=basename($_SERVER['PHP_SELF']);
-		else if(strpos($file,$_SERVER['PHP_SELF'])!==FALSE) $file=basename($file);
+		if (!strlen($file)) {
+			$file = basename($_SERVER['PHP_SELF']);
+		} else {
+			if (strpos($file, $_SERVER['PHP_SELF'])!==FALSE) $file = basename($file);
+		}
 
 		$dir = dirname($_SERVER['PHP_SELF']);
-		if($dir{strlen($dir)-1}!='/' && $file{0}!='/') $dir.="/";
+		if ($dir{strlen($dir)-1} != '/' && $file{0} != '/') {
+			$dir.="/";
+		}
 
 		header("Location: http://".$_SERVER['HTTP_HOST'].$dir.$file);
 	  
@@ -455,18 +479,6 @@ class Anego extends Smarty {
 		return 0;
 	}
 
-	function Box($title) {
-	//if($ret) ob_start();
-		$title = "<div class=\"content_header\">\n<div class=\"add_shadow\"><div><div>\n<div class=\"content_header2\">\n<h2>$title</h2>\n</div>\n</div></div></div>\n</div>";
-		return $title;
-		/*
-		if($ret) {
-			$str=ob_get_contents();
-			ob_end_clean();
-			return $str;
-		}*/	
-	}
-	
 	// Builds the main menu array
 	// TODO: Defenitely cache this. 3 boxed queries - horrible
 	//		 and in the process make it endlessly boxable, not just 3 levels
@@ -566,45 +578,70 @@ class Anego extends Smarty {
 	
 	// Generates one menu item link from a given database row.
 	// $k == If not false: Children div element id
-	function MenuItemLink($row,$k=false) {
+	function MenuItemLink($row, $k=false) {
 		global $cfg;
-		
-		$file = $cfg['domain'];
-		
-		if(defined("ADMIN_MODE")) {
-			if($cfg['fancyURLs']) $file.='admin-';
-			else $file.='admin.php';
+			
+		if (defined("ADMIN_MODE")) {
+			if($cfg['fancyURLs']) {
+				$file.='admin-';
+			} else {
+				$file.='admin.php';
+			}
 		}
 		
-		if($cfg['fancyURLs']) $href = $file.'pg'.$row['idx']; //index.php?p='.$row['idx'];
-			else $href = $file.'?p='.$row['idx'];
+		$class = '';
+		if($cfg['fancyURLs']) {
+			if (@$row['url']) {
+				$href = $cfg['path'] . $row['url'];
+				$class = 'urlalias';
+			} else {
+				$href = $cfg['path'] . 'pages/' . $row['idx'];
+			}
+		} else {
+			$href = $cfg['path'] . '?p=' . $row['idx'];
+		}
 
-		if($cfg['pageLoad']=='ajax')
-			$onc = ' onclick="Core.loadPage(\'pg'.$row['idx'].'\')"';
-		else $onc='';
+		if($cfg['pageLoad']=='ajax') {
+			$onc = ''; // onclick="Core.loadPage(\'pg'.$row['idx'].'\')"';
+		} else {
+			$onc='';
+		}
 		
-		if($row['file']) { $onc=''; $href=$row['file']; }
+		if($row['file']) { 
+			$onc='';
+			$href=$row['file'];
+		}
 		
 		$name=$row['name'];
-		if(isset($row['defImg']) && $row['defImg']==1) 
+		if (isset($row['defImg']) && $row['defImg']==1) 
             $name='<img src="'.$row['defImg'].'" alt="'.$row['name'].'" title="'.htmlentities($row['info']).'">';
-		if(isset($row['activeImg']) && $row['activeImg']==1 && $this->curPg==$row['idx']) 
+		if (isset($row['activeImg']) && $row['activeImg']==1 && $this->curPg==$row['idx']) 
             $name='<img src="'.$row['activeImg'].'" alt="'.$row['name'].'" title="'.htmlentities($row['info']).'">';
 			
-		if($row['nolink']) { if($cfg['submenuStyle']!='auto') return $name; $href='#'; $onc=''; }
+		if ($row['nolink']) { 
+			if($cfg['submenuStyle']!='auto')
+			return $name;
+		}
 
-		if($cfg['submenuStyle']=='auto' && $k) {
-			if(isset($row['defImg']) && $row['defImg']==1 && $row['hoverImg']) $onc.=' onmouseover="OpenMenu('.$k.',\''.$row['image_selected'].'\'); TogImg(this,\''.$row['hoverImg'].'\')" onmouseout="CloseMenu('.$k.',\''.$row['image'].'\'); TogImg(this,\''.$row['defImg'].'\')"';
-			else $onc.= ' OnMouseOver="OpenMenu('.$k.',\''.$row['image_selected'].'\')" OnMouseOut="CloseMenu('.$k.',\''.$row['image'].'\')"';
+		if ($cfg['submenuStyle']=='auto' && $k) {
+			if(isset($row['defImg']) && $row['defImg']==1 && $row['hoverImg']) {
+				$onc.=' onmouseover="OpenMenu('.$k.',\''.$row['image_selected'].'\'); TogImg(this,\''.$row['hoverImg'].'\')" onmouseout="CloseMenu('.$k.',\''.$row['image'].'\'); TogImg(this,\''.$row['defImg'].'\')"';
+			} else {
+				$onc.= ' OnMouseOver="OpenMenu('.$k.',\''.$row['image_selected'].'\')" OnMouseOut="CloseMenu('.$k.',\''.$row['image'].'\')"';
+			}
 		} else  {
 			$js = '';
-			if(isset($row['defImg']) && $row['defImg']==1 && $row['hoverImg']) $onc.=' onmouseover="TogImg(this,\''.$row['hoverImg'].'\')" onmouseout="TogImg(this,\''.$row['defImg'].'\')"';
+			if(isset($row['defImg']) && $row['defImg']==1 && $row['hoverImg']) {
+				$onc.=' onmouseover="TogImg(this,\''.$row['hoverImg'].'\')" onmouseout="TogImg(this,\''.$row['defImg'].'\')"';
+			}
 		}
 		
-		if(function_exists('CustomMenuItemLink'))
-			return CustomMenuItemLink($row, '<a title="'.htmlentities($row['info']).'" href="'.$href.'"'.$onc.'>'.$name.'</a>',$this->curPg);
+		$url = '<a class="' . $class . '" title="'.htmlentities($row['info']).'" href="'.$href.'"'.$onc.'>'.$name.'</a>';
+		
+		if (function_exists('CustomMenuItemLink'))
+			return CustomMenuItemLink($row, $url, $this->curPg);
 	
-		return '<a title="'.htmlentities($row['info']).'" href="'.$href.'"'.$onc.'>'.$name.'</a>';
+		return $url;
 	}
 	
 	function MinorMenu() {

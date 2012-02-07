@@ -4,7 +4,13 @@ include("core.php");
 
 header('Content-type: text/javascript');
 
+
 echo 'var tinyMCELinkList=new Array(';
+
+if (! LOGINOK) {
+	exit(');');
+}
+
 $res2=mysql_query("SELECT idx,name FROM ".PAGES);
 $i=0;
 while($row2=mysql_fetch_array($res2)) {

@@ -42,7 +42,8 @@ if(typeof lngMain == 'undefined') {
 	lng_delpage = 'Really delete page?<br>Notice that all Child pages<br>will also be deleted!';
 
 	lng_editpage = 'Edit page';
-	lng_rename = 'Rename page to';
+	lng_rename = 'Page name';
+	lng_pageurl = 'URL Alias';
 
 	lng_titledesc = "Title/Description";
 

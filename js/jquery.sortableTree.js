@@ -40,14 +40,16 @@
 			var dropAt = null;
 			var draggedAwayListNode = null;
 			var mouseDownOn = null;
+			var mouseDownCoords = [];
 			var dragger;
 			var dragging = false;
-			var draggerIcon = $('<img src="styles/default/img/cleardot.gif" alt="" class="iconDrop"> ');
+			var draggerIcon = $('<img src="' + anego.path + 'styles/default/img/cleardot.gif" alt="" class="iconDrop"> ');
+			var $shadowNode;
 			
-			if(!options) options = {};
+			if (! options) options = {};
 				
 			this.init = function() {
-				$('body').append(dragger = $('<div style="display:none;" class="dragger"></div>'));
+				$('body').append(dragger = $('<div style="display:none;" class="dragger draggedElement"></div>'));
 				
 				$(tree).find('li').each(function() {
 					listElements[listElements.length]=this;
@@ -66,70 +68,80 @@
 			};
 		
 			function onMouseMove(event) {
-				if (mouseDownOn != null) {
+				if (mouseDownOn != null && dist(mouseDownCoords, {x: event.pageX, y: event.pageY}) > 3 ) {
 					dragger.html($(mouseDownOn).clone());
 					dragger.prepend(draggerIcon);
 					dragger.css('display','');
 					draggedAwayListNode = $(mouseDownOn).parent();
-					draggedAwayListNode.css('display','none');
+					
+					draggedAwayListNode.find('span')
+						.append('<div class="shadowElement"></div>')
+						.css('position', 'relative');
+					
+					//draggedAwayListNode.hide();
+					
 					mouseDownOn = null;
 					dragging=true;
+
 				}
 				
 				if(dragging) {
 					var ov = isOverElement(event.pageX,event.pageY);
 					var ovEl;
 					var dy;
-					dragger.offset({left:event.pageX+5,top:event.pageY+15});
-
+					dragger.offset({left:event.pageX + 5,top:event.pageY + 15});
+					
+					// Element is over,above or below an element
 					if(ov != -1) {
-						dy = event.pageY - $(listElements[ov]).offset().top;
+						dropAt = getElementDropAtElement(ov, event);
 						ovEl = $(listElements[ov]).find('span.listEl');
 						
-						if(dy < 6) {
-							dropAt = 'above';
-							ovEl.addClass('insertAbove');
-							ovEl.removeClass('insertBelow');
-							ovEl.removeClass('insertIn');
-							dragger.find('img.iconDrop').attr('class','iconDrop iconDropBetween');
-						} else {
-							if(ovEl.innerHeight() - dy < 6) {
-								dropAt = 'under';
+						switch(dropAt) {
+							case 'above':
+								ovEl.addClass('insertAbove');
+								ovEl.removeClass('insertBelow');
+								ovEl.removeClass('insertIn');
+								dragger.find('img.iconDrop').attr('class','iconDrop iconDropBetween');
+							break;
+								
+							case 'under':
 								ovEl.addClass('insertBelow');
 								ovEl.removeClass('insertIn');
 								ovEl.removeClass('insertAbove');
 								dragger.find('img.iconDrop').attr('class','iconDrop iconDropBetween');
-							} else {
-								dropAt = 'in';
+							break;
+								
+							case 'in':
 								ovEl.addClass('insertIn');
 								ovEl.removeClass('insertBelow');
 								ovEl.removeClass('insertAbove');
 								dragger.find('img.iconDrop').attr('class','iconDrop iconDropAdd');
-							}
+							break;
 						}
 						
-						//dragger.html(dropAt+' '+draggedAwayListNode.find('span.listEl').html());
+					// Element is outside the tree
 					} else {
-						dragger.find('img.iconDrop').attr('class','iconDrop iconDropNo');
+						dropAt = getElementDropAtOutside(event);
+						
+						switch(dropAt) {
+							case 'top':
+								$(tree).addClass('insertAbove');
+								dragger.find('img.iconDrop').attr('class','iconDrop iconDropOver');
+							break;
+							
+							case 'bottom':
+								$(tree).addClass('insertBelow');
+								dragger.find('img.iconDrop').attr('class','iconDrop iconDropUnder');
+							break;
+						}
 					}
 					
-					if(ov==-1 && event.pageY > $(tree).offset().top + $(tree).innerHeight()) {
-						$(tree).addClass('insertBelow');
-						dropAt = 'bottom';
-						dragger.find('img.iconDrop').attr('class','iconDrop iconDropUnder');
+					// May happen when too far outside the tree, or when above the same element itsef
+					if(dropAt == 'none') {
+						$(tree).removeClass('insertBelow');
+						$(tree).removeClass('insertAbove');
 						
-						//dragger.html(dropAt+' '+draggedAwayListNode.find('span.listEl').html());
-						
-					} else {
-						if(ov==-1 && event.pageY < $(tree).offset().top) {
-							$(tree).addClass('insertAbove');
-							dropAt = 'top';
-							dragger.find('img.iconDrop').attr('class','iconDrop iconDropOver');
-						} else {
-							$(tree).removeClass('insertBelow');
-							$(tree).removeClass('insertAbove');
-							
-						}
+						dragger.find('img.iconDrop').attr('class','iconDrop iconDropNo');
 					}
 					
 					if(ov != overElement && overElement!=-1) {
@@ -144,9 +156,59 @@
 				return false;
 			}
 			
+			function getElementDropAtElement(ov, event) {
+				dy = event.pageY - $(listElements[ov]).offset().top;
+				ovEl = $(listElements[ov]).find('span.listEl');
+				
+				if($(listElements[ov]).attr('id') == draggedAwayListNode.attr('id')) {
+					return 'none';
+				}
+				
+				if($(listElements[ov]).parents('li#' + draggedAwayListNode.attr('id')).length > 0) {
+					return 'none';
+				}
+				
+				if(dy < 6) {
+					return 'above';
+				} else {
+					if(ovEl.innerHeight() - dy < 6) {
+						return 'under';
+					} else {
+						return 'in';
+					}
+				}
+				
+				return 'none';
+			}
+			
+			function getElementDropAtOutside(event) {
+				// Element is at bottom of the tree
+				
+					// Within 50 px below the tree (y-coordinate)
+				if(	inside(event.pageY, $(tree).offset().top + $(tree).innerHeight(), $(tree).offset().top + $(tree).innerHeight() + 50)
+					// No more than 25px outside the tree (x-coordinate)
+					&& inside(event.pageX, $(tree).offset().left - 25, $(tree).offset().left + $(tree).width() + 25 )
+				) {
+					
+					return 'bottom';
+				}
+				
+				// Element is at bottom of the tree
+					
+					// Within 50 px above the tree (y-coordinate)
+				if(inside(event.pageY, $(tree).offset().top - 50, $(tree).offset().top)
+					// No more than 25px outside the tree (x-coordinate)
+					&& inside(event.pageX, $(tree).offset().left - 25, $(tree).offset().left + $(tree).width() + 25 )
+				) {
+					return 'top';
+				}
+					
+				return 'none';
+			}
+			
 			function onMouseUp(event) {
-				dragging=false;
-				mouseDownOn=null;
+				dragging = false;
+				mouseDownOn = null;
 				var newNode;
 				var tmp;
 				var atEl = $(listElements[overElement]);
@@ -158,26 +220,41 @@
 				$(listElements[overElement]).find('span.listEl').removeClass('insertBelow');
 				$(listElements[overElement]).find('span.listEl').removeClass('insertAbove');
 				
-				if(draggedAwayListNode) {
+				if (draggedAwayListNode) {
 					/* No place to drop found, put it back */
-					if(overElement==-1 && dropAt!='bottom' && dropAt!='top') {
-						draggedAwayListNode.css('display','');
+					if ((overElement==-1 && dropAt!='bottom' && dropAt!='top') || dropAt=='none') {
+						var off = draggedAwayListNode.offset();
+						dragger.animate({
+							left: off.left,
+							top: off.top,
+							opacity: 0.5
+						}, {
+							duration: 200,
+							complete: function() {
+								dragger.css('display','none');
+								dragger.css('opacity','1');
+								draggedAwayListNode.find('.shadowElement').remove();
+								draggedAwayListNode=null;
+							}
+						});
 					} else {
+						draggedAwayListNode.find('.shadowElement').remove();
 						newNode =  $('<li>'+draggedAwayListNode.html()+'</li>');
 						var nodeId=draggedAwayListNode.attr('id');
 						
 						switch(dropAt) {
 							case 'top':
 								$(tree).prepend(newNode);
-								pos='before';
-								target=$(listElements[0]).attr('id');
+								pos = 'before';
+								target = $(listElements[0]).attr('id');
 								break;
 							
 							case 'above': 
-								if(overElement==0)
+								if (overElement==0) {
 									$(tree).prepend(newNode);
-								else
+								} else {
 									atEl.before(newNode);
+								}
 								
 								target=atEl.attr('id');
 								pos='before';
@@ -197,8 +274,9 @@
 								break;
 								
 							case 'bottom':
-								target=$(listElements[listElements.length-1]).attr('id'); // useless value (might be the same as newNode), just to cause no error serverside
-								pos='bottom';
+								// useless value (might be the same as newNode), just to cause no error serverside
+								target = $(listElements[listElements.length-1]).attr('id'); 
+								pos = 'bottom';
 								$(tree).append(newNode);
 								break;
 								
@@ -207,13 +285,18 @@
 									atEl.append(tmp=$('<ul></ul>'));
 								
 								target=atEl.attr('id');
-								pos='inside';
+								pos = 'inside';
 								tmp.append(newNode);
 								break;
 						}
 						
-						if(draggedAwayListNode.parent().children().length==1) draggedAwayListNode.parent().remove();
-						else draggedAwayListNode.remove();
+						if (draggedAwayListNode.parent().children().length==1) {
+							draggedAwayListNode.parent().remove();
+						} else {
+							draggedAwayListNode.remove();
+						}
+						
+						
 						
 						newNode.attr('id',nodeId);
 					}
@@ -223,9 +306,11 @@
 					atElDiv.removeClass('insertIn');
 					$(tree).removeClass('insertBelow');
 					
-					bindElementEvents(newNode);
-					dragger.css('display','none');
-					draggedAwayListNode=null;
+					if(newNode) {
+						bindElementEvents(newNode);
+						dragger.css('display','none');
+						draggedAwayListNode = null;
+					}
 
 					$(tree).find('li').each(function() {
 						listElements[listElements.length]=this;
@@ -235,7 +320,7 @@
 					
 					checkforLast(tree);
 					
-					if(options.moved)
+					if(options.moved && newNode)
 						options.moved(newNode.attr('id'), target, pos);
 				}
 			}
@@ -245,6 +330,7 @@
 				$(el).find('li > ul').each(function() { checkforLast(this) });
 			}
 			
+			// Returns element index at given coordinate
 			function isOverElement(x,y) {
 				var of,el,cur=-1;
 				
@@ -275,12 +361,17 @@
 					}
 					
 					mouseDownOn = $(this).find('span');
+					mouseDownCoords = { x: event.pageX, y: event.pageY };
 					return false;
 				});
 			}
 			
 			function inside(val, x1, x2) {
 				return val >= x1 && val <= x2;
+			}
+			
+			function dist(p1, p2) {
+				 return Math.sqrt( Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2) )
 			}
 		}
 	}

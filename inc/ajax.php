@@ -253,49 +253,64 @@ switch($ac) {
 	
 	// ajax page loading
 	case 'p':
-		$p=intval($_GET['p']);
-		
-		if ($p == -1) $p = CurrentPage();
+		$p = CurrentPage();
 		
 		$json = Array();
 		
-		if ($p < 1) {
-			$json['content'] = 'Invalid page';
-			exit("200\n".json_encode($json)); 
+		$selection = '';
+		if (is_numeric($p)) {
+			if ($p < 1) {
+				$json['content'] = 'Invalid page';
+				exit("404\n" . json_encode($json)); 
+			}
+
+			$selection = "idx='$p'";
+		} else {
+			$selection = "url='" . mysql_real_escape_string($p) . "'";
+		}
+		
+		
+		$q = "SELECT idx, name, file, content, content_prepared FROM ".PAGES." WHERE " . $selection . ' ' . (!LOGINOK?"AND (visibility&1)=1":"");
+		if (! ($res = mysql_query($q)))	 {
+			$json['content'] = "Failed getting page data for page $p";
+			logError("Failed getting page data for page $p<br>", $q);
+			exit("500\n" . json_encode($json)); 
+		}
+		$row = mysql_fetch_array($res);
+		
+		if (!mysql_affected_rows()) {
+			$json['content'] = __('Page does not exist or no permission to see it');
+			exit("404\n" . json_encode($json)); 
 		}
 		
 		if(@$_GET['updatePage'] && LOGINOK) {
 			include('inc/modules.php');
 			$pmg = new PageManager();
-			$pmg->generatePage($p);
+			$row['content'] = $pmg->generatePage($row['idx']);
 			$json['pageUpdated'] = true;
 		}
-		
-		$q = "SELECT name, file, content, content_prepared FROM ".PAGES." WHERE idx=$p ".(!LOGINOK?"AND (visibility&1)=1":"")."";
-		if (! ($res = mysql_query($q)))	 {
-			$json['content'] = "Failed getting page data for page $p";
-			logError("Failed getting page data for page $p<br>",$q);
-			exit("200\n".json_encode($json)); 
-		}
-		$row = mysql_fetch_array($res);
 
-		if (!mysql_affected_rows()) {
-			$json['content'] = __('Page does not exist or no permission to see it');
-			exit("200\n".json_encode($json)); 
+		if (! strlen($row['content'])) {
+			$row['content'] = 
+				"<i id=\"hasnoContent\">" . 
+					__("This page has not been filled with content yet. Please use the 'Edit this page' Link to enter your text") . 
+				"</i>";
+		} else {
+			if (! strlen($row['content_prepared'])) {
+				$row['content_prepared'] = $row['content'];
+			}
 		}
-		
-		if (!strlen($row['content'])) $row['content']="<i id=\"hasnoContent\">" . __("This page has not been filled with content yet. Please use the 'Edit this page' Link to enter your text") . "</i>";
-		if (!strlen($row['content_prepared'] && strlen($row['content']))) $row['content_prepared'] = $row['content'];
 		
 		/* Also deliever what js files to load */
-		$json['js'] = pageLoadJs($p);
+		$json['js'] = pageLoadJs($row['idx']);
 
 		$settings['pagetitle'] = str_replace(array('&lt;', '&gt;'), array('<','>'), $settings['pagetitle']);
 		
+		$json['pageId'] = $row['idx'];
 		$json['title'] = $settings['pagetitle'] . " - " . $row['name'];
 		$json['content'] = $row['content_prepared'];
 		
-		echo "200\n".json_encode($json)."\r\n";
+		echo "200\n" . json_encode($json) . "\r\n";
 		
 		exit();
 		

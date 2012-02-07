@@ -9,7 +9,10 @@ richtext = ContentElement.extend({
 					'<button type="button" name="mew2" class="btn_cancelrte" style="min-width:150px">' + lng_cancelchanges + '</button>';
 		
 		self.html = $container.html();
-		$container.html('<textarea style="width:100%" id="' + self.editorId + '">' + self.html + '</textarea>' + buttons);
+		// Takes care that escaped html tags stay escaped
+		var escapedHTML = $("<div/>").text(self.html).html();
+		
+		$container.html('<textarea style="width:100%" id="' + self.editorId + '">' + escapedHTML + '</textarea>' + buttons);
 		self.tinyfy();
 		
 		$container.find('.btn_sendrte').click(function() {
@@ -78,8 +81,8 @@ richtext = ContentElement.extend({
 		var mcelang='en';
 		if(anego.language=='ger') /* language var defined by Anego */
 			mcelang='de';
-			
-		$('#' + this.editorId).tinymce({
+		
+		var settings = {
 			script_url : 'lib/tiny_mce/tiny_mce_gzip.php',
 			mode : 'none',
 			theme : "advanced",	
@@ -105,6 +108,11 @@ richtext = ContentElement.extend({
 			external_link_list_url : "modules/richtext/linkList.js.php",
 			convert_urls : false,
 			template_templates : templates
-		});
+		};
+		
+		if (typeof tinymceRichtextSettings == "object")
+			settings = $.extend(settings, tinymceRichtextSettings);
+		
+		$('#' + this.editorId).tinymce(settings);
 	}
 });

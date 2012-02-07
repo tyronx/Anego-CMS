@@ -35,8 +35,10 @@ define ("SQLDB","database");
  */
 $language = 'eng';
 
-/* Uncomment & edit this line, if your anego installation is in a subfolder */
-//$cfg['domain'].='anego/';
+/* Edit this line, if your anego installation is in a subfolder, always with trailing slash
+ * e.g. /anego/
+ */
+$cfg['path'] = '';
 
 // Do not edit this
 define("CONFIG_LOADED",true);

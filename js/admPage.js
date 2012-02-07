@@ -48,7 +48,7 @@ Core.pageEditDialog = null;
  * Parameter is the return value of PageManager->contentElementModules() (page content and array of loaded modules),
  * thus the page is basically being reconstructed on the client side (in DragDropElements.preparePage()).
  */
-function DragDropElements(contentElements) {
+function DragDropElements(options) {
 	/* Element class prefixes */
 	var prefix = 'draggable';
 	var prefix2 = 'draggingItem';
@@ -64,14 +64,30 @@ function DragDropElements(contentElements) {
 	/* (Content-)Element, the mouse is currently hovering over */
 	var curEl;
 	/* Mini toolbar stuff */
-	var miniToolbar = $('.miniToolbar');
+	var $miniToolbar = $('.miniToolbar');
 	
 	// identifies wether the item currently being dragged is a placed content element or a content element template
 	var movingCE = 0;
 	var oldEl;
 	
-	/* Editor window */
-	var out='<div class="draggableList">';
+	var $container = $(options.container);
+	var insertMarkerTemplate = '<hr id="insertMarker" />';
+	var contentElementTemplate = '<div class="contentElement ceDraggable"></div>';
+	/* Content elements window */
+	var ceWindowTemplate = '<div class="draggableList"></div>';
+	var draggableElementTemplate = 
+		'<div class="moduleIcon">' + 
+			'<div id="" class="ceDraggable ceTemplate">' +
+				'<img src=""/>' + 
+			'</div>' + 
+			'' + 
+		'</div>';
+	
+	var miniToolbarTemplate = 
+		'<div style="display:none;" class="miniToolbar">' + 
+			'<img src="' + anego.path + 'styles/default/img/cleardot.gif" class="imgEdit icon">' +
+			'<img src="' + anego.path + 'styles/default/img/cleardot.gif" class="imgBin icon">' +
+		'</div>';
 
 	function rebindElementEvents(container) {
 		container.bind('mousemove.admPage', elementMouseMove);
@@ -79,19 +95,29 @@ function DragDropElements(contentElements) {
 	}
 
 	this.init = function() {
-		// Make sure #content is big enough to put something into
-		if(parseInt($('#content').css('min-height')) < 80 || parseInt($('#content').css('height') < 80))
-			$('#content').css('min-height','80px');
-		
-		/* Parse content element modules and execute its js */
-		for(var i=0; i<contentElements.length; i++) {
-			out += '<div style="float:left; margin-left:7px; margin-right:7px; text-align:center;"><div id="draggable'+i+'" class="ceDraggable ceTemplate"><img src="'+contentElements[i]['image']+'" alt=""></div>'+contentElements[i]['name']+'</div>';	
+		// Make sure $container is big enough to put something into
+		if (parseInt($container.css('min-height')) < 80 || parseInt($container.css('height') < 80)) {
+			$container.css('min-height','80px');
 		}
-		out +="</div>";
+		
+		var elem;
+		$ceWindow = $(ceWindowTemplate);
+		/* Parse content element modules and execute its js */
+		for (var i = 0; i < options.modules.length; i++) {
+			$elem = $(draggableElementTemplate);
+			$('.ceTemplate', $elem)
+				.attr('id', 'draggable' + i)
+				.after(options.modules[i]['name']);
+			
+			$('img', $elem).attr('src', anego.path + options.modules[i]['image']);
+
+			$ceWindow.append($elem);
+		}
 		
 		/* Create content elements window */
-		Core.pageEditDialog = OpenDialog({title:'Page Elements',
-			content: out,
+		Core.pageEditDialog = OpenDialog({
+			title: __('Page Elements'),
+			content: $ceWindow,
 			buttons: BTN_NONE,
 			autocollapse: false,
 			blocking: false,
@@ -99,14 +125,10 @@ function DragDropElements(contentElements) {
 		});
 		
 		/* Create element mini toolbar & bind events */	
-		if(miniToolbar.length == 0) {
-			miniToolbar = $('<div style="display:none;" class="miniToolbar"></div>');
+		if($miniToolbar.length == 0) {
+			$miniToolbar = $(miniToolbarTemplate);
 
-			var imgEdit = $('<img src="styles/default/img/cleardot.gif" class="imgEdit icon">');
-			var imgBin = $('<img src="styles/default/img/cleardot.gif" class="imgBin icon">');
-
-			miniToolbar.append(imgEdit);
-			imgEdit.click(function() {
+			$('.imgEdit', $miniToolbar).click(function() {
 				var targetElem = pageElements[$(curEl).attr('id')];
 				
 				if(targetElem != undefined) {
@@ -119,44 +141,45 @@ function DragDropElements(contentElements) {
 						targetElem.endEdit();
 					}
 					
-					if(targetElem.getHideMiniToolbar())
-						miniToolbar.css('display','none');
+					if (targetElem.getHideMiniToolbar()) {
+						$miniToolbar.hide();
+					}
 				} else {
 					alert("Module of this Element not found, please install the module '" + splitID($(curEl).attr('id')).module_id + "'");
 				}
 			});
 			
-
-			miniToolbar.append(imgBin);
-			imgBin.click(function() {
-				var res=confirm("Really delete?");
-				if(res) {
+			$('.imgBin', $miniToolbar).click(function() {
+				var res = confirm("Really delete?");
+				if (res) {
 					var element2Delete = curEl;
 					var deleteCompleteFn = function() { 
 						$(element2Delete).remove();
-						miniToolbar.css('display','none'); 
+						$miniToolbar.hide();
 					};
 					
 					// Todo: If module doesn't exist, instantiate a ContentElement class and delete it that way
-					if(pageElements[$(curEl).attr('id')] != undefined)
+					if (pageElements[$(curEl).attr('id')] != undefined) {
 						pageElements[$(curEl).attr('id')].deleteElement(deleteCompleteFn);
-					else alert("Module of this Element not found, please install the module '" + splitID($(curEl).attr('id')).module_id + "'");
+					} else {
+						alert("Module of this Element not found, please install the module '" + splitID($(curEl).attr('id')).module_id + "'");
+					}
 				}
 			});
 			
 			/* Add the minitoolbar to the html page */
-			$('#inactive').append(miniToolbar);
+			$('#inactive').append($miniToolbar);
 		}
 		
 		/* Set up draggable content element templates in the dialog */
-		for(var i=0; i < contentElements.length; i++) {
+		for (var i = 0; i < options.modules.length; i++) {
 			$('#draggable'+i).mousedown(function(event) {
 				curEl = $(this).clone();
 				$(curEl).attr("id",'draggingItem'+parseInt(this.id.substr(prefix.length)));
 				$('#inactive').append(curEl);
 				mouseDown = 1;
 				p = $(this).offset();
-				oldOffset=p;
+				oldOffset = p;
 				$(curEl).offset({ top: p.top, left: p.left })
 				dx = event.pageX - p.left
 				dy = event.pageY - p.top;
@@ -165,36 +188,39 @@ function DragDropElements(contentElements) {
 				$(document)
 					.bind('mousemove.admPage', documentMouseMove)
 					.bind('mouseup.admPage', documentMouseUp);
+				
 				return false;
 			});
 		}
 		
-		/* Track #content wide mouse movement */
-		$('#content').mousemove(function(event) {
+		/* Track $container wide mouse movement */
+		$container.mousemove(function(event) {
 			mouseMoved(event);
 			
-			if(mouseDown) {
-				if(movingCE==1) dragContentElement(event);
-				if($('.contentElement').length==0) {
+			if (mouseDown) {
+				if (movingCE == 1) {
+					dragContentElement(event);
+				}
+				if ($('.contentElement', $container).length == 0) {
 					$('#insertMarker').remove();
-					$('#content').prepend('<hr id="insertMarker" style="background-color:transparent; width:100%; height:10px; border:1px dashed red;">');
-				} else
-				
-				if(event.pageY > $('.contentElement').last().offset().top) {
-					$('#insertMarker').remove();
-					$('#content').append('<hr id="insertMarker" style="background-color:transparent; width:100%; height:10px; border:1px dashed red;">');					
+					$container.prepend(insertMarkerTemplate);
+				} else {
+					if (event.pageY > $('.contentElement', $container).last().offset().top) {
+						$('#insertMarker').remove();
+						$container.append(insertMarkerTemplate);
+					}
 				}
 				
 				return false;
 			}
 		});
 
-		/* Track #contents wide mouse movement */
-		$('#contents').mousemove(function(event) {
+		/* Track $container parent wide mouse movement */
+		$container.parent().mousemove(function(event) {
 			mouseMoved(event);
-			if(mouseDown && !inside($('#content'),event.pageX,event.pageY)) {
+			if (mouseDown && !inside($container, event.pageX, event.pageY)) {
 				$('#insertMarker').remove();
-				$('#content').prepend('<hr id="insertMarker" style="background-color:transparent; width:100%; height:10px; border:1px dashed red;">');
+				$container.prepend(insertMarkerTemplate);
 			}
 		});
 		
@@ -216,24 +242,20 @@ function DragDropElements(contentElements) {
 			if($('#insertMarker').length>0) {
 				var mPos = markerPosition();
 
-				$(curEl).css('left','');
-				$(curEl).css('top','');
-				$(curEl).css('position','');
-				$(curEl).css('width','');
-				$(curEl).css('z-index','1');
+				$(curEl).css({
+					'left': '',
+					'top': '',
+					'position': '',
+					'width': '',
+					'z-index': '1'
+				});
+				
 				$('#insertMarker').replaceWith(curEl);
 				$(oldEl).remove();
 				bindEvents(curEl);
 				var ret = splitID($(curEl).attr('id'));
 				
-				$.get('index.php?a=mce&mid='+ret.module_id+'&elid='+ret.elem_id+'&newpos='+mPos,
-					function(data) {
-						if(aw=GetAnswer(data)) {
-							// ok
-						} else {
-							// undo all
-						}
-					});
+				options.onMove(ret, mPos);
 			} else {				
 				if(oldEl!=undefined) {
 					$(curEl).remove();
@@ -250,13 +272,13 @@ function DragDropElements(contentElements) {
 		if($('#insertMarker').length>0) {
 			// content element template "index"
 			var num = parseInt(curEl.attr('id').substr(prefix2.length));
-			var $container = $('<div class="contentElement ceDraggable"><img src="styles/default/img/progress_active.gif"></div>');
+			var $container = $(contentElementTemplate);
 			var markerPos = markerPosition();
 			
 			$('#insertMarker').replaceWith($container);
 			// Call to module
 			var obj;
-			eval("obj = new "+contentElements[num]['mid']+"('" + contentElements[num]['mid'] + "', " + Core.curPg.id + ");");
+			eval("obj = new " + options.modules[num]['mid'] + "('" + options.modules[num]['mid'] + "', " + Core.curPg.pageId + ");");
 			obj.createElement(
 				$container,
 				markerPos,
@@ -270,55 +292,51 @@ function DragDropElements(contentElements) {
 	}
 	
 	this.destroy = function() {
-		$('.contentElement').unbind('.admPage');
-		$('.miniToolbar').remove();
+		$('.contentElement', $container).unbind('.admPage');
+		$('.contentElement', $container).removeClass('ceBorder');
+		
+		$miniToolbar.remove();
 		$(document)
 			.unbind('mousemove.admPage', documentMouseMove)
 			.unbind('mouseup.admPage', documentMouseUp);
 	}
 	
 	this.preparePage = function() {
-		// Has been initialized before, lets unbind all events first
-/*		if(pageElements) {
-			$('.contentElement').unbind();
-		}*/
-		
 		pageElements = {};
-		
+			
 		/* Instantiate all element objects in the page */
-		$('.contentElement').each(function(index) {
+		$('.contentElement', $container).each(function(index) {
 			// Module Type and id is stored in html-element id
 			var elInfo = splitID($(this).attr('id'));
 			var module_id;
 			var found = false;
-			for(var i = 0; i < contentElements.length; i++) {
-				module_id = contentElements[i]['mid'];
+			for (var i = 0; i < options.modules.length; i++) {
+				module_id = options.modules[i]['mid'];
 				if (module_id == elInfo.module_id) {
-					pageElements[$(this).attr('id')] = eval("new " + module_id + "('" + module_id + "', " + Core.curPg.id + ", '" + elInfo.elem_id + "');");
+					pageElements[$(this).attr('id')] = eval("new " + module_id + "('" + module_id + "', " + Core.curPg.pageId + ", '" + elInfo.elem_id + "');");
 					found = true;
 					break;
 				}
 			}
 			
-			if (!found) console.log("some content elements could not be loaded [insert proper error handling here (= don't make those elements editable + mark as such)]");
+			if (! found) console.log("some content elements could not be loaded");
 		});
 		
 		/* Set up events for already loaded content elemens */
-		bindEvents($('.contentElement'));
+		bindEvents($('.contentElement', $container));
 	};
 
 	function documentMouseMove(event) {
 		mouseMoved(event);
 		if (!mouseDown)
 			if (curEl && !outerInside($(curEl),event.pageX,event.pageY)) { 
-				miniToolbar.css('display','none'); 
+				$miniToolbar.hide();
 				$(curEl).removeClass('ceBorder'); 
 				curEl=null; 
 			}
 	}
 	
 	function mouseMoved(event) {
-		//document.getElementById('editpage').innerHTML=event.pageX + " / " + event.pageY;
 		if (mouseDown && curEl.length > 0) {
 			var x = BoundBy(event.pageX+offsetX, 2, $(document).width() - curEl.width() - 4);
 			var y = BoundBy(event.pageY+offsetY, 2, $(document).height() - curEl.height() - 4);
@@ -329,8 +347,11 @@ function DragDropElements(contentElements) {
 				curEl.offset({ top: y });
 			}
 			
-			if ((!inside($('#content'),event.pageX,event.pageY) && !inside($('#content'),event.pageX,event.pageY+50)) || inside(Core.pageEditDialog,event.pageX,event.pageY))
+			if ((	! inside($container,event.pageX,event.pageY) && 
+					! inside($container, event.pageX, event.pageY + 50)) 
+					|| inside(Core.pageEditDialog,event.pageX,event.pageY)) {
 				$('#insertMarker').remove();
+			}
 			
 		} else {
 			mouseDown=0;
@@ -342,21 +363,22 @@ function DragDropElements(contentElements) {
 		if (mouseDown) {
 			if (movingCE == 1) dragContentElement(event);
 			$('#insertMarker').remove();
-			$(element).after('<hr id="insertMarker" style="background-color:transparent; width:100%; height:10px; margin-top:10px; border:1px dashed red;">');			
+			$(element).after(insertMarkerTemplate);
 		} else  {
-			if (curEl != element) { miniToolbar.css('display','none'); $(curEl).removeClass('ceBorder'); }
+			if (curEl != element) { 
+				$miniToolbar.hide();
+				$(curEl).removeClass('ceBorder'); 
+			}
 			
 			if (pageElements[$(element).attr('id')] == undefined || pageElements[$(element).attr('id')].getHideMiniToolbar() != true) {
-				miniToolbar.css('display','');
+				$miniToolbar.show();
 				// offset() needed here because other parent elements might have position:absolute etc.
-				miniToolbar.offset({ 
+				$miniToolbar.offset({ 
 					top: $(element).offset().top, 
-					left: $(element).offset().left + $(element).outerWidth() - miniToolbar.outerWidth()
+					left: $(element).offset().left + $(element).outerWidth() - $miniToolbar.outerWidth()
 				});
 			}
 			$(element).addClass('ceBorder');
-			//if(curEl != element)
-			//	console.log('curel is now '+$(element).attr('id'));
 			curEl = element;
 		}
 	}
@@ -364,7 +386,7 @@ function DragDropElements(contentElements) {
 	function overContentElementOut(event, element) {
 		if (!mouseDown) {
 			if (!outerInside($(element),event.pageX,event.pageY)) {
-				miniToolbar.css('display','none');
+				$miniToolbar.hide();
 				$(element).removeClass('ceBorder');
 				curEl = null;
 			}
@@ -413,12 +435,13 @@ function DragDropElements(contentElements) {
 	
 	function elementMouseDown(event) {
 		if($(this).hasClass('ceDraggable')) {
+			
 			curEl = this; 
 			// Make sure its visible
 			$(curEl).css('z-index','999');
 			movingCE=1; 
 			mouseDown=true;
-			miniToolbar.css('display','none');
+			$miniToolbar.hide();
 
 			/* Track document wide mouse movements */
 			$(document)
@@ -432,9 +455,12 @@ function DragDropElements(contentElements) {
 	function markerPosition() {
 		var i=0;
 		var el = $('#insertMarker');
-		while(el.prev().hasClass('contentElement')) { 
+		while (el.prev().length > 0) {
 			el = el.prev(); 
-			if(el.css('display')!='none') i++; 
+			if(el.hasClass('contentElement') && el.css('display') != 'none') { 
+				i++; 
+			}
+			
 		}
 		return i;
 	}
@@ -442,9 +468,11 @@ function DragDropElements(contentElements) {
 	function elementPosition(id) {
 		var i=0;
 		var el = $(id);
-		while(el.prev().hasClass('contentElement')) { 
+		while (el.prev().length > 0) {
 			el = el.prev(); 
-			if(el.css('display')!='none') i++; 
+			if(el.hasClass('contentElement') && el.css('display') != 'none') { 
+				i++; 
+			}
 		}
 		return i;
 	}
@@ -463,7 +491,10 @@ function DragDropElements(contentElements) {
 	function splitID(id_cid) {
 		var foo = new RegExp(/_(\d+)$/g);
 		var match = foo.exec(id_cid);
-		if(!match) { alert('invalid element'); return 0; }
+		if (! match) { 
+			alert('invalid element');
+			return 0;
+		}
 		var id=match[1];
 		
 		// Remove element index

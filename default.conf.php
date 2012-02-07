@@ -90,6 +90,9 @@ $cfg['minorMenu'] = true;
 $cfg['domain'] = 'http://'.$_SERVER['SERVER_NAME'].(($_SERVER['SERVER_PORT']!=80)?':'.$_SERVER['SERVER_PORT']:''); //.dirname($_SERVER['PHP_SELF']);
 if($cfg['domain'][strlen($cfg['domain'])-1]!='/') $cfg['domain'].='/';
 
+
+$cfg['path'] = '/';
+
 /* Database Tables */
 
 $cfg['tables']['forms'] = 'anego_forms';

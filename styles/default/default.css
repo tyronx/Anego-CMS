@@ -5,6 +5,10 @@ body {
 	margin:0;
 }
 
+.ui-widget {
+	font-size: 1em !important;
+}
+
 /**** TinyMCE classses *****/
 .grayframe {
 	padding: 3px;
@@ -112,6 +116,7 @@ div#editpage {
 	right:8px;
 	top:10px;
 	padding-left:50%;
+
 }
 .loginTitle {
 	border:1px solid gray;
@@ -121,6 +126,7 @@ div#editpage {
 	padding-bottom:2px;
 	text-align:center;
 }
+
 .loginBox {
 	text-align:left; 
 	width:220px; 
@@ -128,13 +134,25 @@ div#editpage {
 	margin-top:20px; 
 	border:1px solid gray;
 }
+
 .loginBox input[type="text"], .loginBox input[type="password"] {
 	width:150px;
 }
+
+.loginBox input[type="button"] {
+	float: right;
+}
+
 .loginBox input[type="checkbox"] {
 	margin-top:10px;
 	margin-left:0px;
 }
+
+.loginBox .warning {
+	color: #C83F1A;
+	clear: both;
+}
+
 img.adp {
 	vertical-align:text-top;
 	padding:0px;
@@ -142,6 +160,10 @@ img.adp {
 
 .bothclear {
 	clear:both;
+}
+
+.floatleft {
+	float: left;
 }
 
 /* Drag&Drop tree */
@@ -184,6 +206,7 @@ img.adp {
 .menuTree {
 	padding-left:0px;
 	margin:0;
+	padding-top: 5px;
 }
 
 .menuTree li { 
@@ -191,11 +214,13 @@ img.adp {
 	list-style-type:none;
 	cursor:url(img/grab.cur),move;
 	line-height:100%;
+	list-style-image: none;
 }
 
 .menuTree .listImg {
-	width:16px;
-	height:22px;
+	padding: 0px;
+	width: 16px;
+	height: 22px;
 	background-image:url(img/elbow.gif);
 	background-repeat:no-repeat;
 	vertical-align:middle;
@@ -309,6 +334,25 @@ table.gal img {
 	padding:0px;
 }
 
+/* Rotate div */
+.draggedElement {
+	transform:rotate(7deg);
+	-ms-transform:rotate(7deg); /* IE 9 */
+	-moz-transform:rotate(7deg); /* Firefox */
+	-webkit-transform:rotate(7deg); /* Safari and Chrome */
+	-o-transform:rotate(7deg); /* Opera */
+}
+
+.shadowElement {
+	background-color: gray;
+	border-radius: 3px;
+	position:absolute;
+	left:0px;
+	top:0px;
+	height:100%;
+	width:100%;
+}
+
 /* Admin settings */
 
 .modulesImg {
@@ -342,6 +386,13 @@ table.gal img {
 	padding-bottom:4px;
 	border: 1px dashed #6B77EB;
 	position:absolute;
+}
+
+.moduleIcon {
+	float:left;
+	margin-left:7px;
+	margin-right:7px;
+	text-align:center;
 }
 
 .contentElement {
@@ -554,6 +605,7 @@ div.dlgBox hr.dlgSep {
 	padding:2px;
 	padding-left:4px;
 	padding-right:4px;
+	vertical-align: middle;
 }
 
 .adminstyles input {
@@ -573,6 +625,18 @@ div.dlgBox hr.dlgSep {
 .adminstyles input[disabled] {
 	color:#AAA;
 	border-color:#AAA;
+}
+
+.adminstyles input[disabled]:hover {
+	color:#AAA;
+	border-color:#AAA;
+	background-color:#F3F1ED;
+	
+}
+
+.ajaxLoad {
+	vertical-align: middle;
+	display: none;
 }
 
 .smallTextInput {

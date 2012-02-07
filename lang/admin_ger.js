@@ -30,6 +30,7 @@ if(typeof lngMain == 'undefined') {
 	lng_entername = "Bitte einen Seitennamen eingeben";
 	lng_pagename = 'Seitenname';
 	lng_pageinfo = 'Seiteninfo';
+	lng_pageurl = 'URL Alias';
 	lng_link2file = 'Link zu einer Datei / URL';
 	lng_filename = 'Dateiname';
 	lng_showinmenu = 'Im Menü anzeigen';
@@ -39,10 +40,9 @@ if(typeof lngMain == 'undefined') {
 	lng_addpage = 'Seite hinzufügen';
 
 	lng_delete = 'Seite löschen';
-	lng_delpage = 'Seite löschen? Bedenken Sie dass alle Unterseiten auch gelöscht werden!';
-
+	lng_delpage = 'Wirklich löschen?<br>Alle Unterseiten werden auch gelöscht!';
 	lng_editpage = 'Seite ändern';
-	lng_rename = 'Seite umbenenen in';
+	lng_rename = 'Name der Seite';
 
 	lng_titledesc = "Titel/Beschreibung";
 

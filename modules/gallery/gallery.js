@@ -21,7 +21,7 @@ gallery = ContentElement.extend({
 				'</div>' + 
 				'<div class="gallery pictureGrid"></div>' +
 				'<div class="bothclear"></div>' +
-				'<button type="button" name="mew" class="btn_cancelrte" style="min-width:150px">' + lng_close + ' & Update page</button>' +
+				'<button type="button" name="mew" class="btn_cancelrte" style="min-width:150px">Close & Update page</button>' +
 			'</div>', 
 	
 	imgTemplate: 
