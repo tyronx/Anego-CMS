@@ -91,7 +91,7 @@ switch($ac) {
 		$elid = intval($_POST['elid']);
 		$pid = intval($_POST['pid']);
 		
-		if(!preg_match("#[a-zA-Z0-9_-]+#",$mid))
+		if(preg_match("#[^a-zA-Z0-9_-]+#",$mid))
 			exit("300\nInvalid module id");
 		
 		include_once('modules/'.$mid.'/'.$mid.'.php');

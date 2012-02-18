@@ -368,17 +368,18 @@ class Anego extends Smarty {
 	
 	// Displays given template and ends php execution
 	function display($template, $cache_id = null, $compile_id = null) {
-		/******* Custom style setup code *********/
+		/******* Custom style setup code *******/
 		if(file_exists("styles/" . $this->curStyle . "/custom.php"))
 			include("styles/" . $this->curStyle . "/custom.php");
 
-		define('DISPLAY_ATTEMPTED',1);
-		$this->prepare();
-		
 		$this->assign('content',$this->content);
 		$this->assign('mainmenu',$this->MainMenu());
 		$this->assign('menuadmin',$this->MenuAdmin());
 		$this->assign('minormenu',$this->MinorMenu());
+
+		define('DISPLAY_ATTEMPTED',1);
+		$this->prepare();
+		
 		
 		parent::display($template, $cache_id,$compile_id);
 	}

@@ -109,6 +109,7 @@ CREATE TABLE IF NOT EXISTS `anego_pages_element_ger` (
 CREATE TABLE IF NOT EXISTS `anego_pages_eng` (
   `idx` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(150) NOT NULL DEFAULT '',
+  `url` varchar(255) NOT NULL,
   `info` varchar(150) NOT NULL DEFAULT '',
   `date` int(13) NOT NULL DEFAULT '0',
   `parent_idx` int(11) NOT NULL DEFAULT '0',
@@ -214,6 +215,7 @@ CREATE TABLE IF NOT EXISTS `anego_pages_gallerypicture` (
 CREATE TABLE IF NOT EXISTS `anego_pages_ger` (
   `idx` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(150) NOT NULL DEFAULT '',
+  `url` varchar(255) NOT NULL,
   `info` varchar(150) NOT NULL DEFAULT '',
   `date` int(13) NOT NULL DEFAULT '0',
   `parent_idx` int(11) NOT NULL DEFAULT '0',

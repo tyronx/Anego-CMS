@@ -82,7 +82,7 @@ div#padder {
 <div style="padding-bottom:70px;">
 <div id="main">
 	<div id="padder">
-		<div id="title"><div id="titleText">Anego CMS Setup</div>(quick'n'dirty)</div>
+		<div id="title"><div id="titleText">Anego CMS Setup</div></div>
 		<br><h3>Tasks:</h3>
 		<ol>
 		<li><b>Configure PHP / Server</b><br>
