@@ -50,7 +50,7 @@ if($language=='auto') {
 function __($str) {
 	global $lang;
 	
-    if (isset($lang[$str])) {
+    if (isset($lang[$str]) && $lang[$str]) {
         return $lang[$str];
 		
     } else {
@@ -59,7 +59,7 @@ function __($str) {
 }
 
 function i10n_smarty($source, $template) {
-     return preg_replace('!{__([^}]+)}!e', '__("$1")', $source);
+     return preg_replace('!{__([^}]+)}!e', '__' . . '("$1")', $source);
 }
 
 /**** Table constants ****/
