@@ -262,8 +262,8 @@ function CoreFunctions() {
 				
 				get = { a: 'p', p: url.pageId };
 				
-				if (anego.editmode)
-					get = { a: 'gce', fgx: url.pageId };
+				//if (anego.editmode)
+				//	get = { a: 'gce', fgx: url.pageId };
 					
 				if (settings.updatePage)
 					get.updatePage = 1;

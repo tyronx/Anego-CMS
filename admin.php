@@ -552,7 +552,7 @@ switch($_GET['a']) {
 			"subpoint='".$subm."' WHERE idx='$id'";
 
 		mysql_query($q) or
-			BailErr(__('Failed renaming page'),$q);
+			BailSQL(__('Failed renaming page'), $q);
 			
 		//$res=mysql_query("SELECT name FROM ".PAGES." WHERE idx='$id'");
 		//list($name)=mysql_fetch_array($res);
