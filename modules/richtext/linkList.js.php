@@ -18,7 +18,7 @@ while($row2=mysql_fetch_array($res2)) {
 	if($i>0) echo ',';
 	$name=str_replace('"','\\"',$row2['name']);
 	if($cfg['fancyURLs']) {
-		echo '["' . $name . '", ' . $cfg['path'] . '"pages/' . $row2['idx'] . '"]';
+		echo '["' . $name . '", "' . $cfg['path'] . 'pages/' . $row2['idx'] . '"]';
 	} else {
 		echo '["'.$name.'", "index.php?p=' . $row2['idx'] . '"]';
 	}
