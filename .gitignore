@@ -7,6 +7,7 @@ files/*
 styles/*
 !styles/default
 !styles/anego
+!styles/anego2
 styles/anego/templates_c/*
 tmp/*
 var/*

@@ -1,0 +1,72 @@
+body {
+	color: #000000;
+	font-family:Arial;
+	font-size:14px;
+	background-image:url(img/box_big.png);	
+}
+
+/* TinyMCE Paragraph behaviour */
+p { margin:0; padding:0; }
+
+
+#contents {
+	color: black;
+	font-family:Arial;
+	font-size:15px;
+	text-align:left;
+}
+
+div.subnavbox {
+	font-size:14px;
+}
+
+form {
+	display:inline;
+}
+
+ul {
+	list-style-image:url(img/dot.png);
+}
+
+hr {
+	color:black;
+	border:1px solid black;
+	height:4px;
+	margin-top:15px;
+	margin-bottom:15px;
+	background-color: #A8BCCA;
+}
+
+small {
+	font-size:11px;
+}
+
+img {
+	border: none;
+}
+
+a:link {
+	color: #5E5E5E;
+	text-decoration: underline;
+}
+
+a:hover {
+	color: #9A9A9A;
+	text-decoration: underline;
+}
+
+a:visited {
+	color: #6B334D;
+	text-decoration: underline;
+}
+
+/*a[target=_blank]:before { content:url(img/planet.gif); }*/
+
+
+h2 {
+	font-family:Arial;
+	font-weight:normal;
+	background-repeat:no-repeat;
+	padding-top:4px;
+	font-size:19px;
+}
