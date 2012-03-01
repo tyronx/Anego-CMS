@@ -4,6 +4,11 @@ body {
 	color:#000;
 }
 
+/* Because tinymce is so retarted as to set td font-size to 10px */
+td {
+	font-size: 11pt;
+}
+
 li {
 	padding-top:4px;
 }
