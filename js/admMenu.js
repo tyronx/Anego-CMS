@@ -139,7 +139,7 @@ function AdminMenuFunctions() {
 		}
 
 		var pageLink = 'index.php?p=' + page_id;
-		if (anego.pageLoad == 'ajax') pageLink = '#pg' + page_id;
+		if (anego.pageLoad == 'ajax') pageLink = '#pages/' + page_id;
 		
 		var $cnt = $(
 			'<div>' +
