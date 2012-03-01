@@ -14,7 +14,7 @@
  */
 
 /* mod_rewrite test for setup.php */
-if(isset($_GET['rewrite'])) echo 'yes';
+if(isset($_GET['rewrite'])) exit ('yes');
 
 /* Main functions file for page printing, db access, error reporting, etc. */
 include("core.php");

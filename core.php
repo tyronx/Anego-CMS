@@ -59,7 +59,7 @@ function __($str) {
 }
 
 function i10n_smarty($source, $template) {
-     return preg_replace('!{__([^}]+)}!e', '__' . . '("$1")', $source);
+     return preg_replace('!{__([^}]+)}!e', '__' . '("$1")', $source);
 }
 
 /**** Table constants ****/
