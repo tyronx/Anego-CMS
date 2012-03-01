@@ -381,6 +381,7 @@ function PrintPage($p) {
 	
 	if($p==-1) {
 		$anego->AddContent(__('<i>No start page set up yet. Please check your settings.</i>'));
+		AdminBar(-1);
 		$anego->display('index.tpl');
 		exit();
 	}
