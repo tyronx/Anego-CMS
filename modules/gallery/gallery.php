@@ -345,15 +345,17 @@ EOF;
 		
 		$q = 'SELECT preview_default_size_id, original_default_size_id FROM ' . $this->databaseTable() . ' WHERE idx=' . $this->elementId;
 		$res = mysql_query($q) or BailSQL(__('Couldn\'t read gallery info from db'), $q);
-		$row = mysql_fetch_array($res, MYSQL_ASSOC);
+		$row = mysql_fetch_assoc($res);
 		
 		$files = array_merge($row, $files);
 		
 		$r = $this->pictures();
-		while($row = mysql_fetch_array($r, MYSQL_ASSOC)) {
+		while($row = mysql_fetch_assoc($r)) {
 			$row['filename_preview'] = preg_replace('/(\.\w+)$/i', "_r\\1", $row['filename']);
 			$files['pictures'][] = $row;
 		}
+		
+		$files['count'] = count($files['pictures']);
 		
 		return "200\n".json_encode($files);
 	}
