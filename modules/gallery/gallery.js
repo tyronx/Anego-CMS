@@ -21,7 +21,7 @@ gallery = ContentElement.extend({
 				'</div>' + 
 				'<div class="gallery pictureGrid"></div>' +
 				'<div class="bothclear"></div>' +
-				'<button type="button" name="mew" class="btn_cancelrte" style="min-width:150px">Close & Update page</button>' +
+				'<button type="button" name="mew" class="btn_cancelrte" style="min-width:150px">Close & Update page</button> <span class="imagecount"></span>' +
 			'</div>', 
 	
 	imgTemplate: 
@@ -74,10 +74,9 @@ gallery = ContentElement.extend({
 			'</fieldset>' +
 		'</div>',
 	
-	onStartEdit: function() {
+	onStartEdit: function(isNew) {
 		var self = this;
 		var $container = $('#' + self.containerId);
-
 		
 		self.html = $('#' + self.containerId).html();
 			
@@ -111,9 +110,12 @@ gallery = ContentElement.extend({
 						};
 				}
 				
+				
 				var $galleryEditor = $(self.galleryTemplate);
 				var $imageGrid = $('.pictureGrid', $galleryEditor);
 				var $button = $('button', $galleryEditor);
+				
+				$('span.imagecount', $galleryEditor).html(self.imageData.count + __(' Images in this gallery'));
 				
 				$('.GalAddFilesLink', $galleryEditor).click(function() { return self.addFiles(); });
 				$('.GalSettingsLink', $galleryEditor).click(function() { return self.settings(); });
@@ -138,10 +140,14 @@ gallery = ContentElement.extend({
 					rnd = Math.round(Math.random() * 100000);
 					
 					$image = $(self.imgTemplate);
+					
+					
 					$image.data('position', pic.position);
+
 					$('img', $image)
 						.attr('src', self.imageData.path + '/' + pic.filename_preview + '?' + rnd)
-						.attr('alt', pic.title)
+						.attr('alt', pic.title);
+					$('img', $image)
 						.attr('title', pic.title);
 					
 					$('.progressHolder', $image).remove();
@@ -182,6 +188,10 @@ gallery = ContentElement.extend({
 						});
 					}
 				});
+				
+				if(isNew) {
+					self.settings();
+				}
 			}
 		});
 		
@@ -199,7 +209,7 @@ gallery = ContentElement.extend({
 			maxfilesize: 4,
 			url: 'index.php',
 			
-			uploadFinished: function(i, file, response){
+			uploadFinished: function(i, file, response) {
 				$img = $.data(file, 'preview');
 				
 				$img.addClass('done');
@@ -208,6 +218,9 @@ gallery = ContentElement.extend({
 				
 				// response is the JSON object that post_file.php returns
 				if(GetAnswer(response.status)) {
+					self.imageData.count++;
+					$('span.imagecount', $img.parents('.galleryEditor').first()).html(self.imageData.count + __(' Images in this gallery'));
+					
 					$img.find('img').attr('src', response.preview);
 					$('a', $img)
 						.data('picData', response.pic)
@@ -266,6 +279,9 @@ gallery = ContentElement.extend({
 			$image.css('max-width', self.previewSize.w + 'px');
 			$image.css('max-height', self.previewSize.h + 'px');
 			
+			$('a', $preview).css('width', self.previewSize.w + 'px');
+			$('a', $preview).css('height', self.previewSize.h + 'px');
+			
 			reader.onload = function(e) {
 				// e.target.result holds the DataURL which
 				// can be used as a source of the image:
@@ -283,6 +299,8 @@ gallery = ContentElement.extend({
 			$.data(file, 'preview', $preview);
 		}
 
+		
+		
 		return true;
 	},
 	
