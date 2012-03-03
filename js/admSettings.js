@@ -23,19 +23,33 @@
 	 * use as callback function name (js in the return html) to be called once the user presses save
 	 */
 	this.config = function(event) {
-		var name = event.data.name;
-		console.log(name);
-		$.get('modules/'+name+'/'+name+'.php', {a:'getconf'}, function(data) {
+		var module = event.data.module;
+		var mid = event.data.id;
+		
+		$.post('index.php',{
+			a: 'callce',
+			fn: 'getconf',
+			mid: mid
+		}, function(data) {
 			var aw;
-			if(aw=GetAnswer(data))
+			if (aw = GetAnswer(data))
 				OpenDialog({
-					title:name+' '+lngMain.configuration,
-					buttons:BTN_SAVECANCEL,
-					content:aw,
+					title: module.name + ' ' + lngMain.configuration,
+					buttons: BTN_SAVECANCEL,
+					content: aw,
 					ok_callback:function() {
-						$.post('modules/'+name+'/'+name+'.php','a=saveconf&'+$('#dlgContent form').serialize(),function(data) {
+						var self = this;
+						
+						self.waitResponse();
+						$.post('index.php',{
+							a: 'callce',
+							fn: 'saveconf',
+							mid: mid,
+							formdata: $('form', self).first().serializeArray(),
+						}, function(data) {
 							if(GetAnswer(data))
-								CloseDialog();
+								self.closeDialog();
+							self.endWait();
 						});
 					}
 				});
@@ -150,7 +164,7 @@
 				'<div class="control rightfloat">' +
 					'<a href="#"></a>' +
 				'</div>' +
-				'<div class="configure rightfloat">' +
+				'<div class="configure rightfloat" style="margin-right:15px;">' +
 					'<a href="#"></a>' +
 				'</div>' +
 				'<hr>';
@@ -188,7 +202,7 @@
 					if(mdata.configurable) {
 						$('.configure a', $module)
 							.html(__('Configure'))
-							.click({ name: prop}, settings.config);
+							.click({ id: prop, module: mdata}, settings.config);
 					} else {
 						$('.configure', $module).remove();
 					}

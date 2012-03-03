@@ -117,7 +117,7 @@ switch($ac) {
 		$elid = intval(@$_POST['elid']);
 		$pid = intval(@$_POST['pid']);
 		
-		if(!$elid) exit("300\nInvalid element id");
+		//if(!$elid) exit("300\nInvalid element id");
 
 		if(preg_match("#[^a-zA-Z0-9_-]+#",$mid))
 			exit("300\nInvalid module id");

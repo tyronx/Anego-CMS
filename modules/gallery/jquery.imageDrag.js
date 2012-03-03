@@ -50,9 +50,7 @@
 		var imgPos = { x:0, y: 0 };
 				
 		this.init = function() {
-			// hide the image & add as bg image
 			$img = $('img', $container).first();
-			
 			$mover = $container.children().first();
 			
 			var src = $img.attr('src');

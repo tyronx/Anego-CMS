@@ -4,6 +4,7 @@ Plugin Name: Gallery
 Plugin Image: gallery.png
 Plugin URI: http://www.anego.at
 Plugin Type: ContentElement
+Configurable: yes
 Description: Simple gallery content element. A convenient way to manage galleries.
 Version: 0.01
 Author: Tyron Madlener
@@ -25,7 +26,9 @@ class gallery extends ContentElement {
 		'up'	=> 'uploadPicture',
 		'us'	=> 'updateSettings',
 		'dp'	=> 'deletePicture',
-		'mp'	=> 'movePicture'
+		'mp'	=> 'movePicture',
+		'getconf' => 'getConfig',
+		'saveconf' => 'saveConfig'
 	);
 	
 	function databaseTable() { return $GLOBALS['cfg']['tablePrefix'].'pages_gallery'; }
@@ -37,6 +40,159 @@ class gallery extends ContentElement {
 		
 		// Module id is equivalent to classname
 		parent::__construct(get_class($this), $pageId, $elementId);
+	}
+	
+	function getConfig() {
+		$q = 'SELECT * FROM ' . $this->imageSizesTable();
+		$res = mysql_query($q) or BailSQL('Couldn\'t retrieve preview image sizes', $q);
+		
+		?>200
+		<form name="galleryconfig" id="galleryconfig" onsubmit="return false">
+			<h3>Image sizes</h3>
+			<table border="0">
+				<thead>
+				<tr>
+					<th>Name</th>
+					<th>Width</th>
+					<th>Height</th>
+					<th></th>
+				</tr>
+				</thead>
+				<tbody>
+			<?
+			while ($row = mysql_fetch_array($res)) {
+				?>
+				<tr>
+					<td><?=$row['name']?></td>
+					<td><?=$row['width']?></td>
+					<td><?=$row['height']?></td>
+					<td><a class="delete" style="border:0;" href="#delete-<?=$row['idx']?>">
+						<img class="adp smallIcon smallimgBin" alt="<?=__('Delete Imagesize')?>" title="<?=__('Delete Page')?>" src="<?=$cfg['path']?>styles/default/img/cleardot.gif">
+					</a></td>
+				</tr>
+				<?
+			}
+
+			?>
+				</tbody>
+			</table>
+			<br>
+			<a style="margin-left:5px;" href="#newSize"><?=__('New image size')?></a>
+		</form>
+		<script type="text/javascript">
+			// Needed, for whatever reason
+			setTimeout(function() {
+				var $form = $('form#galleryconfig');
+				
+				var imageSizeTemplate = 
+					'<tr>' +
+						'<td></td> ' +
+						'<td></td> ' +
+						'<td></td> ' + 
+						'<td><a class="delete" style="border:0;" href="#"><img class="adp smallIcon smallimgBin" alt="<?=__('Delete Imagesize')?>" title="<?=__('Delete Page')?>" src="<?=$cfg['path']?>styles/default/img/cleardot.gif"></a></td>' +
+					'</tr>';
+					
+				
+				var createImageTemplate = 
+					'<form name="newimagesize">' +
+						'<label for="imagename">Image name</label><br>' +
+						'<input type="text" name="imagename" id="imagename" size="19"><br><br> ' +
+						'Image width and height<br>' +
+						'<input type="text" name="imagewidth" size="5"> x <input type="text" name="imageheight" size="5">' +
+					'</form>';
+						
+				$('a[href="#newSize"]', $form).click(function() {
+					OpenDialog({
+						title: '<?=__('New image size')?>',
+						buttons: BTN_SAVECANCEL,
+						content: createImageTemplate,
+						ok_callback: function() {
+							$newimgform = $('form', this);
+							
+							var name = $('input[name="imagename"]', $newimgform).val();
+							var width = $('input[name="imagewidth"]', $newimgform).val();
+							var height = $('input[name="imageheight"]', $newimgform).val();
+							
+							$form.append('<input type="hidden" name="createname[]" value="' + name + '">');
+							$form.append('<input type="hidden" name="createwidth[]" value="' + width + '">');
+							$form.append('<input type="hidden" name="createheight[]" value="' + height + '">');
+							
+							var $row = $(imageSizeTemplate);
+							$('td:nth-child(1)', $row).html(name);
+							$('td:nth-child(2)', $row).html(width);
+							$('td:nth-child(3)', $row).html(height);
+							$('td:nth-child(4) a.delete', $row).attr('href', '#');
+							
+							$('table tbody', $form).append($row);
+							
+							this.closeDialog();
+						}
+					});
+					
+					return false;
+				});
+				
+				$('a.delete', $form).live('click', function() {
+					if (! confirm('<?=__('Delete this image size?\nPlease make sure its not being used by any of your galleries!')?>')) return false;
+
+					if ($(this).attr('href').length > 1) {
+						var id = $(this).attr('href').substr('#delete-'.length);
+						$form.append('<input type="hidden" name="delete[]" value="' + id + '">');
+					}
+					
+					$(this).parents('tr').first().remove();
+				});
+			}, 80);
+		</script>
+		<?
+		exit();
+		/*$smarty = new Smarty();
+		$smarty->assign('sizes', $sizes);
+		$config = $smarty->fetch('modules/gallery/config.tpl');
+		exit("200\n" . $config);*/
+	}
+	
+	function saveConfig() {
+		$newsizes = array();
+		$newCnt = -1;
+		$deleted = array();
+		
+		
+		foreach($_POST['formdata'] as $pair) {
+			switch ($pair['name']) {
+				case 'createname[]':
+					$newCnt++;
+					$newsizes[$newCnt] = array('name' => $pair['value']);
+					break;
+				case 'createwidth[]':
+					$newsizes[$newCnt]['width'] = intval($pair['value']);
+					break;
+				case 'createheight[]':
+					$newsizes[$newCnt]['height'] = intval($pair['value']);
+					break;
+				case 'delete[]':
+					$deleted[] = intval($pair['value']);
+					break;
+			}
+		}
+		
+		foreach($deleted as $id) {
+			$q = 'DELETE FROM ' . $this->imageSizesTable() . ' where idx='.$id;
+			mysql_query($q) or
+				BailSQL('Couldn\'t delete image size', $q);
+		}
+		
+		foreach($newsizes as $new) {
+			if ($new['width'] != 0 && $new['height'] != 0) {
+				$q ='INSERT INTO ' . $this->imageSizesTable() . ' (name, width, height) '.
+					'VALUES (\'' . mysql_real_escape_string($new['name']) . '\', \'' . $new['width'] . '\', \'' . $new['height'] . '\')';
+				
+				mysql_query($q) or
+					BailSQL('Couldn\'t create image size', $q);
+			}
+		}
+		
+		exit("200\nok");
 	}
 	
 	function generateContent() {
@@ -79,21 +235,21 @@ EOF;
 		$picPosRight = intval(@$_POST['picPosRight']);
 		
 		// No item on the left => put to begin
-		$newPos = 1;
+		//$newPos = 1;
 		
 		// No item on the right => put to the end
-		if (! $picPosRight) {
+		/*if (! $picPosRight) {
 			$q = 'SELECT max(position) FROM ' . $this->picTable() . ' WHERE gallery_id=' . $this->elementId;
 			$res = mysql_query($q) or BailSQL(__('Couldn\'t get max pos in db'), $q);
 			list($maxPos) = mysql_fetch_row($res);
 			
 			$newPos = $maxPos + 1;
-		}
+		}*/
 		
 		// Item on the left => put 1 higher
-		if ($picPosLeft) {
+		//if ($picPosLeft) {
 			$newPos = $picPosLeft + 1;
-		}
+		//}	
 		
 		/* Start the move */
 		mysql_query("START TRANSACTION") or 
