@@ -13,6 +13,7 @@ li {
 	padding-top:4px;
 }
 
+
 /* Because tinymce loads after text.css, the body - font size gets overwritten */
 .mceContentBody, #maincontent {
 	font-size:11pt;

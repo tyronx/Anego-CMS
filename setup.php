@@ -143,7 +143,7 @@ div#padder {
 <?php
 
 	if($configGood) {
-		$writeRequired = Array('var/error.log','var/installed_modules','tmp',FILESROOT,'styles/'.STYLE.'/templates_c');
+		$writeRequired = Array('var/error.log','var/installed_modules','tmp', FILESROOT, FILESROOT.'content/', 'styles/'.STYLE.'/templates_c');
 		$writeable=false;
 		$allWriteable=true;
 		foreach($writeRequired as $f) {

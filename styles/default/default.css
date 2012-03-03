@@ -9,6 +9,10 @@ body {
 	font-size: 1em !important;
 }
 
+.disabled {
+	color: gray;
+}
+
 /**** TinyMCE classses *****/
 .grayframe {
 	padding: 3px;
@@ -364,27 +368,6 @@ table.gal img {
 	box-shadow: inset 1px 1px 2px 0px rgba(0, 0, 0, 0.7);
 }
 
-/* Admin settings */
-
-.modulesImg {
-	float:right;
-	border:1px solid #CDCDCD;
-}
-.modulesText {
-	
-}
-.modulesInstall {
-	clear:both;
-	float:right;
-}
-.modLink {
-	color:#21759B;
-	text-decoration:underline;
-	cursor:pointer;
-}
-.modLink:hover {
-	color:#ddd;
-}
 
 /**** Content element code ****/
 

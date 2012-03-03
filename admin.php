@@ -3,6 +3,7 @@
 include("core.php");
 
 $anego->assign('pagetitle', $settings['pagetitle'] . " - Admin");
+$anego->assign('showheader', !@$_GET['noheader']);
 
 // Load admin related js language file - core.php loads this already...?
 //if(!isset($_GET['noheader'])) {
@@ -34,84 +35,18 @@ if(!LOGINOK) {
 			$message = __('Wrong username or password');
 		}
 	}
-
-	if (isset($_GET['noheader']) && $_GET['noheader']) {
-		$lib = 'Core.loadJavascript(\'ld.lo\');';
-	} else {
-		$lib = '';
-	}
 	
-	$lng_adminWelcome = __('Anego CMS Administration Area');
-	$lng_name = __('Name');
-	$lng_pass = __('Password');
-	$lng_sign = __('Stay signed in');
-	$lng_login = __('Login');
-	$lng_pleaseuser = __('Please enter your user name.');
-	$lng_pleasepass = __('Please enter your password.');
+	$anego->assign('message', $message);
 	
-	$lng_javascript = __('It seems like you have Javascript disabled. You will not be able to administrate Anego or even log on without it.');
-	
-	
-	$logon = <<<EOT
-		<div align="center"><div class="loginTitle">$lng_adminWelcome</div>
-		<div class="loginBox">
-		<form id="loginForm" action="#" method="post" accept-charset="UTF-8" onsubmit="return false">
-			$lng_name<br>
-			<input type="text" name="username"><br><br>
-			$lng_pass<br>
-			<input type="password" name="password"><br>
-			<input type="checkbox" name="staysigned" value="1" checked="checked"> $lng_sign<br>
-			<input type="button" onclick="login()" name="submit" value="$lng_login">
-			<div class="warning">$message</div>
-			<div id="javascriptwarning" class="warning">$lng_javascript</div>
-			<div class="bothclear"></div>
-		</form>
-		</div></div>
-		<form id="submitForm" action="admin.php?a=li" method="post" accept-charset="UTF-8">
-		<input type="hidden" name="username">
-		<input type="hidden" name="response">
-		<input type="hidden" name="staysigned" value="0">
-		</form>
-		<script type="text/javascript">
-			document.getElementById('javascriptwarning').style.display = 'none';
-			
-			$lib
-			function login() {
-				var loginForm = document.getElementById("loginForm");
-				if (loginForm.username.value == "") {
-					alert("$lng_pleaseuser");
-					return false;
-				}
-				if (loginForm.password.value == "") {
-					alert("$lng_pleasepass");
-					return false;
-				}
-				var submitForm = document.getElementById("submitForm");
-				submitForm.username.value = loginForm.username.value;
-				if(loginForm.staysigned.checked)
-					submitForm.staysigned.value = '1';
-				else submitForm.staysigned.value = '0';
-				submitForm.response.value = hex_sha256(loginForm.password.value);
-				submitForm.submit();
-				return false;
-			}
-			document.getElementById("loginForm").password.onkeypress = function(ev) {
-				if(!ev) ev = window.event;
-				if(ev.keyCode==13) login();
-			}
-		</script>		
-EOT;
-
 	if(isset($_GET['noheader']) && $_GET['noheader']) {
 		echo "200\nAdmin - Login\r\n";
-		exit($logon);
+		echo $anego->fetchContent('login.tpl');
+	} else {
+		$anego->AddJsModule('lo');
+		$anego->AddContent($logon);
+		$anego->display('login.tpl');
 	}
-		//exit("300\nPermission denied, please log in first");
-
-	// Load Javascript files for login
-	$anego->AddJsModule('lo');
-	$anego->AddContent($logon);
-	$anego->display('index.tpl');
+	
 	exit();
 }
 
@@ -194,83 +129,43 @@ switch($_GET['a']) {
 	
 	/* Admin settings */
 	case 'setg':
-		if(isset($_GET['noheader']))
-			if(UserRole() < Role::Admin) BailErr(__('No permission to access this page, sorry.'));
-		else 
-			if(UserRole() < Role::Admin) Bail(__('No permission to access this page, sorry.'));
-			
-		$s=array();
+		if(UserRole() < Role::Admin) {
+			BailErr(__('No permission to access this page, sorry.'));
+		}
+		
+		$settings = array();
 		$res = mysql_query("SELECT * FROM ".SETTINGS);
-		while($row=mysql_fetch_array($res))
-			$s[$row['name']] = $row['value'];
-			
-		ob_start();
-?>
-		<div id="adminpage" class="adminstyles">
-			<form name="generalsettings" onsubmit="return false">
-			<h2><?=__('Settings')?></h2>
-			<div id="tabs">
-				<ul>
-					<li><a href="#tabs-1"><?=__('General')?></a></li>
-					<li><a href="#tabs-2"><?=__('Modules')?></a></li>
-				</ul>
-				<div id="tabs-1">
-					<?=__('Home page (The Page which the visitor gets to see first)')?><br>
-					<select name="homepage">					
-			<?
-			$res=mysql_query("SELECT idx,name FROM ".PAGES." WHERE nolink=0 AND file='' ORDER BY name");
-			while($row=mysql_fetch_array($res)) {
-				echo "\t\t\t";
-				if($s['firstpage']==$row['idx']) echo '<option value="'.$row['idx'].'" selected>'.$row['name'].'</option>';
-				else echo '<option value="'.$row['idx'].'">'.$row['name'].'</option>';
-			}
-			
-			
-			?>
-					</select><br><br><?=__('Website title')?><br>
-					<input type="text" name="pagetitle" value="<?=@$s['pagetitle']?>">
-					<br><br><?=__('Website keywords (seperated by comma, no newlines!)')?><br>
-					<textarea type="text" cols="60" style="width:100%" rows="3" name="keywords"><?=@$s['keywords']?></textarea>
-					<br><br><?=__('Website description (e.g. displayed in the google search results, without newlines)')?><br>
-					<textarea name="description" rows="3" cols="60" style="width:100%"><?=@$s['description']?></textarea>
-					<br><br><input type="button" name="Save" value="<?=__('Save settings')?>">
-					<img src="<?=$cfg['path']?>styles/default/img/progress_active.gif" class="ajaxLoad">
-				</div>
-				<div id="tabs-2">
-					<table id="modulesTable" class="grid" style="width:100%">
-					<!--<tr><td style="width:60px;"></td><td>Module Name</td><td>Type</td><td>Author</td><td>Installed</td></tr>-->
-					</table>
-				</div>
-			</div>
-			</form>
-		</div>
-		<script type="text/javascript">
-			$(document).ready(function() {
-				settings = new settingsFunctions();
-				settings.loadModules();
-			});
-		</script>
-<?
-		$str=ob_get_contents();
-		ob_end_clean();
+		while ($row = mysql_fetch_array($res)) {
+			$settings[$row['name']] = $row['value'];
+
+		}
+		
+		$res = mysql_query("SELECT idx, name FROM ".PAGES." WHERE nolink=0 AND file='' ORDER BY name");
+		$pages = array();
+		while($row = mysql_fetch_array($res)) {
+			$pages[] = $row;
+		}
+		
+		$anego->assign('settings', $settings);
+		$anego->assign('pages', $pages);
 		
 		if(isset($_GET['noheader'])) {
 			$json=Array();
 			$json['title']='Anego - Admin';
 			$json['js']='ld.as.jui';
 			$json['css']='styles/default/jui/jquery-ui.css';
-			$json['content']=$str;
+			$json['content'] = $anego->fetchContent('settings.tpl');
 			
 			exit("200\n".json_encode($json));
 		}
 		
-		AdminBar(-1);		
+		AdminBar(-1);
 		$anego->AddContent($str);
 		$anego->AddJsModule('as');
 		// jquery ui requires this css file
-		$anego->AddCSSFile('styles/default/jui/jquery-ui.css');		
+		$anego->AddCSSFile('styles/default/jui/jquery-ui.css');
 		$anego->AddJsModule('jui');
-		$anego->display('index.tpl');
+		$anego->display('settings.tpl');
 		break;
 
 
