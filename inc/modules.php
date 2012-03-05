@@ -33,7 +33,7 @@ abstract class ContentElement extends BasicModule {
 		
 		$q = "INSERT INTO " . $this->databaseTable() . " (value) VALUES ('')";
 		$res = mysql_query($q) or
-			BailErr("Failed inserting element", $q);
+			BailSQL("Failed inserting element", $q);
 
 		$this->elementId = mysql_insert_id();
 		

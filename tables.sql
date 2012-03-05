@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS `anego_elements_blog_entry` (
   `entry` text NOT NULL,
   `comments` int(11) NOT NULL,
   PRIMARY KEY (`idx`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=14 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -69,6 +69,25 @@ CREATE TABLE IF NOT EXISTS `anego_pages_aloha` (
   `style` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`idx`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+
+
+--
+-- Table structure for table `anego_pages_mailer`
+--
+
+CREATE TABLE IF NOT EXISTS `test_pages_mailer` (
+  `idx` int(11) NOT NULL AUTO_INCREMENT,
+  `subject` text NOT NULL,
+  `recipient` varchar(255) NOT NULL,
+  `mailtemplate` text NOT NULL,
+  `hourlimit` smallint(6) NOT NULL DEFAULT '5',
+  `formhtml` text NOT NULL,
+  `numsent_total` int(11) NOT NULL DEFAULT '0',
+  `numsent_lasthour` int(11) NOT NULL DEFAULT '0',
+  `currenthour` int(11) NOT NULL,
+  PRIMARY KEY (`idx`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+
 
 -- --------------------------------------------------------
 

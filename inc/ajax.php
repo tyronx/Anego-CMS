@@ -72,8 +72,9 @@ switch($ac) {
 			
 			mysql_query("UPDATE ".PAGE_ELEMENT." SET position=position+1 WHERE page_id=$page AND position>=$position");
 			
-			mysql_query("INSERT INTO ".PAGE_ELEMENT." (page_id,element_id,module_id,position) VALUES ('$page','".$json['id']."','$mid','$position')") or
-				exit("500\nFailed inserting page_element");
+			$q = "INSERT INTO ".PAGE_ELEMENT." (page_id,element_id,module_id,position) VALUES ('$page','" . $json['id'] . "','$mid','$position')";
+			mysql_query($q) or
+				BailSQL("500\nFailed inserting page_element", $q);
 				
 			//list($maxPos) = mysql_fetch_row($res);
 			
@@ -138,7 +139,9 @@ switch($ac) {
 		
 		if(!strlen($method_name)) exit("500\nFunction does not exist");
 		
-		if(isset($_POST['params']) && !is_array($_POST['params'])) exit("500\nCoding Error: Parameters in wrong format (must be array)");
+		if(isset($_POST['params']) && !is_array($_POST['params'])) {
+			exit("500\nCoding Error: Parameters in wrong format (must be array)");
+		}
 		
 		$params = isset($_POST['params']) ? $_POST['params'] : array();
 		
