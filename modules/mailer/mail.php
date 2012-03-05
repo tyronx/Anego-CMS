@@ -9,6 +9,11 @@ if (!isset($_POST['mailerid'])) {
 		function MailTemplate() {
 			$this->template_dir = '';
 			$this->compile_dir = 'tmp';
+			$this->register_resource('string', array(
+						'string_get_template',
+						'string_get_timestamp',
+						'string_get_secure',
+						'string_get_trusted'));
 		}
 	}
 
@@ -16,6 +21,25 @@ if (!isset($_POST['mailerid'])) {
 	sendMail();
 }
 
+
+/* String input for smarty templates */
+function string_get_template($tpl_name, &$tpl_source, &$smarty) {
+    $tpl_source = $tpl_name;
+    return true;
+}
+
+function string_get_timestamp($tpl_name, &$tpl_timestamp, &$smarty) {
+    $tpl_timestamp = time();
+    return true;
+}
+
+function string_get_secure($tpl_name, &$smarty) {
+    return true;
+}
+
+function string_get_trusted($tpl_name, &$smarty) {
+    // not used for templates
+}
 
 function databaseTable() { return $GLOBALS['cfg']['tablePrefix'].'pages_mailer'; }
 
@@ -54,7 +78,7 @@ function sendMail() {
 		$mail->assign($name,$value); 
 	}
 		
-	$m = $mail->fetch('mail'.$id.'.tpl');
+	$m = $mail->fetch('string:' . $row['mailtemplate']);
 	
 	$headers  =	'MIME-Version: 1.0' . "\n";
 	$headers .=	'Content-type: text/plain; charset=iso-8859-1' . "\n";  
