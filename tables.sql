@@ -75,7 +75,7 @@ CREATE TABLE IF NOT EXISTS `anego_pages_aloha` (
 -- Table structure for table `anego_pages_mailer`
 --
 
-CREATE TABLE IF NOT EXISTS `test_pages_mailer` (
+CREATE TABLE IF NOT EXISTS `anego_pages_mailer` (
   `idx` int(11) NOT NULL AUTO_INCREMENT,
   `subject` text NOT NULL,
   `recipient` varchar(255) NOT NULL,
