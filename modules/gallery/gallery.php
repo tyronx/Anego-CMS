@@ -6,7 +6,7 @@ Plugin URI: http://www.anego.at
 Plugin Type: ContentElement
 Configurable: yes
 Description: Simple gallery content element. A convenient way to manage galleries.
-Version: 0.01
+Version: 0.2
 Author: Tyron Madlener
 Author URI: http://www.tyron.at
 License: GPL2
@@ -231,25 +231,19 @@ EOF;
 	
 	function movePicture() {
 		$picid = intval(@$_POST['picid']);
-		$picPosLeft = intval(@$_POST['picPosLeft']);
-		$picPosRight = intval(@$_POST['picPosRight']);
+		$picidxLeft = intval(@$_POST['picidxLeft']);
+		//$picidxRight = intval(@$_POST['picidxRight']);
 		
-		// No item on the left => put to begin
-		//$newPos = 1;
+		// Get old positions of left & right item
+		$picPosLeft = 0;
 		
-		// No item on the right => put to the end
-		/*if (! $picPosRight) {
-			$q = 'SELECT max(position) FROM ' . $this->picTable() . ' WHERE gallery_id=' . $this->elementId;
-			$res = mysql_query($q) or BailSQL(__('Couldn\'t get max pos in db'), $q);
-			list($maxPos) = mysql_fetch_row($res);
-			
-			$newPos = $maxPos + 1;
-		}*/
+		if ($picidxLeft) {
+			$q = 'SELECT position FROM ' . $this->picTable() . ' WHERE idx=' . $picidxLeft;
+			$res=mysql_query($q) or BailSQL(__("Failed getting element pos"), $q);
+			list($picPosLeft) = mysql_fetch_array($res);
+		}
 		
-		// Item on the left => put 1 higher
-		//if ($picPosLeft) {
-			$newPos = $picPosLeft + 1;
-		//}	
+		$newPos = $picPosLeft + 1;
 		
 		/* Start the move */
 		mysql_query("START TRANSACTION") or 

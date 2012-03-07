@@ -142,7 +142,7 @@ gallery = ContentElement.extend({
 					$image = $(self.imgTemplate);
 					
 					
-					$image.data('position', pic.position);
+					$image.data('idx', pic.idx);
 
 					$('img', $image)
 						.attr('src', self.imageData.path + '/' + pic.filename_preview + '?' + rnd)
@@ -172,15 +172,15 @@ gallery = ContentElement.extend({
 					update: function(event, ui) {
 						var imgData = $('a', ui.item).data('picData');
 						
-						$.post('index.php',{
+						$.post('index.php', {
 							a: 'callce',
 							fn: 'mp',
 							mid: self.module_id,
 							pid: self.page_id,
 							elid: self.element_id,
 							picid: imgData.idx,
-							picPosLeft: ui.item.prev().data('position'),
-							picPosRight: ui.item.next().data('position')
+							picidxLeft: ui.item.prev().data('idx'),
+							picidxRight: ui.item.next().data('idx')
 						}, function(data) {
 							if(aw = GetAnswer(data)) {
 								
