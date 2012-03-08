@@ -5,7 +5,7 @@ Plugin Image: blog.png
 Plugin URI: http://www.anego.at
 Plugin Type: ContentElement
 Description: Simple blog / news content element. Write/edit/delete blog entries and allow users to comment on them.
-Version: 0.1
+Version: 0.2
 Author: Tyron Madlener
 Author URI: http://www.tyron.at
 License: GPL2

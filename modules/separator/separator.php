@@ -5,7 +5,7 @@ Plugin Image: separator.png
 Plugin URI: http://www.anego.at
 Plugin Type: ContentElement
 Description: Simple separator content element
-Version: 0.1
+Version: 1
 Author: Tyron Madlener
 Author URI: http://www.tyron.at
 License: GPL2

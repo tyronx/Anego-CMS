@@ -90,7 +90,14 @@ function AdminMenuFunctions() {
 		$('input[name="name"]', $cnt).keyup(function() {
 			var $url = $('input[name="url"]', $cnt);
 			if (! $url.data('changed')) {
-				var val = $(this).val().toLowerCase().replace(/[\s\-]+/g, '-').replace(/[^a-z\d-]+/g, '');
+				var val = $(this).val().toLowerCase()
+					.replace(/ä/g,'ae')
+					.replace(/ö/g,'oe')
+					.replace(/ü/g,'ue')
+					.replace(/ß/g,'sz')
+					.replace(/[\s\-]+/g, '-')
+					.replace(/[^a-z\d-]+/g, '');
+
 				$url.val(val);
 			}
 		});

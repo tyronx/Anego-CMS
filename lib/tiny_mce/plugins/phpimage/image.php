@@ -1,4 +1,7 @@
 <?php
+// With big image uploads this script runs out of memory
+ini_set("memory_limit", "64M");
+
 /* PLEASE NOTE:
  * There is still a bug in this code.
  * If there are undeleted files in the tmpPath (e.g. when the user cancels the picture insert)
@@ -95,7 +98,7 @@ if(isset($_POST['insert'])) {
 
 		exit("200\n" . $cfg['domain'] . $cfg['imagePath'] . $name_sized . "\n" . $cfg['domain'] . $cfg['imagePath'] . $file);
 	} else {
-		exit("500\nnot ok :(");
+		exit("500\nFailed resizing image. Please make sure you are uploading a png, jpg or gif only and have write access to the files folder. In some cases, very big pictures require too much memory to resize.");
 	}
 }
 

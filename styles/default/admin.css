@@ -54,7 +54,7 @@ ul.tabs li:hover {
 
 html ul.tabs li.active, html ul.tabs li.active:hover { /*--Makes sure that the active tab does not listen to the hover properties--*/
 	background: #F0F0F0;
-	border-bottom: 1px solid #F0F0F0 !important; /*--Makes the active tab look like it's connected with its content--*/
+	border-bottom: 1px solid #F0F0F0;
 }
 
 .tab_container {

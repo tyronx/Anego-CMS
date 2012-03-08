@@ -196,30 +196,35 @@ switch($_GET['a']) {
 		
 	/* Install module */
 	case 'im':
-		if(UserRole() < Role::Admin) Bail(__('No permission to access this page, sorry.'));
+		if (UserRole() < Role::Admin) Bail(__('No permission to access this page, sorry.'));
 		
-		if(!isset($_GET['name'])) exit("400\nForgot module name to install?");
-		if(preg_match('#(\.|/)#',$_GET['name'])) exit("400\nInvalid module name");
+		if (!isset($_GET['name'])) exit("400\nForgot module name to install?");
+		if (preg_match('#(\.|/)#',$_GET['name'])) exit("400\nInvalid module name");
 		
 		include('inc/modules.php');
 		$pmg = new PageManager();
-		if($pmg->installModule($_GET['name']))
+		if ($pmg->installModule($_GET['name'])) {
 			exit("200\nok");
-		else exit("300\nCouldn't find this module for installing");
+		} else {
+			exit("300\nCouldn't find this module for installing");
+		}
 		break;
 		
 	/* Uninstall module */
 	case 'uim':
-		if(UserRole() < Role::Admin) Bail(__('No permission to access this page, sorry.'));
+		if (UserRole() < Role::Admin) Bail(__('No permission to access this page, sorry.'));
 		
-		if(!isset($_GET['name'])) exit("400\nForgot module name to uninstall?");
-		if(preg_match('#(\.|/)#',$_GET['name'])) exit("400\nInvalid module name");
+		if (!isset($_GET['name'])) exit("400\nForgot module name to uninstall?");
+		if (preg_match('#(\.|/)#',$_GET['name'])) exit("400\nInvalid module name");
 		
 		include('inc/modules.php');
 		$pmg = new PageManager();
-		if($pmg->uninstallModule($_GET['name']))
+		if ($pmg->uninstallModule($_GET['name'])) {
 			exit("200\nok");
-		else exit("300\nCouldn't find this module for uninstalling");
+		} else {
+			exit("300\nCouldn't find this module for uninstalling");
+		}
+		
 		break;
 		
 	/* AJAX functions - no smarty can be used here. Direct output needed */
@@ -613,10 +618,11 @@ function PrintLinks() {
 		PrintLinksRec(0, MENU_MINOR, true);
 		echo '</div>';
 	}
+	
 
 	$str=ob_get_contents();
 	ob_end_clean();
-	return $str;
+	return $str.'<div class="clearfloat"></div>';
 }
 
 function PrintLinksRec($parent, $menu, $first=0) {
