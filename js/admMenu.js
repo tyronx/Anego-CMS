@@ -19,7 +19,10 @@ function AdminMenuFunctions() {
 			targetNode:targetNode, 
 			position:position 
 		}, function(data) { 
-			printLinks(data, 'moved'); 
+			var aw;
+			if(aw = GetAnswer(data)) {
+				printLinks(aw, 'moved'); 
+			}
 		});
 	}
 
@@ -58,8 +61,13 @@ function AdminMenuFunctions() {
 				menu: menu,
 				intopage: intopage
 			}, function(data) {
-				$dlg.closeDialog();
-				printLinks(data, 'add');
+				var aw;
+				if(aw = GetAnswer(data)) {
+					$dlg.closeDialog();
+					printLinks(aw, 'add'); 
+				} else {
+					$dlg.endWait();
+				}
 			});
 		};
 
@@ -74,17 +82,40 @@ function AdminMenuFunctions() {
 				'</div><div class="bothclear"></div>' +
 				'<br>' + lng_pageinfo + ':<br>' +
 				'<input type="text" size="35" name="info"><br><br>' +
-				'<input type="checkbox" name="isfile" value="1"> ' + lng_link2file + '<br>' +
+				'<input type="checkbox" name="isfile" id="isfile" value="1"> <label for="isfile">' + lng_link2file + '</label><br>' +
 				'<span class="pglink">' + 
 					lng_filename + ': <input type="text" name="filename"><br><br>' + 
 				'</span>' +
 				'<input type="checkbox" name="menu" id="editPageMenu" value="1" checked> <label for="editPageMenu">' + lng_showinmenu + '</label><br>' +
-				'<input type="checkbox" name="admin" id="editPageAdmin" value="1"> <label for="editPageMenu">' + lng_notvisible + '</label><br>' +
-				'<input type="checkbox" name="nolink" id="editPageNolink" value="1"> <label for="editPageMenu">' + lng_notpage + '</label>' +
+				'<input type="checkbox" name="admin" id="editPageAdmin" value="1"> <label for="editPageAdmin">' + lng_notvisible + '</label><br>' +
+				'<input type="checkbox" name="nolink" id="editPageNolink" value="1"> <label for="editPageNolink">' + lng_notpage + '</label>' +
 			'</div>');
 		
 		$('input[name="isfile"]', $cnt).change(function() {
-			$(this).parent().find('.pglink').toggle();
+			var checked = $(this).is(':checked');
+			$(this).parent().find('.pglink').toggle(checked);
+			if (checked) {
+				$('input[name="url"]', $cnt).attr('disabled', 'disabled');
+			} else {
+				if (! $('input[name="nolink"]', $cnt).is(':checked')) {
+					$('input[name="url"]', $cnt).removeAttr('disabled');
+				}
+			}
+		});
+		
+		$('input[name="nolink"]', $cnt).change(function() {
+			if ($(this).is(':checked')) {
+				$('input[name="url"]', $cnt).attr('disabled', 'disabled');
+					$('input[name="isfile"]', $cnt)
+						.removeAttr("checked")
+						.trigger('change')
+						.attr('disabled','disabled');
+			} else {
+				if (! $('input[name="isfile"]', $cnt).is(':checked')) {
+					$('input[name="url"]', $cnt).removeAttr('disabled');
+				}
+				$('input[name="isfile"]', $cnt).removeAttr("disabled");
+			}
 		});
 		
 		$('input[name="name"]', $cnt).keyup(function() {
@@ -123,8 +154,13 @@ function AdminMenuFunctions() {
 				
 				$dlg.waitResponse();
 				$.post('admin.php?a=dp',{ page_id: page_id }, function(data) {
-					$dlg.closeDialog();
-					printLinks(data);
+					var aw;
+					if(aw = GetAnswer(data)) {
+						$dlg.closeDialog();
+						printLinks(aw, 'del'); 
+					} else {
+						$dlg.endWait();
+					}
 				});
 			}
 		});
@@ -204,43 +240,47 @@ function AdminMenuFunctions() {
 					info: $('input[name=info]', this).val(),
 					filename: fname
 				}, function(data) {
-					$dlg.closeDialog();
-					printLinks(data, 'renamed');
+					var aw;
+					if(aw = GetAnswer(data)) {
+						$dlg.closeDialog();
+						printLinks(aw, 'renamed');
+					} else {
+						$dlg.endWait();
+					}
 				});
 			}
 		});
 		
 		$('input[name="isfile"]', $cnt).change(function() {
 			$(this).parent().find('.pglink').toggle();
+			if ($(this).is(':checked')) {
+				$('input[name="url"]', $cnt).attr('disabled', 'disabled');
+			} else {
+				$('input[name="url"]', $cnt).removeAttr('disabled');
+			}
 		});
+		
 		
 		$('.toPage a', $cnt).click(function() {
 			$dlg.closeDialog();
 		});
 	}
 
-	function closeAndPrint(req) {
-		CloseDialog();
-		printLinks(req.responseText);
-	}
 
-	function printLinks(data, type) {
-		var aw;
-		if(aw = GetAnswer(data)) {
-			// Todo: remove reloading the content, instead just apply changes to node directly 
-			if(type != 'moved') {
-				$('#content').html(aw);
-			}
-			
-			$.post('index.php?a=mainmenu','',function(data) {
-				$("#menu").html(data);
-				$.post("index.php?a=minormenu",function(data) {
-					$(".minornav").html(data);
-					/* Upgrade "degraded" links to ajax loading again */
-					if(anego.pageLoad=='ajax') Core.ajaxifyMenu();
-				});
-			});
+	function printLinks(html, type) {
+		// Todo: remove reloading the content, instead just apply changes to node directly 
+		if(type != 'moved') {
+			$('#content').html(html);
 		}
+		
+		$.post('index.php?a=mainmenu','',function(data) {
+			$("#menu").html(data);
+			$.post("index.php?a=minormenu",function(data) {
+				$(".minornav").html(data);
+				/* Upgrade "degraded" links to ajax loading again */
+				if(anego.pageLoad=='ajax') Core.ajaxifyMenu();
+			});
+		});
 	}
 }
 

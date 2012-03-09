@@ -428,7 +428,7 @@ switch($_GET['a']) {
 	case 'rp':
 		if (UserRole() < Role::ProMod) Bail(__('No permission to access this page, sorry.'));
 		
-		$id=intval($_POST['page_id']);
+		$id = intval($_POST['page_id']);
 		
 		//echo 'name is '.$_POST['name'];
 		
@@ -438,7 +438,15 @@ switch($_GET['a']) {
 			$_POST['url']=stripslashes($_POST['url']);
 			$_POST['filename']=stripslashes($_POST['filename']);
 		}
-
+		
+		$q = "SELECT idx, name FROM ".PAGES." WHERE url='" . mysql_real_escape_string($_POST['url']) . "'";
+		$res = mysql_query($q);
+		list($idxWithSameUrl, $pgname) = mysql_fetch_row($res);
+		if (mysql_affected_rows() && $idxWithSameUrl != $id) {
+			echo "304\n" . __("The page '$pgname' already uses this URL-Alias, please choose another!");
+			exit();
+		}
+ 
 		$vis = intval($_POST['vis']);
 		$subm = intval($_POST['subm']);
 		//$nolink = intval($_POST['nolink']);

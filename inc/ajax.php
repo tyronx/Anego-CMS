@@ -269,7 +269,7 @@ switch($ac) {
 
 			$selection = "idx='$p'";
 		} else {
-			$selection = "url='" . mysql_real_escape_string($p) . "'";
+			$selection = "(url='" . mysql_real_escape_string($p) . "' AND nolink=0 AND file='')";
 		}
 		
 		

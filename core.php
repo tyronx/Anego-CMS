@@ -392,7 +392,7 @@ function PrintPage($p) {
 	if (is_numeric($p)) {
 		$selection = "idx='$p'";
 	} else {
-		$selection = "url='" . mysql_real_escape_string($p) . "'";
+		$selection = "(url='" . mysql_real_escape_string($p) . "' AND nolink=0 AND file='')";
 	}
 
 	$q = "SELECT idx, name, file, content, content_prepared FROM ".PAGES." WHERE " . $selection . ' ' . (!LOGINOK?"AND (visibility&1)=1":"");
@@ -419,8 +419,9 @@ function PrintPage($p) {
 	$anego->assign('pagename', $row['name']);
 	
 	$js = pageLoadJs($row['idx']);
-	if (count($js))
+	if (count($js)) {
 		$anego->AddJsPreload("\tanego.pageJS=new Array('" . implode("','",$js) . "');");
+	}
 	
 	if (strlen($row['file'])) {
 		/***** Page is file: include file *****/
