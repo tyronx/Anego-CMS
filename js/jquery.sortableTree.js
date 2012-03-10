@@ -281,7 +281,7 @@
 								break;
 								
 							case 'in':
-								if((tmp=atEl.find('ul')).length==0) 
+								if((tmp = atEl.find('ul').first()).length==0) 
 									atEl.append(tmp=$('<ul></ul>'));
 								
 								target=atEl.attr('id');
