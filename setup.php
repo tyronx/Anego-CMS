@@ -423,5 +423,3 @@ function createTables() {
 	}
 	return true;
 }
-
-?>

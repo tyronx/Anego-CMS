@@ -4,6 +4,7 @@ oldanego
 conf.inc.php
 files/*
 !files/.htaccess
+!files/content/.htaccess
 styles/*
 !styles/default
 !styles/anego
