@@ -242,16 +242,16 @@ switch($ac) {
 	
 	// Print main menu
 	case 'mainmenu': 
-		$anego->assign('mainmenu',$anego->MainMenu());
+		$anego->assign('pagetree', $anego->pageTreeByMenu('MAIN'));
+		$anego->assign('menuname', 'mainnav');
 		$anego->display_element('menu.tpl');
 		exit();
 	
 	// Print minor menu
 	case 'minormenu':
-		// Minor menu doesn't have a template :(
-		echo $anego->MinorMenu();
-		//$anego->assign('minormenu',$anego->MinorMenu());
-		//$anego->display_element('menu.tpl');
+		$anego->assign('pagetree', $anego->pageTreeByMenu('MINOR'));
+		$anego->assign('menuname', 'minornav');
+		$anego->display_element('menu.tpl');
 		exit();
 	
 	// ajax page loading

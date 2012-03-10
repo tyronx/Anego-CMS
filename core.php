@@ -373,13 +373,12 @@ function AdminBar($p) {
 			
 		if($cfg['pageLoad'] == 'ajax') {
 			$anego->AddLink('<a href="' . $cfg['path'] . 'admin/pgad">' . __('Edit Menu') . '</a>');
-			$anego->AddLink('<a href="' . $cfg['path'] . 'admin/filad">' . __('Manage files') . '</a>');
 			
 			if($userRole>=Role::Admin) 
 				$anego->AddLink('<a href="' . $cfg['path'] . 'admin/setg">' . __('Settings') . '</a>');
 		} else {
 			$anego->AddLink('<a href="' . $cfg['path'] . 'admin/pgad">' . __('Edit Menu') . '</a>');
-			$anego->AddLink('<a href="' . $cfg['path'] . 'admin/filad">' . __('Manage files') . '</a>');
+			//$anego->AddLink('<a href="' . $cfg['path'] . 'admin/filad">' . __('Manage files') . '</a>');
 			
 			if($userRole>=Role::Admin) 
 				$anego->AddLink('<a href="' . $cfg['path'] . 'admin/setg">' . __('Settings') . '</a>');
@@ -390,6 +389,7 @@ function AdminBar($p) {
 /* Print the page */
 function PrintPage($p) {
 	global $anego, $cfg;
+	
 	
 	if($p==-1) {
 		$anego->AddContent(__('<i>No start page set up yet. Please check your settings.</i>'));
@@ -452,7 +452,7 @@ function PrintPage($p) {
 		}
 		
 		$anego->AddContent($row['content_prepared']);
-		$anego->assign('pageID',$p);
+		$anego->assign('currentpage', $p);
 		if(!$anego->get_template_vars('pageTitle'))
 			$anego->assign('pageTitle',$row['name']);
 		$anego->display('index.tpl');

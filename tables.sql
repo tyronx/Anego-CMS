@@ -138,16 +138,14 @@ CREATE TABLE IF NOT EXISTS `anego_pages_eng` (
   `file` varchar(255) NOT NULL,
   `visibility` tinyint(4) NOT NULL DEFAULT '1',
   `position` smallint(6) NOT NULL DEFAULT '0',
-  `subpoint` tinyint(4) NOT NULL DEFAULT '0',
   `nolink` tinyint(4) NOT NULL DEFAULT '0',
-  `image` varchar(100) NOT NULL DEFAULT '',
-  `image_selected` varchar(100) NOT NULL DEFAULT '',
   `menu` enum('MAIN','MINOR') NOT NULL DEFAULT 'MAIN',
-  `defImg` varchar(255) DEFAULT NULL,
-  `hoverImg` varchar(255) DEFAULT NULL,
-  `activeImg` varchar(255) DEFAULT NULL,
+  `defimg` varchar(255) DEFAULT NULL,
+  `hoverimg` varchar(255) DEFAULT NULL,
+  `activeimg` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`idx`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1;
+
 
 -- --------------------------------------------------------
 
@@ -244,16 +242,14 @@ CREATE TABLE IF NOT EXISTS `anego_pages_ger` (
   `file` varchar(255) NOT NULL,
   `visibility` tinyint(4) NOT NULL DEFAULT '1',
   `position` smallint(6) NOT NULL DEFAULT '0',
-  `subpoint` tinyint(4) NOT NULL DEFAULT '0',
   `nolink` tinyint(4) NOT NULL DEFAULT '0',
-  `image` varchar(100) NOT NULL DEFAULT '',
-  `image_selected` varchar(100) NOT NULL DEFAULT '',
   `menu` enum('MAIN','MINOR') NOT NULL DEFAULT 'MAIN',
-  `defImg` varchar(255) DEFAULT NULL,
-  `hoverImg` varchar(255) DEFAULT NULL,
-  `activeImg` varchar(255) DEFAULT NULL,
+  `defimg` varchar(255) DEFAULT NULL,
+  `hoverimg` varchar(255) DEFAULT NULL,
+  `activeimg` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`idx`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1;
+
 
 -- --------------------------------------------------------
 

@@ -10,7 +10,6 @@ $anego->assign('showheader', !@$_GET['noheader']);
 //	$anego->AddJsModule('ad'.$language);
 //}
 
-
 if(!LOGINOK) {
 	$message = '';
 	/* Login */
@@ -42,6 +41,7 @@ if(!LOGINOK) {
 		echo "200\nAdmin - Login\r\n";
 		echo $anego->fetchContent('login.tpl');
 	} else {
+	
 		$anego->AddJsModule('lo');
 		$anego->AddContent($logon);
 		$anego->display('login.tpl');
@@ -50,7 +50,7 @@ if(!LOGINOK) {
 	exit();
 }
 
-if(!isset($_GET['a'])) {
+if(!isset($_GET['a']) || $_GET['a']=='li') {
 	$anego->Reload($cfg['domain']);
 }
 
@@ -249,7 +249,6 @@ switch($_GET['a']) {
 	case 'ap':
 		if (UserRole() < Role::ProMod) Bail(__('No permission to access this page, sorry.'));
 		
-		$subm = intval($_POST['subm']);
 		$nolink = intval($_POST['nolink']);
 		$vis = intval($_POST['vis']);
 		$intopage = isset($_POST['intopage']) ? intval($_POST['intopage']) : 0;
@@ -310,8 +309,8 @@ switch($_GET['a']) {
 		$fname = mysql_real_escape_string($fname);
 				
 		$q = "INSERT INTO ".PAGES . 
-			 " (name, url, info, date, parent_idx, file, visibility, position, subpoint,nolink,content,menu) VALUES " .
-			 " ('".$_POST['name']."','".$_POST['url']."','".$_POST['info']."',".time().",'".$par."','".$fname."','".$vis."','".$pos."','$subm','$nolink','','".$menu."')";
+			 " (name, url, info, date, parent_idx, file, visibility, position, nolink,content,menu) VALUES " .
+			 " ('".$_POST['name']."','".$_POST['url']."','".$_POST['info']."',".time().",'".$par."','".$fname."','".$vis."','".$pos."','$nolink','','".$menu."')";
 		
 		mysql_query($q) or
 			BailErr(__('Failed inserting new page'),$q);
@@ -448,7 +447,6 @@ switch($_GET['a']) {
 		}
  
 		$vis = intval($_POST['vis']);
-		$subm = intval($_POST['subm']);
 		//$nolink = intval($_POST['nolink']);
 			
 		$q = "UPDATE ".PAGES." SET " . 
@@ -456,8 +454,7 @@ switch($_GET['a']) {
 			"info='".mysql_real_escape_string($_POST['info'])."', " .
 			"url='".mysql_real_escape_string($_POST['url'])."', " .
 			"file='".mysql_real_escape_string($_POST['filename'])."', " .
-			"visibility='".$vis."', " . 
-			"subpoint='".$subm."' WHERE idx='$id'";
+			"visibility='".$vis."' WHERE idx='$id'";
 
 		mysql_query($q) or
 			BailSQL(__('Failed renaming page'), $q);
@@ -683,8 +680,7 @@ function PrintLinksRec($parent, $menu, $first=0) {
 			addslashes(htmlentities($row['name'], ENT_COMPAT,'UTF-8')) . "','" . 
 			addslashes(htmlentities(@$row['url'], ENT_COMPAT,'UTF-8')) . "','" . 
 			addslashes(htmlentities(@$row['info'], ENT_COMPAT,'UTF-8')) . "'," . 
-			$row['visibility'] . "," . 
-			$row['subpoint'] . ",'" . 
+			$row['visibility'] . ",'" . 
 			$row['file'] . "')\">$name</a> ";
 		
 		echo '</span>';

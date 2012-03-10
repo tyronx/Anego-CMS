@@ -6,12 +6,9 @@
 	<link rel="stylesheet" href="{$basepath}styles/default/default.css" type="text/css" media="screen">
 	<link rel="stylesheet" href="{$basepath}styles/anego/text.css" type="text/css" media="screen">
 	<link rel="stylesheet" href="{$basepath}styles/anego/design.css" type="text/css" media="screen">
-	
-	
+
 {$header}
-
 </head>
-
 
 <body>
 	<div id="keyboard"></div>
@@ -19,7 +16,7 @@
 			<div id="header" class="shadow"><div id="name" onclick="location.href='http://tyron.at'">Anego CMS<br></div></div>
 			<div id="admin">{$menuadmin}</div>
 			<div id="menu">
-				{include file='menu.tpl'}
+				{include file='menu.tpl' pagetree=$pages.major menuname="mainnav"}
 			</div>
 			
 			<div id="centerBox">
@@ -30,8 +27,9 @@
 					</div>
 				</div>
 				
-				<div id="footer">Powered by Anego CMS.</div>
-				<div id="minormenu"><ul class="mnav" id="minornav">{$minormenu}</ul></div>
+				<div id="footer">
+					{include file='menu.tpl' pagetree=$pages.minor menuname="minornav"}
+				</div>
 			</div>
 		</div>
 	{$footer}

@@ -22,11 +22,11 @@
 				<tr>
 					<td id="cornerL"></td>
 					<td id="title"><a href="http://www.anego.at"><img src="{$basepath}styles/anego2/img/logo_white.png" alt="Anego CMS"></a></td>
-					<td id="menu">{include file='menu.tpl'}</td>
+					<td id="menu">
+						{include file='menu.tpl' pagetree=$pages.major menuname="mainnav"}
+					</td>
 					<td id="minor">
-						<ul class="minornav mnav">
-						{$minormenu}
-						</ul>
+						{include file='menu.tpl' pagetree=$pages.minor menuname="minornav"}
 					</td>
 					<td id="cornerR"></td>
 				</tr>

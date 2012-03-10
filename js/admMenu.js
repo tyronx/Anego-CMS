@@ -53,7 +53,6 @@ function AdminMenuFunctions() {
 			$.post("admin.php?a=ap", {
 				name: $('input[name=name]', this).val(),
 				vis: vis,
-				subm: '0',
 				nolink: nolink,
 				info: $('input[name=info]', this).val(),
 				url: $('input[name=url]', this).val(),
@@ -168,13 +167,12 @@ function AdminMenuFunctions() {
 		return false;
 	}
 
-	this.renamePage = function(page_id, page_name, page_url, page_info, vis, subpoint, file) {
+	this.renamePage = function(page_id, page_name, page_url, page_info, vis, file) {
 		var ch1="", ch2="", ch3="",ch4="";
 		var fileDsp = '';
 		
 		if (vis&2) ch1=" checked";
 		if (!(vis&1)) ch2=" checked";
-		if (subpoint) ch3=" checked";
 		
 		if (file.length>0) {
 			ch4=" checked";
@@ -235,7 +233,6 @@ function AdminMenuFunctions() {
 					page_id: page_id,
 					name: $('input[name=name]', this).val(),
 					vis: vis,
-					subm: '0',
 					url: $('input[name=url]', this).val(),
 					info: $('input[name=info]', this).val(),
 					filename: fname

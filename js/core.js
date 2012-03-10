@@ -73,17 +73,79 @@ $(document).ready(function() {
 	$.postOriginal = $.post;
 	$.getOriginal = $.get;
 	
-	$.get = function(url, data, success, datatype) {
-		if(! url.match(/^http:/))
-			url = anego.path + url;
-		return $.getOriginal(url, data, success, datatype);
-	};
+	Core.ajaxQueue = [];
+	Core.processAjaxQueue = function() {
+		if (Core.ajaxQueue.length > 0) {
+			var request = Core.ajaxQueue.shift();
+			
+			$.ajax(request.url, request.settings).always(function() {
+				Core.processAjaxQueue();
+			});
+		}
+	}
 	
-	$.post = function(url, data, success, datatype) {
+	$.get = function(url, data, success, dataType) {
 		if(! url.match(/^http:/))
 			url = anego.path + url;
 		
-		return $.postOriginal(url, data, success, datatype);
+		if (typeof data == 'function') {
+			dataType = success;
+			success = data;
+			data = null;
+		}
+
+		var request = {
+			url: url,
+			settings: {
+				type: 'GET',
+				data: data
+			}
+		};
+		
+		if(typeof success != 'undefined')
+			request.settings.success = success;
+		if(typeof dataType != 'undefined')
+			request.settings.dataType = dataType;
+		
+		Core.ajaxQueue.push(request);
+		
+		// Only one in the queue? => Start the request
+		if (Core.ajaxQueue.length <= 1) {
+			Core.processAjaxQueue();
+		}
+	};
+	
+	$.post = function(url, data, success, datatype) {
+		if (! url.match(/^http:/)) {
+			url = anego.path + url;
+		}
+		
+		if (typeof data == 'function') {
+			dataType = success;
+			success = data;
+			data = null;
+		}
+		
+		var request = {
+			url: url,
+			settings: {
+				type: 'POST',
+				data: data
+			}
+		};
+		
+		if(typeof success != 'undefined')
+			request.settings.success = success;
+		if(typeof dataType != 'undefined')
+			request.settings.dataType = dataType;
+
+		
+		Core.ajaxQueue.push(request);
+		
+		// Only one in the queue? => Start the request
+		if (Core.ajaxQueue.length <= 1) {
+			Core.processAjaxQueue();
+		}
 	};
 });
 
@@ -370,24 +432,30 @@ function CoreFunctions() {
 		if(anego.submenuStyle == 'visible') return;
 		
 		var el = null;
-		if(page != null) el = $('#menu .mainnav li a[href="' + page.fullpath + '"]').parent();
+		if(page != null) {
+			el = $('.anegoNav li a[href="' + page.fullpath + '"]').parent();
+		}
 		
 		// If this is a child of a child we just need to make sure its visible
 		if(el != null && el.hasClass('subsubitem')) {
 			el.show();
 			// Make sure subnav list is visible
-			el.parent().parent().css('display','');
+			el.parent().parent().removeClass('hidden');
 			return;
 		}
 		
 		// Deselect old page, unless its always visible
-		if(anego.submenuStyle != 'submenu onselect' || $('#menu .mainnav li.navSelected').parents('ul').length > 2 ) {
-			$('#menu .mainnav li.navSelected .subnavbox').hide();
+		if(anego.submenuStyle != 'submenu onselect' || $('.anegoNav li.navSelected').parents('ul').length > 2 ) {
+			$('.anegoNav li.navSelected .subnavbox').addClass('hidden');
 		}
 		
-		// Remove current selection
-		$('#menu .mainnav li.navSelected div.subsubitems').hide();
-		$('#menu .mainnav li.navSelected').removeClass('navSelected');
+		// Remove current selection(s)
+		$('.anegoNav li.navSelected div.subnavbox, .anegoNav li.childSelected div.subnavbox,')
+			.addClass('hidden');
+		$('.anegoNav li.navSelected, .anegoNav li.childSelected')
+			.removeClass('navSelected')
+			.removeClass('childSelected');
+		
 		
 		// No page select => we just unselect the current page
 		if(page == null) return;
@@ -395,20 +463,20 @@ function CoreFunctions() {
 		// If a sub page is clicked, leave submenu open and parent menu selected
 		if(el.parents().hasClass('subnavlist')) {
 			// Remove other subpages selection
-			el.parent().find('li.navSelected').removeClass('navSelected');
+			el.parents().find('li.navSelected').removeClass('navSelected');
 			// Menu selected, add class to the. <li>
-			el.addClass('navSelected');
+			el.parent().addClass('navSelected');
 			// If this page again has children, show them
-			el.children('div.subsubitems').show();
+			el.children('div.subnavbox').removeClass('hidden');
 			// Make sure subnav list is visible
-			el.parent().parent().css('display','');
+			el.parents('.subnavbox').removeClass('hidden');
 			// Make sure parent element is selected
-			el.parent().parent().parent().addClass('navSelected');
+			el.parents('.navParent').addClass('childSelected');
 		} else {
 			// Select new page
 			// jQuery rocks. Seriously.
-			$('#menu .mainnav li a[href="' + page.fullpath + '"]').parents('li').first().addClass('navSelected');
-			$('#menu .mainnav li.navSelected .subnavbox').show();
+			$('.anegoNav li a[href="' + page.fullpath + '"]').parents('li').first().addClass('navSelected');
+			$('.anegoNav li.navSelected .subnavbox').removeClass('hidden');
 		}
 	}
 	
@@ -661,7 +729,7 @@ function OpenDialog(settings) {
 			'<div class="dlgContent">' + 
 				/* Content goes here */
 				'<div class="dlgBtnContainer adminstyles">' +
-					'<img src="styles/default/img/cleardot.gif" class="loadingIcon"> ' +
+					'<img src="' + anego.path + 'styles/default/img/cleardot.gif" class="loadingIcon"> ' +
 					//buttons +
 				'</div>' +
 			'</div>' +

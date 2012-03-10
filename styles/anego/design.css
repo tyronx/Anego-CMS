@@ -23,19 +23,16 @@ body {
 }
 
 #outer {
-	margin-left: -440px;
-	position: absolute;
-	top: 100px;
-	left: 50%;
+	position: relative;
 	width:880px;
+	margin: auto;
+	padding-top: 120px;
+	z-index: 1;
 }
 
 #centerBox {
 	width:878px;
-	position:absolute;
 	z-index:3;
-	left:0;
-	top:0;
 	padding-bottom:20px;
 }
 
@@ -43,11 +40,11 @@ body {
 	min-height:200px;
 }
 #header {
-	height:90px;
-	width:220px;
+	height: 90px;
+	width: 220px;
 	position:absolute;
-	left:0;
-	top:-110px;
+	left: 0;
+	top: -1px;
 	-moz-border-radius-bottomleft: 12px;
 	border-bottom-left-radius: 12px;
 	-moz-border-radius-bottomright: 12px;
@@ -81,10 +78,9 @@ div#name {
 
 #menu {
 	position:absolute;
-	left:450px;
-	top:-22px;
-	height:17px;
-/*	width:500px;*/
+	right: 40px;
+	top: 98px;
+	height: 17px;
 	z-index:5;
 }
 .mainnav > li {
@@ -103,6 +99,7 @@ div#name {
 	
 	text-shadow: 1px 1px 0 #DADADA;
 	border:1px solid #444;
+	
 }
 
 #contents {
@@ -119,6 +116,7 @@ div#name {
 	width:372px;
 	vertical-align:top;
 }
+
 #footer {
 	text-align:right;
 	font-size:9pt;
@@ -126,6 +124,8 @@ div#name {
 	padding-top:8px;
 	padding-right:3px;
 	padding-bottom:3px;
+	position: absolute;
+	right: 0px;
 }
 
 ul.mainnav {
@@ -135,10 +135,10 @@ ul.mainnav {
 }
 
 ul.mainnav a, div#editpage a, ul.nav a, .draggable a, .gallery a { border:0px; }
-ul#minornav a { border:0px; }
+ul.minornav a { border:0px; }
 
 /* Bg color is set if the class is navSelected */
-.mainnav > li.navSelected { 
+.mainnav > li.navSelected, .mainnav > li.childSelected { 
 	background-color:#DDDDDB;
 	text-shadow: 1px 1px 0 #FFFFFF;
 	border:1px solid #aaa;
@@ -150,16 +150,20 @@ ul#minornav a { border:0px; }
 
 div.subnavbox {
 	position:absolute;
-	top:35px;
-	right:80px;
-	z-index:4;
-	padding:0px;
-	margin:0px;
-	padding-left:5px;
-	padding-right:5px;
-	text-align:right;
-	font-size:12pt;
-	text-shadow:0 0;
+	top: 23px;
+	right: -37px;
+	z-index: 4;
+	padding: 0px;
+	margin: 0px;
+	padding-left: 5px;
+	padding-right: 5px;
+	text-align: right;
+	font-size: 12pt;
+	
+	background-color: #EEE;
+	border-radius: 10px;
+	border-bottom-right-radius: 0;
+	border-top-left-radius: 0;
 }
 
 div.subnavbox a {
@@ -182,16 +186,13 @@ ul.subnavlist li {
 	margin-bottom:2px;
 	float:left;
 	padding-left:22px;
-	background-image:url(img/vr.png);
-	background-repeat:no-repeat;
-	background-position:6px 3px;
 }
 
 ul.subnavlist li:first-child {
-	background-image:none;
+	padding-left:5px;
 }
 
-li.subnavSelected {
+ul.subnavlist li.navSelected {
 	font-weight:bold;
 }
 
@@ -205,8 +206,8 @@ li.subnavSelected {
 
 #admin {
 	position:absolute;
-	top:-110px;
-	right:-3px;
+	top: -10px;
+	right: 0px;
 }
 #admin ul {
 	margin-right:0px;
@@ -249,29 +250,21 @@ ul.nav a:hover {
 
 /**** Main navigation only ****/
 
-#minormenu {
-	position:absolute;
-	left:10px;
-	bottom:23px;
-}
 
-#minormenu a {
-	color:gray;
-}
-
-ul#minornav {
+ul.minornav {
 	padding:0px;
 	margin:0px;
 	
 	list-style-image:none;
 	list-style-type:none;
 }
-ul#minornav li {
+
+ul.minornav li {
 	padding:0px;
-	display:inline;
+	float: left;
 	padding-right:10px;
 	list-style-image:none;
-	list-style-type:none;	
+	list-style-type:none;
 }
 
 /**** main box ****/
