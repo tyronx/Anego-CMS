@@ -11,6 +11,8 @@ Author URI: http://www.tyron.at
 License: GPL2
 */
 
+addL10N('modules/mailer/' . $language . '.php');
+
 class mailer extends ContentElement {
 	var $config;
 
@@ -33,45 +35,29 @@ class mailer extends ContentElement {
 		$res = mysql_query('SELECT name FROM '. PAGES . ' WHERE idx=' . $this->pageId);
 		list($pagename) = mysql_fetch_row($res);
 		
-		$subject = 'From ' . $_SERVER['SERVER_NAME'] . ': A person used your e-mail form';
-		$template = 'Hello
+		// Defaults
+		$subject = sprintf(__('From %s: A person used your e-mail form'), $_SERVER['SERVER_NAME']);
+		$template = sprintf(__('mailtemplate'), $pagename, $_SERVER['SERVER_NAME']);
+		$formhtml = __('formhtml');
+		$successMessage = __("Thank you for your message!");
 		
-A person has used the e-mail form on the \'' . $pagename .'\' Page of your website. 
-
-Name: {$name}
-E-Mail/Phone Number: {$email}
-
-Request:
-{$request}
-
- -------------------------------------------------------
-  - Anego CMS Mailer Module on ' . $_SERVER['SERVER_NAME'] . '
-';
-		$formhtml = '<p><label for="yourname">Your name:</label><br>
-<input type="text" id="yourname" name="name">
-</p><p><label for="youremail">Your email or phone number:</label><br>
-<input type="text" id="yourmail" name="email"><br>
-</p><br>
-<p><label for="yourrequest">Your Request:</label><br>
-<textarea rows="10" cols="50" name="request" id="yourrequest"></textarea>
-<br>
-<p><input type="submit" name="send" value="Submit form">';
-		
-		$q = "INSERT INTO " . $this->databaseTable() . " (subject, mailtemplate, formhtml) VALUES (" .
-			"'" . mysql_real_escape_string($subject) ."'," .
-			"'" . mysql_real_escape_string($template) ."'," .
-			"'" . mysql_real_escape_string($formhtml) ."')";
+		$q = "INSERT INTO " . $this->databaseTable() . " (subject, mailtemplate, formhtml, successmessage) VALUES (" .
+			"'" . mysql_real_escape_string($subject) . "', '" . mysql_real_escape_string($template) . "'," .
+			"'" . mysql_real_escape_string($formhtml) . "', '" . mysql_real_escape_string($successmessage) ."')";
 		
 		$res = mysql_query($q) or
-			BailSQL("Failed inserting element", $q);
+			BailSQL(__("Failed inserting element"), $q);
 
 		$this->elementId = mysql_insert_id();
 		
-		return Array("id" => $this->elementId, "html" => $this->generateContent($this->elementId));
+		return Array(
+			"id" => $this->elementId,
+			"html" => $this->generateContent($this->elementId)
+		);
 	}
 	
 	function getData() {
-		$q = 'SELECT * FROM ' . $this->databaseTable() .' WHERE idx=' . $this->elementId;
+		$q = 'SELECT * FROM ' . $this->databaseTable() . ' WHERE idx=' . $this->elementId;
 		$res = mysql_query($q) or BailSQL(__("Failed getting form code"), $q);
 		$response = mysql_fetch_assoc($res);
 		return "200\n" . json_encode($response);
@@ -87,14 +73,16 @@ Request:
 			$pairs[$pair['name']] = $pair['value'];
 		}
 		
-		$q = "UPDATE " . $this->databaseTable() ." SET 
+		$q = "UPDATE " . $this->databaseTable() . " SET 
 			subject='" . mysql_real_escape_string($pairs['subject']) . "',
 			recipient='" . mysql_real_escape_string($pairs['recipient']) . "',
 			mailtemplate='" . mysql_real_escape_string($pairs['mailtemplate']) . "',
+			successmessage='" . mysql_real_escape_string($pairs['successmessage']) . "',
 			hourlimit='" . intval($pairs['hourlimit']) . "',
 			formhtml='" . mysql_real_escape_string($pairs['formhtml']) . "' WHERE idx=" . $this->elementId;
 			
-		$res = mysql_query($q) or BailSQL(__("Failed updating mailer element"), $q);
+		$res = mysql_query($q) or 
+			BailSQL(__("Failed updating mailer element"), $q);
 		
 		return "200\n" . $this->generateContent();
 	}
@@ -103,7 +91,9 @@ Request:
 		global $cfg;
 		
 		$q = 'SELECT formhtml FROM ' . $this->databaseTable() .' WHERE idx=' . $this->elementId;
-		$res = mysql_query($q) or BailSQL(__("Failed form code"), $q);
+		$res = mysql_query($q) or 
+			BailSQL(__("Failed form code"), $q);
+		
 		list($form) = mysql_fetch_row($res);
 		
 		$form = preg_replace("#(<(input|select|textarea).+name=('|\"))([^\\3]+)\\3#Usi", "\\1formdata[\\4]\\3", $form);
@@ -124,7 +114,6 @@ Request:
 					}
 				);
 				
-				console.log($('.sending', \$form));
 				$('.sending', \$form).show();
 				$('input[type="submit"], button[type="submit"]', \$form).attr('disabled', 'disabled');
 				
@@ -138,7 +127,7 @@ EOT;
 			'<form name="mailer' . $this->elementId . '" onsubmit="return sendFormMail(' . $this->elementId . ')">' .
 			'<input type="hidden" name="mailerid" value="' . $this->elementId . '"> ' .
 			$form . 
-			'<span class="sending" style="display:none;"><img style="vertical-align: middle;" src="' . $cfg['path'] . 'styles/default/img/progress_active.gif" alt="Ajax ">Sending...</span>' .
+			'<span class="sending" style="display:none;"><img style="vertical-align: middle;" src="' . $cfg['path'] . 'styles/default/img/progress_active.gif" alt="Ajax ">' . __('Sending...') . '</span>' .
 			'</form>' . $js;
 	}
 	

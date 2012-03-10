@@ -80,13 +80,14 @@ CREATE TABLE IF NOT EXISTS `anego_pages_mailer` (
   `subject` text NOT NULL,
   `recipient` varchar(255) NOT NULL,
   `mailtemplate` text NOT NULL,
-  `hourlimit` smallint(6) NOT NULL DEFAULT '5',
+  `hourlimit` smallint(6) NOT NULL DEFAULT '60',
   `formhtml` text NOT NULL,
+  `successmessage` text NOT NULL,
   `numsent_total` int(11) NOT NULL DEFAULT '0',
   `numsent_lasthour` int(11) NOT NULL DEFAULT '0',
   `currenthour` int(11) NOT NULL,
   PRIMARY KEY (`idx`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1;
 
 
 -- --------------------------------------------------------

@@ -5,12 +5,14 @@ mailer = ContentElement.extend({
 		'<input type="text" id="recipient" name="recipient" size="30" value=""></p> ' +
 		'<p><label for="subject">' + __('Send with subject:') + '</label><br> ' +
 		'<input type="text" id="subject" name="subject" size="60" value=""></p><br> ' +
-		'<label for="hourlimit">' + ('Limit mail sending to') + '</label> ' +
+		'<label for="hourlimit">' + __('Limit mail sending to') + '</label> ' +
 		'<input type="text" id="hourlimit" name="hourlimit" size="2" value=""> ' + __('per Hour') + '<br><br>' +
 		'<p><label for="mailtemplate">' + __('Mail template:') + '</label><br> ' +
 		'<textarea style="width:99%" rows="9" id="mailtemplate" name="mailtemplate"></textarea></p><br> ' +
-		'<p><label for="formhtml">' + ('Form HTML (only &lt;inputs&gt;, etc.):') + '</label><br> ' +
+		'<p><label for="formhtml">' + __('Form HTML (only &lt;inputs&gt;, etc.):') + '</label><br> ' +
 		'<textarea style="width:99%" rows="9" id="formhtml" name="formhtml"></textarea></p><br> ' +
+		'<label for="successmessage">' + __('Success message that should be shown when the user submits the form') + '</label> ' +
+		'<input type="text" id="successmessage" name="successmessage" size="80" value=""><br><br>' +
 		'<button name="save" type="button" style="min-width:150px">' + __('Save & Update form') + '</button> ' +
 		'</form>',
 	
@@ -34,6 +36,7 @@ mailer = ContentElement.extend({
 					$('input[name="recipient"]', $editor).val(data.recipient);
 					$('input[name="subject"]', $editor).val(data.subject);
 					$('input[name="hourlimit"]', $editor).val(data.hourlimit);
+					$('input[name="successmessage"]', $editor).val(data.successmessage);
 					
 					$('textarea[name="mailtemplate"]', $editor).text(data.mailtemplate);
 					$('textarea[name="formhtml"]', $editor).text(data.formhtml);

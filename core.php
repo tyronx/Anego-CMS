@@ -25,11 +25,14 @@ if (!function_exists('json_encode')) {
 	require 'inc/json_encode.php';
 }
 	
-if (! file_exists('styles/' . STYLE . '/templates/index.tpl'))
+if (! file_exists('styles/' . STYLE . '/templates/index.tpl')) {
 	exit("File 'styles/" . STYLE . "/templates/index.tpl' not found. Missing or mistyped style name?");
+}
 
 /* Do not allow tampering with Session/Cookie variables */
-if (isset($_REQUEST['_SESSION']) || isset($_REQUEST['_COOKIE'])) die("Get lost Muppet!");
+if (isset($_REQUEST['_SESSION']) || isset($_REQUEST['_COOKIE'])) {
+	die("Get lost Muppet!");
+}
 
 /**** Setup code for the design ****/
 
@@ -38,13 +41,21 @@ if (isset($_REQUEST['_SESSION']) || isset($_REQUEST['_COOKIE'])) die("Get lost M
 // ger: 2
 $langnum = array("eng"=>1,"ger"=>2);
 
-if($language!='auto' && !array_key_exists($language,$langnum))
-	$language='eng';
+if($language != 'auto' && !array_key_exists($language, $langnum)) {
+	$language = 'eng';
+}
 
-if($language=='auto') {
-	$language=GetCookie('lang');
-	if(!array_key_exists($language,$langnum))
+if ($language == 'auto') {
+	$language = GetCookie('lang');
+	if (!array_key_exists($language, $langnum))
 		$language='eng';
+}
+
+function addL10N($file) {
+	if (file_exists($file)) {
+		include($file);
+		$GLOBALS['lang'] = array_merge($GLOBALS['lang'], $lang);
+	}
 }
 
 function __($str) {

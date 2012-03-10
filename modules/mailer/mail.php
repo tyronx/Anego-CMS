@@ -4,6 +4,7 @@ if (!isset($_POST['mailerid'])) {
 } else {
 	chdir('../../');
 	include('core.php');
+	addL10N('modules/mailer/' . $language . '.php');
 
 	class MailTemplate extends Smarty {	
 		function MailTemplate() {
@@ -56,28 +57,28 @@ function sendMail() {
 	$row = mysql_fetch_assoc($res);
 	
 	if (!isset($row['recipient'])) {
-		BailErr('Mailer: No receiver E-Mail in DB found. Missing entry or wrong id?');
+		BailErr(__('Mailer: No receiver E-Mail in DB found. Missing entry or wrong id?'));
 	}
 	
 	$hrcount = $row['numsent_lasthour'];
 	
 	$currenthour = date('H') - date('i') - date('s');
 	
-	if($currenthour - $row['currenthour'] > 3600) {
+	if ($currenthour - $row['currenthour'] > 3600) {
 		$hrcount = 0;
 	}
 	
 	if ($hrcount >= $row['hourlimit']) {
-		BailErr('Sorry, hourly contact request limit reached. Please try again later.');
+		BailErr(__('Sorry, hourly contact request limit reached. Please try again later.'));
 	}
 	
 	
 	$mail = new MailTemplate();
 
-	foreach($_POST['formdata'] as $name=>$value) {
+	foreach ($_POST['formdata'] as $name=>$value) {
 		$mail->assign($name,$value); 
 	}
-		
+	
 	$m = $mail->fetch('string:' . $row['mailtemplate']);
 	
 	$headers  =	'MIME-Version: 1.0' . "\n";
@@ -88,7 +89,7 @@ function sendMail() {
 
 	
 	if(! @mail($row['recipient'], $row['subject'], utf8_decode($m), $headers)) {
-		BailErr('I\'m sorry, but I was unable to send out a mail. Something must be wrong with the server configuration');
+		BailErr(__('I\'m sorry, but I was unable to send out a mail. Something must be wrong with the server configuration'));
 	}
 	
 	
@@ -98,7 +99,13 @@ function sendMail() {
 			currenthour=$currenthour
 		WHERE idx=$mailerid");
 	
-	exit("200\nThank you for your message!");
+	
+	$successMessage = @$row['successmessage'];
+	if (!strlen($successMessage)) {
+		$successMessage = __("Thank you for your message!");
+	}
+	
+	exit("200\n" . $successMessage);
 }
 
 ?>
