@@ -438,12 +438,14 @@ switch($_GET['a']) {
 			$_POST['filename']=stripslashes($_POST['filename']);
 		}
 		
-		$q = "SELECT idx, name FROM ".PAGES." WHERE url='" . mysql_real_escape_string($_POST['url']) . "'";
-		$res = mysql_query($q);
-		list($idxWithSameUrl, $pgname) = mysql_fetch_row($res);
-		if (mysql_affected_rows() && $idxWithSameUrl != $id) {
-			echo "304\n" . __("The page '$pgname' already uses this URL-Alias, please choose another!");
-			exit();
+		if (strlen(trim($_POST['url']))) {
+			$q = "SELECT idx, name FROM ".PAGES." WHERE url='" . mysql_real_escape_string($_POST['url']) . "'";
+			$res = mysql_query($q);
+			list($idxWithSameUrl, $pgname) = mysql_fetch_row($res);
+			if (mysql_affected_rows() && $idxWithSameUrl != $id) {
+				echo "304\n" . __("The page '$pgname' already uses this URL-Alias, please choose another!");
+				exit();
+			}
 		}
  
 		$vis = intval($_POST['vis']);
@@ -452,7 +454,7 @@ switch($_GET['a']) {
 		$q = "UPDATE ".PAGES." SET " . 
 			"name='".mysql_real_escape_string($_POST['name'])."', " .
 			"info='".mysql_real_escape_string($_POST['info'])."', " .
-			"url='".mysql_real_escape_string($_POST['url'])."', " .
+			"url='".mysql_real_escape_string(trim($_POST['url']))."', " .
 			"file='".mysql_real_escape_string($_POST['filename'])."', " .
 			"visibility='".$vis."' WHERE idx='$id'";
 
