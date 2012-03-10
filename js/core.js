@@ -706,6 +706,7 @@ function OpenDialog(settings) {
 	
 	/*** Dialog behavior ***/
 	if (settings.collapse == undefined) settings.collapse = false;
+	if (settings.blocking == undefined) settings.blocking = true;
 	
 	if (settings.width != undefined) 
 		w = 'width: ' + settings.width + 'px; ';
@@ -786,11 +787,8 @@ function OpenDialog(settings) {
 	/* settings.blocking defines wether the user is still 
 	 * allowed to interact with the site or not (blocking or non blocking dialog) 
 	 */
-	if (settings.blocking) {
-		$('#inactive').css('position','absolute');
-	} else {
-		$('#inactive').css('position','static');
-	}
+	$('#inactive').toggleClass('blocking', settings.blocking);
+	
 	
 	/* Get previously saved position if it is set and no custom position supplied, but limit to viewable area  */
 	if (settings.top == undefined && settings.left == undefined) {
@@ -813,13 +811,25 @@ function OpenDialog(settings) {
 	}
 	
 	$dlgBox.closeDialog = function() {
+		var unblock = true;
+		
 		if(Core.openDialogs.length == 0)
 			document.onkeydown = null;
 		
 		for(var i=0; i < Core.openDialogs.length; i++) {
-			if(Core.openDialogs[i].dialogId = this.dialogId)
+			if (Core.openDialogs[i].dialogSettings.blocking && Core.openDialogs[i].dialogId != this.dialogId) {
+				unblock = false;
+			}
+			
+			if (Core.openDialogs[i].dialogId == this.dialogId) {
 				Core.openDialogs.splice(i,1);
+			}
 		}
+		
+		if(unblock) {
+			$('#inactive').removeClass('blocking');
+		}
+		
 		this.remove();
 	};
 	
