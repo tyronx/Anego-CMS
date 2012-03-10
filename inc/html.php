@@ -55,6 +55,8 @@ class Anego extends Smarty {
 			}
 		}*/
 		
+		define('DISPLAY_ATTEMPTED', 1);
+		
 		$pages = array(
 			'major' => $this->pageTreeByMenu('MAIN'),
 			'minor' => $this->pageTreeByMenu('MINOR')
@@ -64,7 +66,7 @@ class Anego extends Smarty {
 		$this->assign('content', $this->content);
 		$this->assign('pages', $pages);
 
-		define('DISPLAY_ATTEMPTED',1);
+		
 		$this->prepare();
 		
 		if (!file_exists($this->template_dir . '/'. $template)) {
@@ -90,7 +92,7 @@ class Anego extends Smarty {
 	function bail($template) {
 		$this->prepare();
 		
-		$this->assign('content',$this->content);
+		$this->assign('content', $this->content);
 		parent::display($template);	
 	}
 	
@@ -147,7 +149,7 @@ class Anego extends Smarty {
 				$ft.="$code\n";
 		}
 		
-		$this->assign('footer',$ft);
+		$this->assign('footer', $ft);
 		$this->assign('content',$this->content);
 	}
 	

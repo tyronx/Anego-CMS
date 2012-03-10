@@ -212,7 +212,7 @@ function BailSQL($msg,$q,$log_once=0) {
 		logError($msg,$q);
 		exit("500\n$msg");
 	}
-	ExitError($msg,mysql_error()."\r\nQuery: '$q'",2,$log_once);
+	ExitError($msg, mysql_error()."\r\nQuery: '$q'", 2, $log_once);
 }
 // Normal Bail for non-Ajax Request
 function BailErr($msg , $log="", $log_once=0) {
@@ -227,12 +227,13 @@ function BailErr($msg , $log="", $log_once=0) {
 function logError($msg, $query = '') {
 	$mymsg = str_replace('<br>',"\n", 
 		sprintf(__('<br>There was an error, I\'m sorry I couldnt execute your request. The respsonsible php script '.
-				   'told me: %s<br><br>A detailed error message has been logged.'),$msg));
+				   'told me: %s<br><br>A detailed error message has been logged.'), $msg));
 	
 	$log = '';
-	if (strlen($query))
+	if (strlen($query)) {
 		$log = mysql_error()."\nQuery: '$query'";
-
+	}
+	
 	$fp = fopen('var/error.log','a');
 	fwrite($fp, "ID: n/a\n");
 	fwrite($fp, "Time: ".time()." (".@date("H:i d.m.Y").")\n");
@@ -258,23 +259,23 @@ function logError($msg, $query = '') {
 function ExitError($msg,$ToLog="", $severity=0, $log_once=0, $no_header=0) {
 	global $_GET, $_POST, $anego;
 	
-	if($severity>0)
+	if ($severity > 0) {
 		$mymsg = '<br>'.sprintf(__('<br>There was an error, I\'m sorry I couldnt execute your request. '.
 								   'The respsonsible php script told me: %s<br><br>A detailed error message has been logged.'), $msg);
-	else 
+	} else {
 		$mymsg = "<br>$msg";
+	}
 	
-	
-	if($severity>0) {
-		if($log_once>0 && file_exists('var/error.log')) {
+	if ($severity>0) {
+		if ($log_once>0 && file_exists('var/error.log')) {
 			$log = file_get_contents('var/error.log');
 			$entries = explode("\n\n",$log);
 			
-			foreach($entries as $entry) {
-				if(intval(substr($entry,4,8)) == $log_once) {
-					if(time()-intval(substr($entry,strpos($entry,"\n")+6,strpos($entry,"("))) < 3600) {
+			foreach ($entries as $entry) {
+				if (intval(substr($entry,4,8)) == $log_once) {
+					if (time()-intval(substr($entry,strpos($entry,"\n")+6,strpos($entry,"("))) < 3600) {
 						//if($GLOBALS['sql_link'] && $no_header==0) {
-						if(!$no_header) {
+						if (!$no_header) {
 							$anego->AddContent($mymsg);
 							$anego->bail('index.tpl');
 						//} else echo $mymsg;
