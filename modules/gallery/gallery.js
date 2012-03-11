@@ -548,7 +548,7 @@ gallery = ContentElement.extend({
 	addFiles: function() {
 		OpenDialog({
 			title: "Add files",
-			content: '<b>Hint:</b> You can just Drag&Drop Images into your browser window!<br><br><input type="file" name="picupload" multiple /> tbd'
+			content: '<b>Hint:</b> You can just Drag&Drop Images into your browser window!<br>(Requires a modern browser)<br><br><input type="file" name="picupload" multiple /> <= not implemented yet'
 		});
 		//OpenDialog("<div id)
 		/*function makeFileList() {
