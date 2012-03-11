@@ -3,6 +3,22 @@
 abstract class BasicModule { 
 }
 
+abstract class FilterModule extends BasicModule {
+	
+	public function onContentOutputPage($text) {
+		return $text;
+	}
+
+	public function onContentOutputAjax($text) {
+		return $text;
+	}
+
+	public function __call($method, $args) {
+		return '';
+	}
+	
+}
+
 /* Implement this Interface if you want your module to be a draggable content element when editing pages 
  * Also includes basic module behaviour. Overwrite where required.
  */
@@ -111,8 +127,20 @@ class PageManager {
 	}
 	
 	// Returns array of loaded modules (false when modules aren't loaded)
-	function getModules() {
-		return $this->loadedModules;
+	function getModules($type = null) {
+		$modules = array();
+		
+		if ($type) {
+			foreach($this->loadedModules as $module) {
+				if(trim($module['type']) == $type) {
+					$modules[] = $module;
+				}
+			}
+		} else {
+			$modules = $this->loadedModules;
+		}
+		
+		return $modules;
 	}
 	
 	function moduleClassnameById($mid) {
@@ -127,13 +155,11 @@ class PageManager {
 	function contentElementModules($page_id) {
 		global $cfg;
 		
-		//if(!$this->modulesPopulated) return '500'."\n".'Coding error, modules array not initialised yet';
-		
 		$page_id = intval($page_id);
 		
 		$ret = array('modules' => array());
-		foreach($this->loadedModules as $mID => $module) {
-			if(trim($module['type']) == 'ContentElement')
+		foreach ($this->loadedModules as $mID => $module) {
+			if (trim($module['type']) == 'ContentElement')
 				$ret['modules'][] = array(
 					'mid' => $mID,
 					'name' => $module['name'],
@@ -141,47 +167,33 @@ class PageManager {
 				);
 		}
 
-		// Todo: It might be a better idea to return a structured array of content element modules 
-		// from anego_pages_element instead of extracting the content elements from div ids 
-		
+
 		// Send the source too since its not much more overhead
 		$q = "SELECT content_prepared, name  FROM ".PAGES." WHERE idx=$page_id";
 		$res = mysql_query($q) or
 			BailErr("Failed getting page content for editing",$q);
 		$row = mysql_fetch_array($res);
 		
-		/*if(isset($row['content_prepared'][0])) // faster than strlen()
-			$ret['content'] = $row['content_prepared'];
-		else 
-			$ret['content'] = $this->generatePage($page_id);*/
-		
 		
 		$ret['title'] = $row['name'];
-		
-		// Does not look like this is needed, so commenting it out
-		/*$q="SELECT * FROM ".PAGE_ELEMENT." WHERE page_id=$page_id";
-		$res=mysql_query($q) or
-			BailErr("Failed getting page content for editing",$q);
-			
-		while($row=mysql_fetch_array($res))
-			$ret['elements'][] = array('pos'=>$row['position'],'module'=>$row['module_id'],'element_id'=>$row['element_id']);
-		*/
 		
 		return $ret;
 	}
 	
 	/* Rebuilds a page's HTML by calling each individual module generateContent() method and stitching that together */
 	function generatePage($page_id) {
-		$page_id=intval($page_id);
+		$page_id = intval($page_id);
 		
-		$q="SELECT * FROM ".PAGE_ELEMENT." WHERE page_id=$page_id ORDER BY position";
-		$res=mysql_query($q) or
-			BailErr("Failed getting page elements for page generation",$q);
+		$q = "SELECT * FROM ".PAGE_ELEMENT." WHERE page_id=$page_id ORDER BY position";
+		$res = mysql_query($q) or
+			BailErr("Failed getting page elements for page generation", $q);
 		
 		$txt = '';
-		while($row=mysql_fetch_array($res)) {
-			$mid=$row['module_id'];
-			if(!isset($this->loadedModules[$mid])) BailErr("Cannot recreate page as there is a module missing!");
+		while ($row = mysql_fetch_array($res)) {
+			$mid = $row['module_id'];
+			if(!isset($this->loadedModules[$mid])) {
+				BailErr("Cannot recreate page as there is a module missing!");
+			}
 			
 			include_once($this->modulePath . $mid . '/' . $mid . '.php');
 			
@@ -189,8 +201,8 @@ class PageManager {
 			$txt.= '<div id="' . $mid.'_' . $row['element_id'] . '" class="contentElement ceDraggable">' . $ce->generateContent() . '</div>';
 		}
 		
-		$q="UPDATE ".PAGES." SET content_prepared='" . mysql_real_escape_string($txt) . "' WHERE idx=$page_id";
-		$res=mysql_query($q) or
+		$q = "UPDATE ".PAGES." SET content_prepared='" . mysql_real_escape_string($txt) . "' WHERE idx=$page_id";
+		$res = mysql_query($q) or
 			BailErr("Failed generating page",$q);
 			
 		return $txt;
@@ -198,50 +210,56 @@ class PageManager {
 	
 	// Installs a module
 	function installModule($f) {
-		if(file_exists($this->modulePath.$f.'/'.$f.'.php')) {
-			$header = $this->parseHeader(file_get_contents($this->modulePath.$f.'/'.$f.'.php'));
+		if (file_exists($this->modulePath . $f . '/' . $f . '.php')) {
+			$header = $this->parseHeader(file_get_contents($this->modulePath . $f . '/' . $f . '.php'));
 			
 			// Load the file and get install settings
-			include_once($this->modulePath.$f.'/'.$f.'.php');
+			include_once($this->modulePath . $f . '/' . $f . '.php');
 			
 			// Todo: use SuperClosure.class.php here to serialize the anonymous function hooks
 			//$install_config=$f::installModule(); // this syntax only works in php5.3 
 			// ...and eval() is always a potential security hole :/
-			eval('$install_config = '.$f.'::installModule();');
+			eval('$install_config = ' . $f . '::installModule();');
 			
 			include_once('lib/jsmin.php');
 			
 			// Todo: New module install system with anonymous functions for hooks as well as better js loading code over the js loader
-			$this->loadedModules[$f] = array('name'=>$header['Plugin Name'], 
-											 'image'=>@$header['Plugin Image'],
-											 'type'=>trim($header['Plugin Type']),
-											 'configurable'=>@$header['Configurable'],
-											 'plugin_uri'=>@$header['Plugin URI'],
-											 'description'=>@$header['Description'],
-											 'version'=>@$header['Version'],
-											 'author'=>@$header['Author'],
-											 //'jscode'=>JSMin::minify(file_get_contents($this->modulePath.$f.'/'.$f.'.js')),
-											 'config'=>$install_config,
-											 'installed'=>true);
-											 
-											 
-												
-			$fp=@fopen('var/installed_modules','w') or
+			$this->loadedModules[$f] = array(
+				'name'			=> $header['Plugin Name'], 
+				'image'			=> @$header['Plugin Image'],
+				'type'			=> trim($header['Plugin Type']),
+				'configurable'	=> @$header['Configurable'],
+				'plugin_uri'	=> @$header['Plugin URI'],
+				'description'	=> @$header['Description'],
+				'version'		=> @$header['Version'],
+				'author'		=> @$header['Author'],
+				'config'		=> $install_config,
+				'installed'		=> true
+			);
+			
+			
+			$fp = @fopen('var/installed_modules','w') or
 				exit("400\nCannot open var/installed_modules for writing");
-			fwrite($fp,serialize($this->loadedModules));
+			
+			fwrite($fp, serialize($this->loadedModules));
 			fclose($fp);
+			
 			return true;
-		} else return false;
+		} else {
+			return false;
+		}
 	}
 	
 	// Uninstalls a module
 	function uninstallModule($f) {
-		if(!isset($this->loadedModules[$f])) return true;
+		if (!isset($this->loadedModules[$f])) {
+			return true;
+		}
 		
 		unset($this->loadedModules[$f]);
 		
-		$fp=@fopen('var/installed_modules','w') or
-				exit("400\nCannot open var/installed_modules for writing");
+		$fp = @fopen('var/installed_modules', 'w') or
+			exit("400\nCannot open var/installed_modules for writing");
 				
 		fwrite($fp,serialize($this->loadedModules));
 		fclose($fp);
@@ -251,44 +269,48 @@ class PageManager {
 	
 	// Gets all installed modules - code duplicated in ajax.php when reading pages as well as the javascript loader
 	function loadModules() {
-		if(file_exists('var/installed_modules'))
+		if (file_exists('var/installed_modules')) {
 			$this->loadedModules = unserialize(file_get_contents('var/installed_modules'));
-		else $this->loadedModules = Array();			
+		} else {
+			$this->loadedModules = Array();
+		}
 	}
 
 	// Populates the loadedModules array with all existing modules
 	// This includes non-installed modules as well. (a installed flag is being set appropietly)
 	function findModules() {
 		$d = opendir($this->modulePath);
-		while($f=readdir($d)) {	
-			if(is_dir($this->modulePath.$f) && !preg_match("#[^\w_0-9]+#",$f)) {
-				$header = $this->parseHeader(file_get_contents($this->modulePath.$f.'/'.$f.'.php'));
-				if(!isset($header['Plugin Name'])) continue;
+		while ($f = readdir($d)) {	
+			if (is_dir($this->modulePath . $f) && !preg_match("#[^\w_0-9]+#", $f)) {
+				$header = $this->parseHeader(file_get_contents($this->modulePath . $f . '/' . $f . '.php'));
+				if (!isset($header['Plugin Name'])) continue;
 				
-				if(isset($this->loadedModules[$f])) $this->loadedModules[$f]['installed']=true;
-				else
-					$this->loadedModules[$f] = array('name'=>$header['Plugin Name'], 
-													 'image'=>@$header['Plugin Image'],
-													 'type'=>trim($header['Plugin Type']),
-													 'configurable'=>@$header['Configurable'],
-													 'plugin_uri'=>@$header['Plugin URI'],
-													 'description'=>@$header['Description'],
-													 'version'=>@$header['Version'],
-													 'author'=>@$header['Author'],
-													 'installed'=>false);
-													 
+				if (isset($this->loadedModules[$f])) {
+					$this->loadedModules[$f]['installed'] = true;
+				} else {
+					$this->loadedModules[$f] = array(
+						'name'			=> $header['Plugin Name'], 
+						'image'			=> @$header['Plugin Image'],
+						'type'			=> trim($header['Plugin Type']),
+						'configurable'	=> @$header['Configurable'],
+						'plugin_uri'	=> @$header['Plugin URI'],
+						'description'	=> @$header['Description'],
+						'version'		=> @$header['Version'],
+						'author'		=> @$header['Author'],
+						'installed'	=> false
+					);
+				}
 			}
 		}
 	}
 	
 	// Parses the Meta-Data that is contained in the comments at beginning of the module main php file
 	function parseHeader($file) {
-		if(preg_match("#/\*(.*)\*/#sU",$file,$cmt))
-			if(preg_match_all("#^\s*([\w\s]*):\s*(.*)$#m",$cmt[1],$pairs)>0)
-				return array_combine($pairs[1],$pairs[2]);
-		
+		if (preg_match("#/\*(.*)\*/#sU", $file, $cmt)) {
+			if (preg_match_all("#^\s*([\w\s]*):\s*(.*)$#m", $cmt[1], $pairs)>0) {
+				return array_combine($pairs[1], $pairs[2]);
+			}
+		}
 		return Array();
 	}
-	
 }
-?>
