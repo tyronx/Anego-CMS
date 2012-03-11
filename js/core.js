@@ -200,9 +200,17 @@ function CoreFunctions() {
 		/* Links to pages on the same site that are made with tinymce/etc. need to be converted */
 		if(anego.pageLoad=='ajax') {
 			$('#content a').attr('href',function(idx,attr) { 
+				var urlaliasRegex = new RegExp('^' + anego.path + '[^/]+$');
+				
+				if (attr.match(urlaliasRegex) && !$(this).hasClass("nopage")) {
+					var pt = new RegExp(anego.path + '(.*)');
+					return attr.replace(pt, anego.path + '#pages/$1');
+				}
+
 				return attr.replace(/^(pages\/.+)/g, '#$1'); 
 			} );
 		}
+		
 		/* Default zoomable picture links */
 		this.lightbox($('a.zoomable'));
 	}
@@ -481,7 +489,7 @@ function CoreFunctions() {
 	}
 	
 	/* Opens the page editing interface */
-	// Paremeter: (optional) page: (int)
+	// Parameter: (optional) page: (int)
 	//			  (optional) data: already received edit page data (will skip get request)
 	this.editPage = function(page, data) {
 		var aw;
@@ -700,7 +708,7 @@ var BTN_NONE = 5;
 	close_callback:	function to be called when the user pressed Cancel,No or Close
 	autocollapse:	If true, minimizes the dialog when out of focus (default: false)
 */
-/* Todo: Refactor this into a jquery plugin. But more importanly, allow multiple dialogs! */
+/* Todo: Refactor this into a jquery plugin. */
 function OpenDialog(settings) {
 	var w='', h='';
 	
@@ -756,6 +764,7 @@ function OpenDialog(settings) {
 			break;	
 	}
 	
+	/* Construct the buttons */
 	var $buttons = $('<span></span>');
 	
 	if (typeof settings.buttons == "object") {
@@ -779,6 +788,8 @@ function OpenDialog(settings) {
 
 	$('.dlgContent', $dlgBox).prepend(settings.content);
 	$('.dlgBtnContainer', $dlgBox).append($buttons);
+
+	// Make dialog visible
 	$("#inactive").append($dlgBox);
 	
 	// Focus the first field
@@ -810,6 +821,9 @@ function OpenDialog(settings) {
 		$dlgBox.css('left', (window.innerWidth/2 - $dlgBox.width()) + 'px');
 	}
 	
+	
+	/* Helper methods */ 
+	
 	$dlgBox.closeDialog = function() {
 		var unblock = true;
 		
@@ -833,16 +847,19 @@ function OpenDialog(settings) {
 		this.remove();
 	};
 	
+	// Disables dialog buttons and shows a ajax loading icon
 	$dlgBox.waitResponse = function() {
 		$('input[type=button]', $dlgBox).attr('disabled','disabled');
 		$('.dlgBtnContainer .loadingIcon', $dlgBox).show();
 	};
 	
+	// Resets changes from waitResponse()
 	$dlgBox.endWait = function() {
 		$('input[type=button]', $dlgBox).removeAttr('disabled');
 		$('.dlgBtnContainer .loadingIcon', $dlgBox).hide();
 	};
 	
+	// Store some metadata about the dialog in the jquery object
 	$dlgBox.dialogSettings = settings;
 	$dlgBox.dialogId = Core.dialogId++;
 	$dlgBox.ok_callback = settings.ok_callback;
@@ -852,7 +869,9 @@ function OpenDialog(settings) {
 
 	SetupEvents();
 	
+	// We're done here
 	return $dlgBox;
+	
 	
 	/* All events related to the dialog */
 	function SetupEvents() {
@@ -955,29 +974,33 @@ function OpenDialog(settings) {
 		
 		if(settings.nohotkeys) return;
 		
+		// Keyboard interaction support (Esc and Enter)
 		if( !document.onkeydown) {
 			document.onkeydown = function(event) {
 				// escape: 27
 				// enter: 13
-				if(!event) event = window.event;
+				if (!event) {
+					event = window.event;
+				}
 				
 				// Dispatch these to the currently focused dialog or to the last opened one
 				var $dlg = null;
-				for(var i=0; i < Core.openDialogs.length; i++) {
+				for (var i=0; i < Core.openDialogs.length; i++) {
 					$dlg = Core.openDialogs[i];
 					if ($dlg.is(':focus')) break;
 				}
 				if (!$dlg) return;
 
-				if (event.keyCode==27 || ($dlg.dialogSettings.buttons == BTN_CLOSE && event.keyCode==13)) {
+				if (event.keyCode == 27 || ($dlg.dialogSettings.buttons == BTN_CLOSE && event.keyCode == 13)) {
 					if($dlg.close_callback != undefined) {
 						$dlg.close_callback();
 					}
 					$dlg.closeDialog();
-				} else
+				} else {
 					if (event.keyCode==13 && $dlg.ok_callback != undefined) {
 						$dlg.ok_callback();
 					}
+				}
 			};
 		}
 	}
@@ -987,13 +1010,13 @@ function BoundBy(x, minx, maxx) {
 	return Math.min(maxx,Math.max(x,minx));
 }
 
-/* Most AJAX request reply a 3 digit number at the beginning. 
+/* Most AJAX requests reply a 3 digit number at the beginning. 
  * If it is 200 it means the request was successfull, anything
  * else than that means something went wrong. Though the exact type of the
- * returned number have no impact at all, it is currently loosely oriented
+ * returned number has no impact at all, it is currently loosely oriented
  * at http error codes where 3xx denote permission errors, 5xx internal errors, and 4xx not found errors.
  * Todo: Every occurrence of GetAnswer() should ideally be replaced with JSON responses + $.loadJSON() 
- * and error numbers should be given some actual meaning
+ * and non-2xx error numbers should be given some actual meaning
  */
 function GetAnswer(text) {
 	// If the response data is a json object, then the error code is stored in the status property
@@ -1002,6 +1025,7 @@ function GetAnswer(text) {
 			alert(text.substr(4));
 			return null;
 		}
+		
 		return text;
 	}
 	
@@ -1019,7 +1043,7 @@ function urlencode(str) {
 	return str;
 }
 
-// private method for UTF-8 encoding
+// method for UTF-8 encoding
 function utf8_encode(string) {
 	string = string.replace(/\r\n/g,"\n");
 	var utftext = "";
