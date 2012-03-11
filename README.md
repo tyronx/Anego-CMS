@@ -12,6 +12,7 @@ Features
 * Easy theming with the Smarty Templating Engine
 * SEO friendly URLs and page composition
 * Integrated richtext image upload solution 
+* Supports multiple backend languages (german and english included)
 * Pages are composed of elements that can be placed in order
 * Currently supported page elements: Richtext, Gallery, Blog, Contact form
 * Site may be run in AJAX mode (all pages load with AJAX) or standard Link mode
