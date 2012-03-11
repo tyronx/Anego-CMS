@@ -1,7 +1,7 @@
 Anego CMS
 =========
 
-A content managment leveraging newest web technologies such as HTML5 and AJAX
+A content managment leveraging newest web technologies such as HTML5 and AJAX.
 To install, run setup.php in your browser.
 
 
@@ -9,11 +9,11 @@ Features
 --------
 
 * Admin interface entirely AJAX-based
-* Site may be run in AJAX mode (all pages load with AJAX) or standard Link mode
 * Easy theming with the Smarty Templating Engine
 * Integrated richtext image upload solution 
 * Pages are composed of elements that can be placed in order
 * Currently supported page elements: Richtext, Gallery, Blog, Contact form
+* Site may be run in AJAX mode (all pages load with AJAX) or standard Link mode
 
 
 Project philosophy
