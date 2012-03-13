@@ -49,7 +49,10 @@
 			if (! options) options = {};
 				
 			this.init = function() {
-				$('body').append(dragger = $('<div style="display:none;" class="dragger draggedElement"></div>'));
+				dragger = $('div.dragger.draggedElement');
+				if (dragger.length == 0) {
+					$('body').append(dragger = $('<div style="display:none;" class="dragger draggedElement"></div>'));
+				}
 				
 				$(tree).find('li').each(function() {
 					listElements[listElements.length]=this;

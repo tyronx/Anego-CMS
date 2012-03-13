@@ -142,18 +142,18 @@ switch($_GET['a']) {
 		
 		$res = mysql_query("SELECT idx, name FROM ".PAGES." WHERE nolink=0 AND file='' ORDER BY name");
 		$pages = array();
-		while($row = mysql_fetch_array($res)) {
+		while ($row = mysql_fetch_assoc($res)) {
 			$pages[] = $row;
 		}
 		
 		$anego->assign('settings', $settings);
-		$anego->assign('pages', $pages);
+		$anego->assign('pagelist', $pages);
 		
-		if(isset($_GET['noheader'])) {
-			$json=Array();
-			$json['title']='Anego - Admin';
-			$json['js']='ld.as.jui';
-			$json['css']='styles/default/jui/jquery-ui.css';
+		if (isset($_GET['noheader'])) {
+			$json = array();
+			$json['title'] = 'Anego - Admin';
+			$json['js'] = 'ld.as'; //.jui
+			//$json['css'] = 'styles/default/jui/jquery-ui.css';
 			$json['content'] = $anego->fetchContent('settings.tpl');
 			
 			exit("200\n".json_encode($json));
@@ -163,8 +163,8 @@ switch($_GET['a']) {
 		$anego->AddContent($str);
 		$anego->AddJsModule('as');
 		// jquery ui requires this css file
-		$anego->AddCSSFile('styles/default/jui/jquery-ui.css');
-		$anego->AddJsModule('jui');
+		//$anego->AddCSSFile('styles/default/jui/jquery-ui.css');
+		//$anego->AddJsModule('jui');
 		$anego->display('settings.tpl');
 		break;
 

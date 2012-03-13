@@ -841,7 +841,7 @@ function OpenDialog(settings) {
 		}
 		
 		if(unblock) {
-			$('#inactive').removeClass('blocking');
+			$('#inactive').removeClass('blocking').hide();
 		}
 		
 		this.remove();
