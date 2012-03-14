@@ -62,7 +62,7 @@ function sendMail() {
 	
 	$hrcount = $row['numsent_lasthour'];
 	
-	$currenthour = date('H') - date('i') - date('s');
+	$currenthour = time() - 60*date('i') - date('s');
 	
 	if ($currenthour - $row['currenthour'] > 3600) {
 		$hrcount = 0;
@@ -89,15 +89,16 @@ function sendMail() {
 
 	
 	if(! @mail($row['recipient'], $row['subject'], utf8_decode($m), $headers)) {
-		BailErr(__('I\'m sorry, but I was unable to send out a mail. Something must be wrong with the server configuration'));
+		//BailErr(__('I\'m sorry, but I was unable to send out a mail. Something must be wrong with the server configuration'));
 	}
 	
-	
-	mysql_query("UPDATE " . databaseTable() . " SET 
-			numsent_lasthour=$hrcount
-			numsent_total=numsent_total+1
+	$q = "UPDATE " . databaseTable() . " SET 
+			numsent_lasthour=$hrcount,
+			numsent_total=numsent_total+1,
 			currenthour=$currenthour
-		WHERE idx=$mailerid");
+		WHERE idx=$mailerid";
+	echo $q;
+	mysql_query($q);
 	
 	
 	$successMessage = @$row['successmessage'];
