@@ -89,15 +89,17 @@ function sendMail() {
 
 	
 	if(! @mail($row['recipient'], $row['subject'], utf8_decode($m), $headers)) {
-		//BailErr(__('I\'m sorry, but I was unable to send out a mail. Something must be wrong with the server configuration'));
+		BailErr(__('I\'m sorry, but I was unable to send out a mail. Something must be wrong with the server configuration'));
 	}
+	
+	$hrcount++;
 	
 	$q = "UPDATE " . databaseTable() . " SET 
 			numsent_lasthour=$hrcount,
 			numsent_total=numsent_total+1,
 			currenthour=$currenthour
 		WHERE idx=$mailerid";
-	echo $q;
+		
 	mysql_query($q);
 	
 	
