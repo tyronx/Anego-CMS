@@ -91,7 +91,7 @@ div#padder {
 	if(file_exists('conf.inc.php')) {
 		include('conf.inc.php');
 	} else {
-		define("STYLE","nothing");
+		define("STYLE","anego");
 	}
 	
 	$good = '<img src="styles/default/img/tick.png" alt="ok"> ';
