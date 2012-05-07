@@ -261,6 +261,8 @@ function AdminMenuFunctions() {
 		$('.toPage a', $cnt).click(function() {
 			$dlg.closeDialog();
 		});
+		
+		return false;
 	}
 
 
@@ -273,7 +275,7 @@ function AdminMenuFunctions() {
 		$.post('index.php?a=mainmenu','',function(data) {
 			$("#menu").html(data);
 			$.post("index.php?a=minormenu",function(data) {
-				$(".minornav").html(data);
+				$("ul.minornav").parent().html(data);
 				/* Upgrade "degraded" links to ajax loading again */
 				if(anego.pageLoad=='ajax') Core.ajaxifyMenu();
 			});

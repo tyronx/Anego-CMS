@@ -677,7 +677,7 @@ function PrintLinksRec($parent, $menu, $first=0) {
 			echo '<img src="' . $cfg['path'] . 'styles/default/img/cleardot.gif" class="listImg"><span class="listEl">';
 		}
 		
-		echo "<a id=\"adm".$row['idx']."\" href=\"javascript:adminMenu.renamePage(" . 
+		echo "<a id=\"adm".$row['idx']."\" href=\"#\" onclick=\"return adminMenu.renamePage(" . 
 			$row['idx'] . ",'" . 
 			addslashes(htmlentities($row['name'], ENT_COMPAT,'UTF-8')) . "','" . 
 			addslashes(htmlentities(@$row['url'], ENT_COMPAT,'UTF-8')) . "','" . 
@@ -686,7 +686,7 @@ function PrintLinksRec($parent, $menu, $first=0) {
 			$row['file'] . "')\">$name</a> ";
 		
 		echo '</span>';
-		echo "<a href=\"javascript:adminMenu.delPage(".$row['idx'].")\">";
+		echo "<a href=\"#\" onclick=\"return adminMenu.delPage(".$row['idx'].")\">";
 		echo "<img class=\"adp smallIcon smallimgBin\" alt=\"". __('Delete Page') ."\" title=\"". __('Delete Page') ."\" src=\"" . $cfg['path'] . "styles/default/img/cleardot.gif\"></a>\n";
 		PrintLinksRec($row['idx'], $menu);
 		echo "</li>\n\n";

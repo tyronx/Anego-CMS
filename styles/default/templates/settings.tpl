@@ -10,7 +10,7 @@
 				<form name="generalsettings" onsubmit="return false">
 					{__Home page (The Page which the visitor gets to see first)}<br>
 					<select name="homepage">
-						{foreach from=$pages item=page name=page}
+						{foreach from=$pagelist item=page name=page}
 							{if $page.idx == $settings.firstpage}
 								<option value="{$page.idx}" selected>{$page.name}</option>
 							{else}

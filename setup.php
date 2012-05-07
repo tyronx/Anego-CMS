@@ -144,10 +144,11 @@ div#padder {
 
 	if($configGood) {
 		$writeRequired = Array('var/error.log','var/installed_modules','tmp', FILESROOT, FILESROOT.'content/', 'styles/'.STYLE.'/templates_c');
-		$writeable=false;
-		$allWriteable=true;
+		$writeable = false;
+		$allWriteable = true;
 		foreach($writeRequired as $f) {
-			if(is_writeable($f)) $writeable = true;
+			$writeable = false;
+			if(is_writeable($f) && file_exists($f)) $writeable = true;
 			if(is_dir($f)) $writeableRec = CheckWriteableRec($f);
 			if($writeable) {
 				if(is_dir($f) && !$writeableRec) {

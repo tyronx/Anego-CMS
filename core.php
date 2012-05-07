@@ -24,7 +24,7 @@ $cfg['domain'] .= $cfg['path'];
 if (!function_exists('json_encode')) {
 	require 'inc/json_encode.php';
 }
-	
+
 if (! file_exists('styles/' . STYLE . '/templates/index.tpl')) {
 	exit("File 'styles/" . STYLE . "/templates/index.tpl' not found. Missing or mistyped style name?");
 }
@@ -454,6 +454,7 @@ function PrintPage($p) {
 		
 		$anego->AddContent($row['content_prepared']);
 		$anego->assign('currentpage', $p);
+		$anego->assign('currentpageid', $row['idx']);
 		if(!$anego->get_template_vars('pageTitle'))
 			$anego->assign('pageTitle',$row['name']);
 		$anego->display('index.tpl');

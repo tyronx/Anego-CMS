@@ -211,7 +211,7 @@ iframe.upload {
 
 /****** Dialog box code ******/
 div#inactive {
-	position: fixed;
+	position: absolute;
 	top:0px;
 	left:0px;
 	padding:0px;
@@ -221,7 +221,8 @@ div#inactive {
 }
 
 div#inactive.blocking {
-	z-index: 2;
+	position: fixed;
+	z-index: 10;
 	background: rgba(128,128,128, 0.3);
 }
 

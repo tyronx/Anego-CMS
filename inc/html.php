@@ -66,13 +66,18 @@ class Anego extends Smarty {
 		$this->assign('content', $this->content);
 		$this->assign('pages', $pages);
 
-		
+
 		$this->prepare();
 		
 		if (!file_exists($this->template_dir . '/'. $template)) {
 			$template = '../../default/templates/' . $template;
 		}
-		
+
+		/******* Custom style setup code *******/
+		if (file_exists("styles/" . $this->curStyle . "/postfilter.php"))
+			include("styles/" . $this->curStyle . "/postfilter.php");
+
+
 		parent::display($template, $cache_id, $compile_id);
 	}
 	

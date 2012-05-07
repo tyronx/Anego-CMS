@@ -8,12 +8,29 @@ richtext = ContentElement.extend({
 		var buttons = '<button type="button" name="mew" class="btn_sendrte" style="min-width:150px">' + lng_savechanges + '</button> '+
 					'<button type="button" name="mew2" class="btn_cancelrte" style="min-width:150px">' + lng_cancelchanges + '</button>';
 		
+		
+		var loadnew = false;
+
 		self.html = $container.html();
 		// Takes care that escaped html tags stay escaped
 		var escapedHTML = $("<div/>").text(self.html).html();
-		
 		$container.html('<textarea style="width:100%" id="' + self.editorId + '">' + escapedHTML + '</textarea>' + buttons);
 		self.tinyfy();
+		
+		if(loadnew) {
+			$.post('index.php', {
+				a: 'gcec',
+				mid: self.module_id,
+				elid: self.element_id,
+				pid: self.page_id
+			}, function(data) {
+				var aw;
+				if(aw = GetAnswer(data)) {
+					self.html = aw;
+					$('#' + self.editorId).tinymce().setContent(aw);
+				}
+			});
+		}
 		
 		$container.find('.btn_sendrte').click(function() {
 			self.html = $('#' + self.editorId).tinymce().getContent();
@@ -83,7 +100,7 @@ richtext = ContentElement.extend({
 			mcelang='de';
 		
 		var settings = {
-			script_url : 'lib/tiny_mce/tiny_mce_gzip.php',
+			script_url : anego.path + 'lib/tiny_mce/tiny_mce_gzip.php',
 			mode : 'none',
 			theme : "advanced",	
 			plugins : "advimagescale,table,tablegrid,advlink,preview,media,searchreplace,contextmenu,paste,fullscreen,xhtmlxtras,inlinepopups,phpimage,template",
@@ -104,8 +121,9 @@ richtext = ContentElement.extend({
 			advimagescale_noresize_all: true,
 			extended_valid_elements: "form[name|id|action|method|enctype|accept-charset|onsubmit|onreset|target],input[id|name|type|value|size|maxlength|checked|accept|src|width|height|disabled|readonly|tabindex|accesskey|onfocus|onblur|onchange|onselect|onclick|onkeyup|onkeydown|required|style],textarea[id|name|rows|cols|maxlength|disabled|readonly|tabindex|accesskey|onfocus|onblur|onchange|onselect|onclick|onkeyup|onkeydown|required|style],option[name|id|value|selected|style],select[id|name|type|value|size|maxlength|checked|width|height|disabled|readonly|tabindex|accesskey|onfocus|onblur|onchange|onselect|onclick|multiple|style]",	
 			button_tile_map : true,
-			content_css : "styles/"+anego.style+"/text.css", /* style var defined by Anego */
-			external_link_list_url : "modules/richtext/linkList.js.php",
+			content_css : anego.path + "styles/" + anego.style + "/text.css", /* style var defined by Anego */
+			external_link_list_url : anego.path + "modules/richtext/linkList.js.php",
+			external_image_list_url : anego.path + "modules/richtext/imageList.js.php",
 			convert_urls : false,
 			template_templates : templates
 		};

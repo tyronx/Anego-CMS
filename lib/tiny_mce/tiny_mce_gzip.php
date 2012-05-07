@@ -190,8 +190,11 @@ class TinyMCE_Compressor {
 			return;
 		}
 
+		include("../../default.conf.php");
+		include("../../conf.inc.php");
+
 		// Set base URL for where tinymce is loaded from
-		$buffer = "var tinyMCEPreInit={base:'" . dirname($_SERVER["SCRIPT_NAME"]) . "',suffix:''};";
+		$buffer = "var tinyMCEPreInit={base:'" . $cfg['domain'] . $cfg['path'] . "lib/tiny_mce/',suffix:''};";
 
 		// Load all tinymce script files into buffer
 		foreach ($allFiles as $file) {

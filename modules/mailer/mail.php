@@ -3,6 +3,7 @@ if (!isset($_POST['mailerid'])) {
 	exit();
 } else {
 	chdir('../../');
+	$language = '';
 	include('core.php');
 	addL10N('modules/mailer/' . $language . '.php');
 

@@ -200,6 +200,8 @@ function CoreFunctions() {
 		/* Links to pages on the same site that are made with tinymce/etc. need to be converted */
 		if(anego.pageLoad=='ajax') {
 			$('#content a').attr('href',function(idx,attr) { 
+				if (!attr) return;
+				
 				var urlaliasRegex = new RegExp('^' + anego.path + '[^/]+$');
 				
 				if (attr.match(urlaliasRegex) && !$(this).hasClass("nopage")) {
