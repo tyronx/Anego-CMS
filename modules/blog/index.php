@@ -288,6 +288,7 @@ class BlogManager {
 		return $text;
 	}
 	
+	
 	function entryComments($entry_id) {
 		global $lng, $cfg;
 		
@@ -308,6 +309,8 @@ class BlogManager {
 		return $cmts.'</div>';
 	}
 	
+	
+	/* Overview of all blog entries */
 	function navigation($blog_id) {
 		global $cfg;
 		
@@ -332,6 +335,7 @@ class BlogManager {
 		return $text;
 	}
 
+	/* List of all blog entries*/
 	function blogEntries($blog_id) {
 		global $lng, $cfg;
 		$text = '';

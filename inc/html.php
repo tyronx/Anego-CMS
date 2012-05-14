@@ -1,7 +1,7 @@
 <?
 require(SMARTYPATH.'Smarty.class.php');
 
-define('MAXDEPTH', 15);
+define('MAXDEPTH', 9);
 
 /* Main HTML Output class based on Smarty */
 class Anego extends Smarty {
@@ -272,8 +272,13 @@ class Anego extends Smarty {
 			$row['link'] .= '?p=' . $row['idx'];
 		}
 		
-		if($row['file']) { 
-			$row['link'] = $cfg['path'] . $row['file'];
+		if($row['file']) {
+			if (preg_match("/^http/", $row['file'])) {
+				$row['link'] = $row['file'];
+			} else {
+				$row['link'] = $cfg['path'] . $row['file'];
+			}
+			
 		}
 		
 		if (function_exists('CustomMenuItemLink'))
