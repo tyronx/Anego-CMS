@@ -38,7 +38,7 @@ $language = 'eng';
 /* Edit this line, if your anego installation is in a subfolder, always with trailing slash
  * e.g. /anego/
  */
-$cfg['path'] = '';
+$cfg['path'] = '/';
 
 // Do not edit this
 define("CONFIG_LOADED",true);

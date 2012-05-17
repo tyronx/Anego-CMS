@@ -274,8 +274,22 @@ class BlogManager {
 				$text.='<div class="commentSection"></div>';
 			}
 		} else {
-			$text.='<div class="blogSummary"><p><small><a href="'.$link.'" onclick="blogfuncs.loadEntry('.$entry_id.')">'.$row['comments'].' '.(($row['comments']==1)?$lng['blog']['blog_comment']:$lng['blog']['blog_comments']).'</a></small></p>';		
-			if(LOGINOK && !$this->readonly) $text.='<div><img src="' . $cfg['path'] . 'styles/default/img/cleardot.gif" class="imgEdit icon" onclick="blogfuncs.editEntry('.$row['idx'].',true)"><img src="' . $cfg['path'] . 'styles/default/img/cleardot.gif" class="imgBin icon" onclick="blogfuncs.deleteEntry('.$row['idx'].',true)"></div>';
+			if ($cfg['pageLoad'] == 'ajax') {
+				$onc = ' onclick="blogfuncs.loadEntry('.$entry_id.')"';
+			} else {
+				$onc = '';
+			}
+			$text .= 
+				'<div class="blogSummary">' .
+					'<p><small>' .
+						'<a href="'.$link.'"' . $onc . '>' . 
+							$row['comments'] . ' ' . (($row['comments']==1) ? $lng['blog']['blog_comment'] : $lng['blog']['blog_comments'])
+						. '</a>' .
+					'</small></p>';
+			
+			if(LOGINOK && !$this->readonly) {
+				$text.='<div><img src="' . $cfg['path'] . 'styles/default/img/cleardot.gif" class="imgEdit icon" onclick="blogfuncs.editEntry('.$row['idx'].',true)"><img src="' . $cfg['path'] . 'styles/default/img/cleardot.gif" class="imgBin icon" onclick="blogfuncs.deleteEntry('.$row['idx'].',true)"></div>';
+			}
 			$text.='</div>';
 		}
 		$text.='<hr></div>';
@@ -364,13 +378,33 @@ class BlogManager {
 			} else {
 				$link = '?a=lm&id='.$row['idx'];
 			}
-		
-			$text.='<div class="blogElement" id="blogElement_'.$row['idx'].'"><span class="blogDate">'.date('d.m.Y H:i',$row['date']).'</span>';
-			$text.='<a class="blogLink" name="blog'.$i.'" href="'.$link.'" onclick="blogfuncs.loadEntry(this,'.$row['idx'].','.$blog_id.')"><h1 class="blogTitle">'.$row['title'].'</h1></a><div class="blogContent">'.$row['entry'].'</div>';
-			$text.='<div class="blogSummary"><p><small><a href="'.$link.'" onclick="blogfuncs.loadEntry(this,'.$row['idx'].','.$blog_id.')">'.$row['comments'].' '.(($row['comments']==1)?$lng['blog']['blog_comment']:$lng['blog']['blog_comments']).'</a></small></p>';
-			if (LOGINOK && !$this->readonly) $text.='<div><img src="' . $cfg['path'] . 'styles/default/img/cleardot.gif" class="imgEdit icon" onclick="blogfuncs.editEntry('.$row['idx'].')"><img src="' . $cfg['path'] . 'styles/default/img/cleardot.gif" class="imgBin icon" onclick="blogfuncs.deleteEntry('.$row['idx'].')"></div>';
-			$text.='<div class="blogComments"></div>';
-			$text.='</div><hr></div>';
+
+			if ($cfg['pageLoad'] == 'ajax') {
+				$onc = '  onclick="blogfuncs.loadEntry(this,'.$row['idx'].','.$blog_id.')"';
+			} else {
+				$onc = '';
+			}
+			
+			$text .= 
+				'<div class="blogElement" id="blogElement_' . $row['idx'] . '">' . 
+					'<span class="blogDate">' . date('d.m.Y H:i', $row['date']) . '</span>' .
+					'<a class="blogLink" name="blog' . $i . '" href="' . $link . '"' . $onc . '>
+						<h1 class="blogTitle">' . $row['title'] . '</h1>' .
+					'</a>' .
+				'<div class="blogContent">' . $row['entry'] . '</div>' .
+				'<div class="blogSummary">
+					<p><small>
+						<a href="' . $link . '"' . $onc . '>' . 
+							$row['comments'] . ' ' . (($row['comments']==1) ? $lng['blog']['blog_comment'] : $lng['blog']['blog_comments']) . 
+						'</a>' .
+					'</small></p>';
+			
+			if (LOGINOK && !$this->readonly) {
+				$text.='<div><img src="' . $cfg['path'] . 'styles/default/img/cleardot.gif" class="imgEdit icon" onclick="blogfuncs.editEntry('.$row['idx'].')"><img src="' . $cfg['path'] . 'styles/default/img/cleardot.gif" class="imgBin icon" onclick="blogfuncs.deleteEntry('.$row['idx'].')"></div>';
+			}
+			
+			$text .= '<div class="blogComments"></div>';
+			$text .= '</div><hr></div>';
 			$i--;
 		}
 		
