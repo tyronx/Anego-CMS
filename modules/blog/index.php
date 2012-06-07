@@ -45,7 +45,7 @@ class BlogManager {
 					'navigation' => $nav));
 				
 				break;
-				
+			
 			// load entry (ajax call)
 			case 'le':
 				$id = intval($_GET['id']);
@@ -122,8 +122,8 @@ class BlogManager {
 				}
 					
 				$q = "INSERT INTO " . $this->cmtTable . " (element_id,user,date,comment) VALUES 
-					($id,'" . mysql_real_escape_string(htmlentities($_POST['name'])) . "',
-					'" . time() . "','" . mysql_real_escape_string(htmlentities($_POST['comment'])) . "')";
+					($id,'" . mysql_real_escape_string(htmlspecialchars($_POST['name'])) . "',
+					'" . time() . "','" . mysql_real_escape_string(htmlspecialchars($_POST['comment'])) . "')";
 				
 				mysql_query($q) or
 					BailErr($lng['blog']['cmtaddfail'], $q);
@@ -143,7 +143,7 @@ class BlogManager {
 				
 				echo '<div class="blogComment" id="blogCmt'.$cmt_id.'"><p>';
 				if(LOGINOK) echo '<img src="' . $cfg['path'] . 'styles/default/img/cleardot.gif" class="smallIcon smallimgBin" onclick="blogfuncs.deleteComment('.$cmt_id.','.$id.')">';
-				echo '<b>' . sprintf($lng['blog']['said'], htmlentities($_POST['name'])) . '</b></p><p>' . htmlentities($_POST['comment']) . '</p>';
+				echo '<b>' . sprintf($lng['blog']['said'], htmlspecialchars($_POST['name'])) . '</b></p><p>' . htmlspecialchars($_POST['comment']) . '</p>';
 				echo '<p><span class="blogCommentDate">' . date('F d Y H:i', time()) . '</span></p></div><br>';
 				
 				break;
@@ -306,7 +306,7 @@ class BlogManager {
 	function entryComments($entry_id) {
 		global $lng, $cfg;
 		
-		$q = "SELECT * FROM ".$this->cmtTable." WHERE element_id=$entry_id";
+		$q = "SELECT * FROM ".$this->cmtTable." WHERE element_id=$entry_id ORDER BY date DESC";
 		$res = mysql_query($q) or
 			BailErr($lng['blog']['cmtreadfail'],$q);
 			
