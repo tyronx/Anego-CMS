@@ -28,7 +28,9 @@ if(!LOGINOK) {
 			//if(isset($_SERVER['HTTP_REFERER']))
 			//	$anego->Reload($_SERVER['HTTP_REFERER']);
 			//else 
-			$anego->Reload($cfg['domain']);
+			//$anego->Reload($cfg['domain']);
+			header('Location: ' . $cfg['path']);
+			exit();
 			
 		} else {
 			$message = __('Wrong username or password');
@@ -43,7 +45,7 @@ if(!LOGINOK) {
 	} else {
 	
 		$anego->AddJsModule('lo');
-		$anego->AddContent($logon);
+		//$anego->AddContent($logon);
 		$anego->display('login.tpl');
 	}
 	
@@ -160,7 +162,7 @@ switch($_GET['a']) {
 		}
 		
 		AdminBar(-1);
-		$anego->AddContent($str);
+		//$anego->AddContent($str);
 		$anego->AddJsModule('as');
 		// jquery ui requires this css file
 		//$anego->AddCSSFile('styles/default/jui/jquery-ui.css');
