@@ -203,8 +203,9 @@ function blogFunctions() {
 				name: $('#commentName').attr('value')
 			}, function(data) {
 				var aw,cmts;
-				$('#commentButton').attr('disabled','');
+				$('#commentButton').removeAttr('disabled');
 				$('#loadingIconSlot').removeClass('loadingIcon');
+				
 				if (aw = GetAnswer(data)) {
 					// The first line is the comment counter
 					cmts = aw.substr(0,aw.indexOf("\n"));
