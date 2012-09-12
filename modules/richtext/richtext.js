@@ -34,6 +34,7 @@ richtext = ContentElement.extend({
 		
 		$container.find('.btn_sendrte').click(function() {
 			self.html = $('#' + self.editorId).tinymce().getContent();
+			$container.html(self.html);
 			self.endEdit();
 			
 			$.ajax({
@@ -103,10 +104,10 @@ richtext = ContentElement.extend({
 			script_url : anego.path + 'lib/tiny_mce/tiny_mce_gzip.php',
 			mode : 'none',
 			theme : "advanced",	
-			plugins : "advimagescale,table,tablegrid,advlink,preview,media,searchreplace,contextmenu,paste,fullscreen,xhtmlxtras,inlinepopups,phpimage,template",
+			plugins : "advimagescale,table,tablegrid,advlink,preview,media,searchreplace,contextmenu,paste,fullscreen,xhtmlxtras,inlinepopups,phpimage,anegofileupload,template",
 			height : 350,
 			theme_advanced_buttons1 : "bold,italic,strikethrough,|,justifyleft,justifycenter,justifyright,justifyfull,|,formatselect,fontselect,fontsizeselect,|,forecolor,backcolor",
-			theme_advanced_buttons2 : "pastetext,|,search,|,bullist,numlist,|,outdent,indent,|,undo,redo,|,link,unlink,|,charmap,template,media,phpimage,|,hr,removeformat,|,sub,sup",
+			theme_advanced_buttons2 : "pastetext,|,search,|,bullist,numlist,|,outdent,indent,|,undo,redo,|,link,unlink,|,charmap,template,media,phpimage,anegofileupload,|,hr,removeformat,|,sub,sup",
 			theme_advanced_buttons3 : "tablegrid,|,row_props,cell_props,|,row_before,row_after,delete_row,|,col_before,col_after,delete_col,|,split_cells,merge_cells,|,preview,code,fullscreen",
 			theme_advanced_toolbar_location : "top",
 			theme_advanced_toolbar_align : "left",

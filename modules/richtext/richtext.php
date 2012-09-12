@@ -5,7 +5,7 @@ Plugin Image: richtext.png
 Plugin URI: http://www.anego.at
 Plugin Type: ContentElement
 Description: Simple richtext content element. A text element with almost all available TinyMCE features enabled.
-Version: 0.1
+Version: 1
 Author: Tyron Madlener
 Author URI: http://www.tyron.at
 License: GPL2

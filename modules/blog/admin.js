@@ -262,7 +262,8 @@ function blogFunctions() {
 			accessibility_warnings : false,
 			button_tile_map : true,
 			content_css : anego.path + "styles/" + anego.style + "/text.css", /* style var defined by Anego */
-			external_link_list_url : "modules/simpletext/linkList.js.php",
+			external_link_list_url : anego.path + "modules/richtext/linkList.js.php",
+			external_image_list_url : anego.path + "modules/richtext/imageList.js.php",
 			convert_urls : false
 		});
 	};

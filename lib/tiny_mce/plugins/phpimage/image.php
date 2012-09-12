@@ -25,14 +25,10 @@ require 'inc/functions.php';
 // Some language strings
 require 'lang/'.$language.'.php';
 
-if(substr($cfg['domain'], -1) == '/' && $cfg['path'][0] == '/') {
-	$cfg['domain'] = substr($cfg['domain'], 0, strlen($cfg['domain'])-1);
-}
-
-$cfg['domain'] .= $cfg['path'];
+$cfg['domain'] .= ($cfg['path']{0} == '/') ? substr($cfg['path'],1) : $cfg['path'];
 
 if (!LoggedOn())
-	exit("300\nYou are not logged on. Please log in as admin to upload a picture");
+	exit("You are not logged on. Please log in as admin to upload a picture");
 
 /* Editing a picture requires the original size picture */
 if (isset($_POST['getoriginal'])) {
@@ -41,7 +37,7 @@ if (isset($_POST['getoriginal'])) {
 		$name_unsized = basename(preg_replace("#(.*)_r(\.[a-zA-Z]+)$#", "\\1\\2", $_POST['file']));
 		if (is_file($cfg['imagePath'] . $name_unsized )) {
 			list($w, $h) = @getimagesize($cfg['imagePath'] . $name_unsized);
-			if ( !$w) exit("200\n".$lng_format);
+			if ( !$w) exit("200\n" . __('Please upload only images in the following formats: jpg, png or gif'));
 			exit("200\n" . $cfg['domain'].$cfg['imagePath'] . $name_unsized . "\n" . $w . "\n" . $h);
 		} else {
 			exit("200\n");
@@ -57,6 +53,11 @@ if(isset($_POST['insert'])) {
 	if (! isset($_POST['file']) || ! isset($_POST['width']) || ! isset($_POST['height'])) 
 		exit("300\nScript giving me not enough values :(");
 	
+	if (isset($_POST['imageselected'])) {
+		$file_orig = $_POST['file'];
+		exit("200\n" . $_POST['file'] . "\n" . $file_orig);
+	}
+	
 	//$url = parse_url($_POST['file']);
 	//$file = basename($url['path']);
 	$file = basename(substr(trim($_POST['file']), strlen($cfg['domain'])));
@@ -66,7 +67,7 @@ if(isset($_POST['insert'])) {
 	if (! is_file($cfg['tmpPath'] . $file)) {
 		// When editing files, the image is not in the tmp path of course
 		if (! is_file($cfg['imagePath'] . $file)) {
-			exit("300\nCouldn't find image on disk. Has it been deleted already?");
+			exit("300\nCouldn't find image $file on disk. Has it been deleted already?");
 		} else {
 			$path = $cfg['imagePath'] . $file;
 			$justResize = true;
@@ -84,12 +85,23 @@ if(isset($_POST['insert'])) {
 	// create a resized filename_r.(jpg/png/gif) file
 	$name_sized = resizedName($newfile);
 	
-	if (CopyResized($path, $_POST['width'], $_POST['height'], true, 'file', '', $cfg['imagePath'] . $name_sized)) {
+	$origsize = getimagesize($path);
+	
+	// Dont create a resized image if the width and height is the same
+	if ($origsize[0] == $_POST['width'] && $origsize[1] == $_POST['height']) {
+		$resizeOk = true;
+		$name_sized = $newfile;
+	} else {
+		$resizeOk = CopyResized($path, $_POST['width'], $_POST['height'], true, 'file', '', $cfg['imagePath'] . $name_sized);
+	}
+	
+	if ($resizeOk) {
 		// Also keep a copy of the original size picture
 		if (! $justResize) copy($path, $cfg['imagePath'] . $newfile);
 		// delete from tmp directory if its there & possible to delete
 		if (is_file($cfg['tmpPath'] . $file)) 
 			@unlink($cfg['tmpPath'] . $file);
+		
 		// Delete old image if possible (if it wasnt a resize)
 		if ($_POST['isReplace'] && is_file($cfg['imagePath'] . basename($_POST['oldImage'])) && ! $justResize) {
 			@unlink($cfg['imagePath'] . basename($_POST['oldImage']));
@@ -98,7 +110,7 @@ if(isset($_POST['insert'])) {
 
 		exit("200\n" . $cfg['domain'] . $cfg['imagePath'] . $name_sized . "\n" . $cfg['domain'] . $cfg['imagePath'] . $file);
 	} else {
-		exit("500\nFailed resizing image. Please make sure you are uploading a png, jpg or gif only and have write access to the files folder. In some cases, very big pictures require too much memory to resize.");
+		exit("500\n" . __("Failed resizing image. Please make sure you are uploading a png, jpg or gif only and have write access to the files folder. In some cases, very big pictures require too much memory to resize."));
 	}
 }
 
@@ -115,9 +127,9 @@ if(isset($_POST['uploadImg'])) {
 	switch($_FILES['fiupl']['error']) {
 		case 0: break;
 		case 1: 
-		case 2: echo("500\n$lng_err_file_tobig"); break;
-		case 7: echo("500\n$lng_err_file_cantwrite"); break;
-		default: echo("500\n".sprintf($lng_err_file_fail,$_FILES['fiupl']['error'])); break;
+		case 2: echo("500\n" . __('Can\'t upload File. Size exceeds server limits!')); break;
+		case 7: echo("500\n" . __('Cannot write file to temporary files folder. No free space left?')); break;
+		default: echo("500\n".sprintf(__('A unexpected error occurend while uploading. Error number %s'), $_FILES['fiupl']['error'])); break;
 		break;
 	}
 
@@ -129,10 +141,10 @@ if(isset($_POST['uploadImg'])) {
 				
 				echo "200\n".$cfg['domain'].$cfg['tmpPath'].$newName;
 			} else {
-				echo ("500\n".sprintf($lng_err_file_cantwrite2, $cfg['tmpPath']));
+				echo ("500\n".sprintf(__('Cannot write file to folder %s. Forgot to set writting permissions?'), $cfg['tmpPath']));
 			}
 		} else {
-			echo "300\n$lng_format";
+			echo "300\n" . __('Please upload only images in the following formats: jpg, png or gif');
 		}
 	}
 	echo <<<STREND
@@ -186,6 +198,22 @@ STREND;
 							</tr>
 						</table>
 				</fieldset>
+
+				<fieldset>
+						<legend>{#phpimage_dlg.imagelist}</legend>
+
+						<table class="properties">
+							<tr>
+								<td>
+									<input type="hidden" name="imageselected" value="0">
+									<select id="src_list" name="src_list" onchange="ImageDialog.selectuploadedImage(this.value)">
+										<option value=""></option>
+									</select>
+								</td>
+							</tr>
+						</table>
+				</fieldset>
+
 				<fieldset>
 						<legend>{#phpimage_dlg.general}</legend>
 
@@ -199,10 +227,6 @@ STREND;
 									</tr>
 								  </table></td>
 							</tr>
-							<tr>
-								<td><label for="src_list">{#phpimage_dlg.image_list}</label></td>
-								<td><select id="src_list" name="src_list" onchange="document.getElementById('src').value=this.options[this.selectedIndex].value;document.getElementById('alt').value=this.options[this.selectedIndex].text;document.getElementById('title').value=this.options[this.selectedIndex].text;ImageDialog.showPreviewImage(this.options[this.selectedIndex].value);"><option value=""></option></select></td>
-							</tr>
 							<tr> 
 								<td class="column1" width="105" ><label id="altlabel" for="alt">{#phpimage_dlg.alt}</label></td> 
 								<td colspan="2"><input id="alt" name="alt" type="text" value="" /></td> 
@@ -212,10 +236,10 @@ STREND;
 								<td colspan="2"><input id="title" name="title" type="text" value="" /></td> 
 							</tr>-->
 							<tr>
-								<td class="column1"><label id="widthlabel" for="width">{#phpimage_dlg.dimensions}</label></td> 
+								<td class="column1"><label id="widthlabel" for="widthImage">{#phpimage_dlg.dimensions}</label></td> 
 								<td colspan="2">
-									<input name="width" type="text" id="width" value="" size="5" maxlength="5" class="size" onkeydown="ImageDialog.widthDown(event);" onkeyup="ImageDialog.widthPress(event);" /> x 
-									<input name="height" type="text" id="height" value="" size="5" maxlength="5" class="size" onkeydown="ImageDialog.heightDown(event);" onkeyup="ImageDialog.heightPress(event);" /> px &nbsp;&nbsp;<a href="#" onclick="ImageDialog.setoriginalSize()">{#phpimage_dlg.origsize}</a>
+									<input name="width" type="text" id="widthImage" value="" size="5" maxlength="5" class="size" onkeydown="ImageDialog.widthDown(event);" onkeyup="ImageDialog.widthPress(event);" /> x 
+									<input name="height" type="text" id="heightImage" value="" size="5" maxlength="5" class="size" onkeydown="ImageDialog.heightDown(event);" onkeyup="ImageDialog.heightPress(event);" /> px &nbsp;&nbsp;<a href="#" onclick="ImageDialog.setoriginalSize()">{#phpimage_dlg.origsize}</a>
 								</td>
 							</tr>
 							<tr id="zoomableRow" style="display:none;">
@@ -381,11 +405,11 @@ STREND;
 		</div>
 
 		<div class="mceActionPanel">
-			<div style="float: left">
+			<div style="float: right">
 				<input type="button" id="cancel" name="cancel" value="{#cancel}" onclick="tinyMCEPopup.close();" />
 			</div>
 
-			<div style="float: right">
+			<div style="float: left">
 				<input type="submit" id="insert" name="insert" value="{#insert}" onclick="ImageDialog.insert();return false;" />
 			</div>
 		</div>

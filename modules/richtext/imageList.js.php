@@ -14,6 +14,7 @@ if (! LOGINOK) {
 $imgpath = 'files/content';
 // Get all page which are not just for structuring (nolink)
 $dir = opendir($imgpath);
+$i=0;
 
 while ($file = readdir($dir)) {
 	if (preg_match("/(?<!_r)\.(jpg|png|gif)$/i", $file)) {
