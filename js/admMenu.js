@@ -179,8 +179,13 @@ function AdminMenuFunctions() {
 			fileDsp='display:block;';
 		}
 
-		var pageLink = 'index.php?p=' + page_id;
-		if (anego.pageLoad == 'ajax') pageLink = '#pages/' + page_id;
+		
+		var pageLink;
+		if (anego.pageLoad == 'ajax') {
+			pageLink = (page_url.length > 0) ? '#pages/' + page_url : '#pages/' + page_id;
+		} else {
+			pageLink = (page_url.length > 0) ? anego.path + page_url : anego.path + 'pages/' + page_id;
+		}
 		
 		var $cnt = $(
 			'<div>' +

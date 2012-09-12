@@ -24,7 +24,7 @@ function blogFunctions() {
 				});*/
 				
 				Core.initPageContent();
-				$("#blogc_" + blog_id + " .blogElements").jPaginate({ start: 1, items: 4 });
+				//$("#blogc_" + blog_id + " .blogElements").jPaginate({ start: 1, items: 4 });
 			}
 		});
 	}
@@ -72,8 +72,11 @@ function blogFunctions() {
 					$self.endWait();
 					if (aw = GetAnswer(data)) {
 						$('#blogadminbar_' + blog_id).after(aw);
-						$('#newblogText').tinymce().hide();
-						$self.closeDialog();
+						
+						setTimeout(function() {
+							$('#newblogText').tinymce().hide();
+							$self.closeDialog();
+						}, 5);
 					}
 				});
 			},
@@ -102,8 +105,11 @@ function blogFunctions() {
 						$('#blogElement_'+el_id+' .blogTitle').html($('#editblogTitle').attr('value'));
 						$('#blogElement_'+el_id+' .blogContent').html($('#editblogText').tinymce().getContent());
 						
-						$('#editblogText').tinymce().hide();
-						$self.closeDialog();
+						// Simultaneous changes to the DOM seem to cancel image loading
+						setTimeout(function() {
+							$('#editblogText').tinymce().hide();
+							$self.closeDialog();
+						}, 5);
 					}
 				});
 			},
@@ -143,7 +149,7 @@ function blogFunctions() {
 		/* Fade out text */
 		if(anego.animatePageLoad > 0)
 			$('#content').css({opacity: 1.0}).animate({opacity: 0.0}, anego.animatePageLoad, function() {
-				if (loaded) putLoadedText(aw);
+				if (loaded) putLoadedText($.parseJSON(aw));
 				loaded = true;
 			});
 
@@ -152,6 +158,7 @@ function blogFunctions() {
 		$.get('modules/blog/', {a:'le',id:el_id}, function(data) {
 			loadingEntry = false;
 			var aw;
+			
 			if (aw = GetAnswer(data)) {
 				putLoadedText(aw);
 				loaded=true;
@@ -161,7 +168,7 @@ function blogFunctions() {
 		blogEntryLoaded = el_id;
 		
 		function putLoadedText(str) {
-			response = $.parseJSON(str);
+			response = str;
 			
 			//$("#blogc_" + blog_id).html(response.blogs);
 			//$("#blognav_" + blog_id).html(response.navigation);
@@ -171,8 +178,8 @@ function blogFunctions() {
 			// Fade in text
 			if(anego.animatePageLoad>0) 
 				$('#content').css({opacity: 0.0}).animate({opacity: 1.0}, anego.animatePageLoad);	
-				
-			Core.curPg = Core.pageInfo('blog/'+el_id);
+			
+			Core.curPg = Core.splitURL('blog/'+el_id);
 		}
 	};
 	

@@ -14,11 +14,8 @@ require "inc/html.php";
 
 /**** Basic Checks ****/
 
-if(substr($cfg['domain'], -1) == '/' && $cfg['path'][0] == '/') {
-	$cfg['domain'] = substr($cfg['domain'], 0, strlen($cfg['domain'])-1);
-}
+$cfg['domain'] .= ($cfg['path']{0} == '/') ? substr($cfg['path'],1) : $cfg['path'];
 
-$cfg['domain'] .= $cfg['path'];
 
 /* Only available from PHP 5.2 and onward */
 if (!function_exists('json_encode')) {

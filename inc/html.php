@@ -1,7 +1,7 @@
 <?
 require(SMARTYPATH.'Smarty.class.php');
 
-define('MAXDEPTH', 15);
+define('MAXDEPTH', 9);
 
 /* Main HTML Output class based on Smarty */
 class Anego extends Smarty {
@@ -13,6 +13,8 @@ class Anego extends Smarty {
 	var $content="";
 	var $curPg=-1;
 	var $curStyle;
+	
+	var $customphpincluded = false;
 	
 	function Anego($style) {
 		$this->template_dir = 'styles/'.$style.'/templates';
@@ -30,12 +32,51 @@ class Anego extends Smarty {
 		$this->register_prefilter('i10n_smarty');
 	}
 	
+	function _addCustomCode() {
+		/******* Custom style setup code *******/
+		if (!$this->customphpincluded && file_exists("styles/" . $this->curStyle . "/custom.php")) {
+			include("styles/" . $this->curStyle . "/custom.php");
+			$this->customphpincluded = true;
+		}
+	}
+	
 	// Displays given template and ends php execution
 	function display($template, $cache_id = null, $compile_id = null) {
-		/******* Custom style setup code *******/
-		if (file_exists("styles/" . $this->curStyle . "/custom.php"))
-			include("styles/" . $this->curStyle . "/custom.php");
-			
+		$this->prepare();
+		
+		if (!file_exists($this->template_dir . '/'. $template)) {
+			$template = '../../default/templates/' . $template;
+		}
+		
+		parent::display($template, $cache_id, $compile_id);
+	}
+	
+	function fetchContent($template, $cache_id = null, $compile_id = null) {
+		if (!file_exists($this->template_dir . '/'. $template)) {
+			$template = '../../default/templates/' . $template;
+		}
+		
+		return parent::fetch($template, $cache_id, $compile_id);
+	}
+	
+	function display_element($template) {
+		parent::display($template);
+	}
+	
+	// SQL-free display
+	function bail($template) {
+		$this->prepare();
+		
+		$this->assign('content', $this->content);
+		parent::display($template);	
+	}
+	
+	// Puts together all required header stuff
+	function prepare() {
+		global $cfg;
+		
+		$this->_addCustomCode();
+		
 		if (LOGINOK) {
 			$this->AddCSSFile('styles/default/admin.css');
 		}
@@ -65,45 +106,8 @@ class Anego extends Smarty {
 		$this->assign('menuadmin',$this->MenuAdmin());
 		$this->assign('content', $this->content);
 		$this->assign('pages', $pages);
-
-
-		$this->prepare();
 		
-		if (!file_exists($this->template_dir . '/'. $template)) {
-			$template = '../../default/templates/' . $template;
-		}
-
-		/******* Custom style setup code *******/
-		if (file_exists("styles/" . $this->curStyle . "/postfilter.php"))
-			include("styles/" . $this->curStyle . "/postfilter.php");
-
-
-		parent::display($template, $cache_id, $compile_id);
-	}
-	
-	function fetchContent($template, $cache_id = null, $compile_id = null) {
-		if (!file_exists($this->template_dir . '/'. $template)) {
-			$template = '../../default/templates/' . $template;
-		}
 		
-		return parent::fetch($template, $cache_id, $compile_id);
-	}
-	
-	function display_element($template) {
-		parent::display($template);
-	}
-	
-	// SQL-free display
-	function bail($template) {
-		$this->prepare();
-		
-		$this->assign('content', $this->content);
-		parent::display($template);	
-	}
-	
-	// Puts together all required header stuff
-	function prepare() {
-		global $cfg;
 		// general header
 		if (count($this->header_general)) {
 			$header = implode("\n", $this->header_general);
@@ -156,6 +160,10 @@ class Anego extends Smarty {
 		
 		$this->assign('footer', $ft);
 		$this->assign('content',$this->content);
+		
+		/******* Custom style setup code *******/
+		if (file_exists("styles/" . $this->curStyle . "/postfilter.php"))
+			include("styles/" . $this->curStyle . "/postfilter.php");
 	}
 	
 	
@@ -186,6 +194,7 @@ class Anego extends Smarty {
 	// Builds the main menu array
 	function pageTreeByMenu($menuid) {
 		global $cfg;
+		$this->_addCustomCode();
 	
 		// Get Flat array of pages
 		$q = "SELECT idx, parent_idx, name, url, info, file, nolink, defImg, hoverImg, activeImg FROM ". PAGES . " WHERE menu='$menuid' AND (visibility&2)=2 ".(!LOGINOK?"AND (visibility&1)=1":"") . " ORDER BY parent_idx, position";
@@ -205,7 +214,7 @@ class Anego extends Smarty {
 			}
 			
 			$idx = $this->curPg;
-			while (($idx = $pages_flat[$idx]['parent_idx']) != 0) {
+			while (($idx = @$pages_flat[$idx]['parent_idx']) != 0) {
 				$pages_flat[$idx]['childselected'] = true;
 			}
 		}
@@ -239,7 +248,7 @@ class Anego extends Smarty {
 					($cfg['submenuStyle'] == 'auto'
 						&& !$page['selected']					? 'hidden ' : '') .
 					($cfg['submenuStyle'] == 'onselect' 
-						&& (!$page['selected'] && !$page['childselected'])
+						&& (!@$page['selected'] && !@$page['childselected'])
 						&& $depth > 0							? 'hidden ' : '') .
 					($cfg['submenuStyle'] == 'submenu onselect' 
 						&& (!$page['selected'] && !$page['childselected'])
@@ -272,8 +281,13 @@ class Anego extends Smarty {
 			$row['link'] .= '?p=' . $row['idx'];
 		}
 		
-		if($row['file']) { 
-			$row['link'] = $cfg['path'] . $row['file'];
+		if($row['file']) {
+			if (preg_match("/^http/", $row['file'])) {
+				$row['link'] = $row['file'];
+			} else {
+				$row['link'] = $cfg['path'] . $row['file'];
+			}
+			
 		}
 		
 		if (function_exists('CustomMenuItemLink'))

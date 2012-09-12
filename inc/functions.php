@@ -99,17 +99,43 @@ function CopyResized($file, $width = 0, $height = 0, $proportional = true, $outp
 
  
 	$info = getimagesize($file);
-
-	if( $info[2] != IMAGETYPE_GIF && 
-		$info[2] != IMAGETYPE_JPEG && 
-		$info[2] != IMAGETYPE_PNG) return false;
-	
 	$image = '';
  
 	$final_width = 0;
 	$final_height = 0;
 	list($width_old, $height_old) = $info;
  
+
+	if( $info[2] != IMAGETYPE_GIF && 
+		$info[2] != IMAGETYPE_JPEG && 
+		$info[2] != IMAGETYPE_PNG) return false;
+	
+	$filename = NULL;
+	switch ( strtolower($output) ) {
+		case 'browser':
+			$mime = image_type_to_mime_type($info[2]);
+			header("Content-type: $mime");
+			break;
+		case 'file':
+			if(strlen($newfile)) {
+				$filename = $newfile;
+			} else {
+				$filename = preg_replace("/(?U)(.*)(\.\w+)$/","\\1$ext\\2",$file);
+			}
+			break;
+		case 'return':
+			return $image_resized;
+			break;
+		default:
+			break;
+	}
+	
+	// Don't resize, just copy
+	if ($width_old == $width && $height_old == $height && !$crop) {
+		copy($file, $filename);
+		return true;
+	}
+	
 	if ($proportional) {
 	  if ($width == 0) $factor = $height/$height_old;
 	  elseif ($height == 0) $factor = $width/$width_old;
@@ -197,25 +223,6 @@ function CopyResized($file, $width = 0, $height = 0, $proportional = true, $outp
 		fastimagecopyresampled($image_resized, $image, 0, 0, 0, 0, $final_width, $final_height, $width_old, $height_old);
 	}
  
-	$filename = NULL;
-	switch ( strtolower($output) ) {
-		case 'browser':
-			$mime = image_type_to_mime_type($info[2]);
-			header("Content-type: $mime");
-			break;
-		case 'file':
-			if(strlen($newfile)) {
-				$filename = $newfile;
-			} else {
-				$filename = preg_replace("/(?U)(.*)(\.\w+)$/","\\1$ext\\2",$file);
-			}
-			break;
-		case 'return':
-			return $image_resized;
-			break;
-		default:
-			break;
-	}
 
 	switch ( $info[2] ) {
 		case IMAGETYPE_GIF:

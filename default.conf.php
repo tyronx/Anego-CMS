@@ -88,7 +88,7 @@ $cfg['minorMenu'] = true;
 
 /* Domain of the website you want to use, overwrite if you don't want automatic detection. */
 $cfg['domain'] = 'http://'.$_SERVER['SERVER_NAME'].(($_SERVER['SERVER_PORT']!=80)?':'.$_SERVER['SERVER_PORT']:''); //.dirname($_SERVER['PHP_SELF']);
-if($cfg['domain'][strlen($cfg['domain'])-1]!='/') $cfg['domain'].='/';
+if ($cfg['domain'][strlen($cfg['domain'])-1] != '/') $cfg['domain'].='/';
 
 
 $cfg['path'] = '/';

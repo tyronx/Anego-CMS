@@ -25,10 +25,10 @@ switch($ac) {
 		$page = intval(@$_GET['page']);
 		if (LOGINOK) {
 			if (! $page) exit("500\n" . __('Missing page'));
-			$pmg->generatePage($page);
+			$result = $pmg->generatePage($page);
 		}
 		
-		exit("200\nok");
+		exit("200\n" . $result);
 		break;
 	
 	// Get content elements. This is data required once the user presses "Edit page"
@@ -304,6 +304,10 @@ switch($ac) {
 			}
 		}
 		
+		$anego->curPg = $p;
+		$anego->content = $row['content_prepared'];
+		$anego->prepare();
+
 		/* Also deliever what js files to load */
 		$json['js'] = pageLoadJs($row['idx']);
 
@@ -311,7 +315,8 @@ switch($ac) {
 		
 		$json['pageId'] = $row['idx'];
 		$json['title'] = $settings['pagetitle'] . " - " . $row['name'];
-		$json['content'] = $row['content_prepared'];
+		$json['content'] = $anego->get_template_vars('content');
+				
 		
 		echo "200\n" . json_encode($json) . "\r\n";
 		
