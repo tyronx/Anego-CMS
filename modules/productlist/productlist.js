@@ -3,7 +3,7 @@ productlist = ContentElement.extend({
 	editProductsTemplate:
 		'<div class="productsEditor">' +
 			'<div class="links">' + 
-				'<a class="createproduct" href="#">New Product</a> | <a class="productsSettings" href="#">Settings</a>' +
+				'<a class="createproduct" href="#">New Product</a> | <a class="productssettings" href="#">Settings</a>' +
 			'</div>' + 
 			'<div class="products"></div>' +
 			'<div class="bothclear">&nbsp;</div>' +
@@ -18,6 +18,15 @@ productlist = ContentElement.extend({
 			'</a>' +
 		'</div>',
 	
+	settingsTemplate: 
+		'<div class="settings">' +
+			'<label for="productswidth">Width of the Productlist:</label><br> <input size="3" type="text" name="productswidth" id="productswidth"><br><br> ' +
+			'<label for="productwidth">Width and Height of each Product:</label><br> <input size="3" type="text" name="productwidth" id="productwidth"> ' +
+			'x <input size="3" type="text" name="productheight" id="productheight"> ' +
+			'<br><br><label for="producthorispacing">Horizontal and Vertical spacing between products:</label><br> <input size="3" type="text" name="producthorispacing" id="producthorispacing"> ' +
+			'x <input size="3" type="text" name="productvertispacing" id="productvertispacing"> ' +
+		'</div>',
+	
 	serverresponse: [],
 	
 	onStartEdit: function() {
@@ -29,6 +38,9 @@ productlist = ContentElement.extend({
 		var $productsEditor = $(self.editProductsTemplate);
 		
 		$('.createproduct', $productsEditor).click(function() { return self.editProduct(); });
+		$('.productssettings', $productsEditor).click(function() { return self.openSettings(); });
+				
+
 		
 		$container.html($productsEditor);
 		$container.find('.btn_close').click(function() {
@@ -63,6 +75,77 @@ productlist = ContentElement.extend({
 		return true;
 	},
 	
+	openSettings: function() {
+		var self = this;
+		
+		
+		$.ajax({
+			type : 'POST',
+			url : 'index.php',
+			data: { 
+				a: 'callce',
+				mid: self.module_id,
+				elid: self.element_id,
+				pid: self.page_id,
+				fn: 'gs'
+			}, success: function(data) {
+				var aw;
+				// alerts any errors that might have happened
+				if (aw = GetAnswer(data)) {
+					
+					settings = $.parseJSON(aw);
+					
+					$settingsContent = $(self.settingsTemplate);
+					
+					$('input#productswidth', $settingsContent).val(settings.productswidth),
+					$('input#productwidth', $settingsContent).val(settings.productwidth),
+					$('input#productheight', $settingsContent).val(settings.productheight),
+					$('input#producthorispacing', $settingsContent).val(settings.producthorispacing),
+					$('input#productvertispacing', $settingsContent).val(settings.productvertispacing)
+					
+					OpenDialog({
+						title: "Settings",
+						buttons: BTN_SAVECANCEL,
+						content: $settingsContent,
+						
+						ok_callback: function() {
+							var $dlg = this;
+							this.waitResponse();
+							
+							$.ajax({
+								type : 'POST',
+								url : 'index.php',
+								data: { 
+									a: 'callce',
+									mid: self.module_id,
+									elid: self.element_id,
+									pid: self.page_id,
+									fn: 'ss',
+									recache: true,
+									productswidth: $('input#productswidth').val(),
+									productwidth: $('input#productwidth').val(),
+									productheight: $('input#productheight').val(),
+									producthorispacing: $('input#producthorispacing').val(),
+									productvertispacing: $('input#productvertispacing').val()
+								},
+								success: function(data) {
+									$dlg.endWait();
+									// alerts any errors that might have happened
+									if (GetAnswer(data)) {
+										$dlg.closeDialog();
+										self.loadProducts();
+									}
+								}
+							});
+						}
+					});
+					
+					
+				}
+			}
+		});
+	},
+	
 	
 	loadProducts: function() {
 		var self = this;
@@ -70,7 +153,7 @@ productlist = ContentElement.extend({
 		
 		$('.products', $container).html('');
 		
-		$.post('index.php',{
+		$.post('index.php', {
 			a: 'callce',
 			fn: 'lp',
 			mid: self.module_id,
@@ -81,12 +164,18 @@ productlist = ContentElement.extend({
 				var response = $.parseJSON(aw);
 				self.serverresponse = response;
 				
-				console.log(response);
+				if (response.productswidth > 0) {
+					$('.products', $container).width(response.productswidth);
+				}
+
+				
 				
 				for (var i=0; i < response.products.length; i++) {
 					var product = response.products[i];
 					
 					var $product = $(self.productTemplate);
+					
+					$product.attr('style', response.css);
 					
 					if (product.filename) {
 						$('.productpicture', $product).html('<img src="' + product.filename + '">');
@@ -116,53 +205,80 @@ productlist = ContentElement.extend({
 		var productimage = { name: '' };
 		var productimagedata;
 		
-		$dialog = OpenDialog({
+		
+		var dlgSettings = {
 			title: productid ? "Edit product" : "Create new product",
 			buttons: BTN_SAVECANCEL,
 			content: 'Name:<br><input style="width:90%;" type="text" id="productName" value=""><br>' +
 					'Image:<br><input id="productimage" type="file"><br><br>' +
 					'<input type="checkbox" name="createpage" id="createpage" value="1" checked="checked"> <label for="createpage">Create a new page for this product</label><br><br>' +
 					'<div class="productdesc">Description: <textarea style="width:100%" id="productDescription"></textarea></div>',
+			buttons: {}
+		};
+		
+		dlgSettings.buttons['Save'] = function() {
+			var $dlg = this;
+			this.waitResponse();
+							
+			$.ajax({
+				type : 'POST',
+				url : 'index.php',
+				data: { 
+					a: 'callce',
+					mid: self.module_id,
+					elid: self.element_id,
+					pid: self.page_id,
+					fn: 'sp',
+					recache: true,
+					description: $('#productDescription').tinymce().getContent(),
+					title: $('#productName').val(),
+					createpage: $('#createpage').is(':checked') ? $('#createpage').val() : 0 ,
+					productid: productid,
+					createnew: productid ? 0 : 1,
+					filename: productimage.name,
+					filedata: productimagedata 
+				},
+				success: function(data) {
+					$dlg.endWait();
+					// alerts any errors that might have happened
+					if (GetAnswer(data)) {
+						$('#productDescription').tinymce().hide();
+						$dlg.closeDialog();
+						self.loadProducts();
+					}
+				}
+			});	
+		};
 			
-			ok_callback: function() {
-				var $dlg = this;
-				this.waitResponse();
-								
-				$.ajax({
-					type : 'POST',
-					url : 'index.php',
-					data: { 
-						a: 'callce',
-						mid: self.module_id,
-						elid: self.element_id,
-						pid: self.page_id,
-						fn: 'sp',
-						recache: true,
-						description: $('#productDescription').tinymce().getContent(),
-						title: $('#productName').val(),
-						createpage: $('#createpage').is(':checked') ? $('#createpage').val() : 0 ,
-						productid: productid,
-						createnew: productid ? 0 : 1,
-						filename: productimage.name,
-						filedata: productimagedata 
-					},
-					success: function(data) {
-						$dlg.endWait();
-						// alerts any errors that might have happened
-						if (GetAnswer(data)) {
-							$('#productDescription').tinymce().hide();
-							$dlg.closeDialog();
-							self.loadProducts();
-						}
+		
+		dlgSettings.buttons['Cancel'] = function() {
+			$('#productDescription').tinymce().hide();
+			this.closeDialog();
+		};
+		
+
+		dlgSettings.buttons['Delete Product'] = function() {
+			var dlg = this;
+			if (confirm('Really delete Product?')) {
+				dlg.waitResponse();
+				$.post('index.php', {
+					a: 'callce',
+					fn: 'dp',
+					mid: self.module_id,
+					pid: self.page_id,
+					elid: self.element_id,
+					productid: productid
+				}, function(data) {
+					dlg.endWait();
+					if(aw = GetAnswer(data)) {
+						dlg.closeDialog();
+						self.loadProducts();
 					}
 				});
-			},
-			
-			close_callback: function() {
-				$('#productDescription').tinymce().hide();
-				
 			}
-		});
+		};
+		
+		OpenDialog(dlgSettings);
 		
 		this.tinyfy("productDescription");
 		

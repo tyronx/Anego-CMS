@@ -314,6 +314,44 @@ CREATE TABLE IF NOT EXISTS `anego_settings_ger` (
   PRIMARY KEY (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+
+
+--
+-- Table structure for table `anego_pages_product`
+--
+
+CREATE TABLE IF NOT EXISTS `anego_pages_product` (
+  `idx` int(11) NOT NULL AUTO_INCREMENT,
+  `products_idx` int(11) NOT NULL,
+  `page_idx` int(11) NOT NULL,
+  `element_idx` int(11) NOT NULL,
+  `title` text NOT NULL,
+  `description` text NOT NULL,
+  `filename` varchar(255) NOT NULL,
+  PRIMARY KEY (`idx`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `anego_pages_products`
+--
+
+CREATE TABLE IF NOT EXISTS `anego_pages_products` (
+  `idx` int(11) NOT NULL AUTO_INCREMENT,
+  `value` longtext NOT NULL,
+  `style` varchar(255) DEFAULT NULL,
+  `productswidth` int(11) NOT NULL,
+  `productwidth` smallint(6) NOT NULL,
+  `productheight` smallint(6) NOT NULL,
+  `producthorispacing` smallint(6) NOT NULL,
+  `productvertispacing` smallint(6) NOT NULL,
+  PRIMARY KEY (`idx`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+
+
+
+
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

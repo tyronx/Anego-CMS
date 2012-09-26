@@ -2,6 +2,7 @@
 	<div id="adminpage">
 		<ul class="tabs">
 			<li><a href="#pagesettings">{__General}</a></li>
+			<li><a href="#pageoptions">{__Options}</a></li>
 			<li><a href="#modules">{__Modules}</a></li>
 		</ul>
 			
@@ -31,6 +32,11 @@
 					
 					<img src="{$anegopath}styles/default/img/progress_active.gif" class="ajaxLoad">
 				</form>
+			</div>
+			
+			<div id="pageoptions" class="tab_content">
+				<h2 style="float:left;">{__Options}</h2>
+				<input type="checkbox" name="stayineditmode" value="1"> When logged in, stay in editing mode when browsing pages.
 			</div>
 			
 			<div id="modules" class="tab_content">

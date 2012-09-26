@@ -53,7 +53,7 @@ if(isset($_POST['insert'])) {
 	if (! isset($_POST['file']) || ! isset($_POST['width']) || ! isset($_POST['height'])) 
 		exit("300\nScript giving me not enough values :(");
 	
-	if (isset($_POST['imageselected'])) {
+	if (@$_POST['imageselected']) {
 		$file_orig = $_POST['file'];
 		exit("200\n" . $_POST['file'] . "\n" . $file_orig);
 	}

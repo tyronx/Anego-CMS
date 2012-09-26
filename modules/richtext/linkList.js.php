@@ -2,8 +2,7 @@
 chdir('../../');
 include("core.php");
 
-header('Content-type: text/javascript');
-
+header('Content-type: text/javascript; charset=utf-8');
 
 echo 'var tinyMCELinkList=new Array(';
 
@@ -12,7 +11,7 @@ if (! LOGINOK) {
 }
 
 // Get all page which are not just for structuring (nolink)
-$res2 = mysql_query("SELECT idx,name,url FROM ".PAGES." WHERE nolink=0");
+$res2 = mysql_query("SELECT idx,name,url FROM ".PAGES." WHERE nolink=0 order by name asc");
 $i = 0;
 
 while ($row2 = mysql_fetch_array($res2)) {

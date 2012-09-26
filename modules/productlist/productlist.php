@@ -21,7 +21,9 @@ class productlist extends ContentElement {
 	static $methodMap = Array(
 		'lp'	=> 'loadProducts',
 		'sp'	=> 'saveProduct',
-		'dp'	=> 'deleteProduct'
+		'dp'	=> 'deleteProduct',
+		'ss'	=> 'saveSettings',
+		'gs'	=> 'getSettings'
 	);	
 	
 	function __construct($pageId, $elementId = 0) {
@@ -30,15 +32,46 @@ class productlist extends ContentElement {
 		// Module id is equivalent to classname
 		parent::__construct(get_class($this), $pageId, $elementId);
 	}
+	
+	function getCSS($nostyletag = false) {
+		$q = 'SELECT * FROM ' . $this->databaseTable() . ' WHERE idx=' . $this->elementId;
+		$res = mysql_query($q) or BailSQL('Couldn\'t read settings', $q);
+		$settings = mysql_fetch_array($res);
+		
+		$css = array();
+		if ($settings['productwidth'] > 0) 
+			$css[] = 'width: ' . $settings['productwidth'] . 'px;';
+		if ($settings['productheight'] > 0) 
+			$css[] = 'height: ' . $settings['productheight'] . 'px;';
+		if ($settings['producthorispacing'] > 0) 
+			$css[] = 'margin-right: ' . $settings['producthorispacing'] . 'px;';
+		if ($settings['productvertispacing'] > 0) 
+			$css[] = 'margin-bottom: ' . $settings['productvertispacing'] . 'px;';
+		
+		if (count($css)) {
+			$css = implode(' ', $css);
+			if (!$nostyletag) $css = 'style="' . $css . '"';
+		} else {
+			$css = '';
+		}
+		return $css;
+	}
 
 	function generateContent() {
 		global $cfg;
 		$products = $this->getProducts();
 		
-		$str = '<div class="products">';
+		$q = 'SELECT * FROM ' . $this->databaseTable() . ' WHERE idx=' . $this->elementId;
+		$res = mysql_query($q) or BailSQL('Couldn\'t read settings', $q);
+		$settings = mysql_fetch_array($res);
+
+		
+		$str = '<div class="products"';
+		if ($settings['productswidth']) $str .= ' style="width:'.$settings['productswidth'].'px"';
+		$str .= '>';
 		
 		foreach($products as $product) {
-			$str .= '<div class="product">';
+			$str .= '<div class="product"'.$this->getCSS().'>';
 			
 			if ($product['page_idx'] > 0) {
 				if ($product['pageurl']) {
@@ -50,7 +83,7 @@ class productlist extends ContentElement {
 			}
 			
 			if ($product['filename'])
-				$str .= '<div class="productpicture"><img src="' . $this->path . $product['filename'] . '" alt="' . $product['title'] . '"></div>';
+				$str .= '<div class="productpicture"><img src="' . $cfg['path'] . $this->path . $product['filename'] . '" alt="' . $product['title'] . '"></div>';
 			
 			$str .= '<div class="producttitle"><img src="' . $cfg['path'] . 'styles/sytech/img/pfeil.gif">'. $product['title'] . '</div>';
 			
@@ -61,22 +94,33 @@ class productlist extends ContentElement {
 			$str .= '</div>';
 		}
 		
-		return $str . '</div><div class="bothclear"></div>';
+		return $str . '</div><div class="afterproductlist"></div>';
 	}
 	
 
 	function loadProducts() {
+		global $cfg;
 		$products = $this->getProducts();
 		$productsbyIndex = array();
 		
 		foreach($products as &$product) {
-			$product['filename'] = $product['filename'] ? $this->path . $product['filename'] : '';
+			$product['filename'] = $product['filename'] ? $cfg['path'] . $this->path . $product['filename'] : '';
 		}
+		
+		$q = 'SELECT * FROM ' . $this->databaseTable() . ' WHERE idx=' . $this->elementId;
+		$res = mysql_query($q) or BailSQL('Couldn\'t read settings', $q);
+		$settings = mysql_fetch_array($res);
+
 	
-		return "200\n" . json_encode(array ("products" => $products));
+		return "200\n" . json_encode(array ("products" => $products, 'css' => $this->getCSS(true), 'productswidth' => $settings['productswidth']));
 	}
 	
 	function saveProduct() {
+		if (get_magic_quotes_gpc()) {
+			$_POST['title'] = stripslashes($_POST['title']);
+			$_POST['description'] = stripslashes($_POST['description']);
+		}
+		
 		$desc = mysql_real_escape_string(@$_POST['description']);
 		$title = mysql_real_escape_string(@$_POST['title']);
 		// TODO SECURITY RISC
@@ -165,6 +209,9 @@ class productlist extends ContentElement {
 	}
 	
 	function deleteProduct() {
+		$q = 'DELETE FROM '. $this->productTable() .' WHERE idx=' . intval($_POST['productid']);
+		mysql_query($q) or BailSQL(__('Couldn\'t delete product'), $q);
+		return "200\nok";
 	}
 	
 	function getProducts() {
@@ -178,6 +225,33 @@ class productlist extends ContentElement {
 		}
 		
 		return $products;
+	}
+	
+	function getSettings() {
+		$q = 'SELECT * FROM ' . $this->databaseTable() . ' WHERE idx=' . $this->elementId;
+		$res = mysql_query($q) or BailSQL('Couldn\'t read settings', $q);
+		
+		return "200\n" . json_encode(mysql_fetch_array($res, MYSQL_ASSOC));
+	}
+	
+	function saveSettings() {
+		$productswidth = intval($_POST['productswidth']);
+		$productwidth = intval($_POST['productwidth']);
+		$productheight = intval($_POST['productheight']);
+		$producthorispacing = intval($_POST['producthorispacing']);
+		$productvertispacing = intval($_POST['productvertispacing']);
+		
+		$q = 'UPDATE '. $this->databaseTable() . " SET
+			productswidth = $productswidth,
+			productwidth = $productwidth,
+			productheight = $productheight,
+			producthorispacing = $producthorispacing,
+			productvertispacing = $productvertispacing
+			WHERE idx=" . $this->elementId;
+			
+		$res = mysql_query($q) or BailSQL('Couldn\'t update settings', $q);
+		
+		return "200\nok";
 	}
 	
 	public static function installModule() {
