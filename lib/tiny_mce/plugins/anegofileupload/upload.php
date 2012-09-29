@@ -92,6 +92,9 @@ function display_upload_form() {
 						<legend>{#phpimage_dlg.browse}</legend>
 						<input type="file" size="70" name="upload_file" id="File1"/><br/>
 					</fieldset>
+					<div>
+						<p>Max file size: <?=maxFileSize()?></p>
+					</div>
 				</div>
 				<div id="progress_div" style="visibility: hidden;">
 					<img src="<?=$cfg['domain']?>styles/default/img/progress_active.gif" alt="Please wait..." style="padding-top: 5px;">
@@ -112,6 +115,27 @@ function display_upload_form() {
 	<?php
 }
 
+
+
+function maxFileSize() {
+	return in_mb(min(ini_get('post_max_size'),ini_get('upload_max_filesize'))) . 'MB';
+	
+}
+
+function in_mb($val) {
+	$ret = intval(trim($val));
+	$last = strtolower($val[strlen($val)-1]);
+
+	switch($last) {
+		// The 'G' modifier is available since PHP 5.1.0
+		case 'g':
+			$ret *= 1024;
+		case 'k':
+			$ret = $val/1024;
+	}
+
+	return $ret;
+}
 
 function CloseWindow($filepath) {
 	global $iconTypes, $cfg;

@@ -147,16 +147,40 @@ if(isset($_POST['uploadImg'])) {
 			echo "300\n" . __('Please upload only images in the following formats: jpg, png or gif');
 		}
 	}
-	echo <<<STREND
+	$fsize = maxFileSize();
+	echo '
 	</span>
 	<form method="POST" enctype="multipart/form-data" name="fileupload" action="" accept-charset="UTF-8"  onSubmit="return false">
 	<input type="file" onchange="parent.FileEntered()" style="background-color:#FFF; border:1px solid #808080; font-size:11px;" size="40" id="fiupl" name="fiupl">
 	<input type="hidden" name="uploadImg" value="1">
-	</form>
+	</form>&nbsp;&nbsp;Max file size: '.$fsize.'
 	</body></html>
-STREND;
+	';
+	
 	exit();
 }
+
+
+function maxFileSize() {
+	return in_mb(min(ini_get('post_max_size'),ini_get('upload_max_filesize'))) . 'MB';
+	
+}
+
+function in_mb($val) {
+	$ret = intval(trim($val));
+	$last = strtolower($val[strlen($val)-1]);
+
+	switch($last) {
+		// The 'G' modifier is available since PHP 5.1.0
+		case 'g':
+			$ret *= 1024;
+		case 'k':
+			$ret = $val/1024;
+	}
+
+	return $ret;
+}
+
 
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -172,6 +196,7 @@ STREND;
 	<link href="css/phpimage.css" rel="stylesheet" type="text/css" />
 </head>
 <body id="advimage" style="display: none" onresize="ImageDialog.resizePreview()">
+	<span id="maxfsize" style="display:none;"><?=maxFileSize()?></span>
 	<form id="wholepageForm" action="" enctype="multipart/form-data" method="post"> 
 		<div class="tabs">
 			<ul>
