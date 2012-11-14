@@ -124,20 +124,32 @@ class productlist extends ContentElement {
 		$desc = mysql_real_escape_string(@$_POST['description']);
 		$title = mysql_real_escape_string(@$_POST['title']);
 		// TODO SECURITY RISC
-		$filename = mysql_real_escape_string(@$_POST['filename']);
+		$filename = @$_POST['filename'];
 		$createpage = intval(@$_POST['createpage']);
 		$productid = intval(@$_POST['productid']);
 		
 		
 		if ($filename) {
+			$q = 'SELECT filename FROM ' . $this->productTable() . ' WHERE idx='.$productid;
+			$res = mysql_query($q) or BailSQL(__('Couldn\'t get product info'), $q);
+			list ($oldfilename) = mysql_fetch_row($res);
+			
+			if ($oldfilename) {
+				@unlink($this->path . $oldfilename);
+			}
+			
+			$filename = prettyName($filename, $this->path);
+
 			if (!is_dir(FILESROOT . 'products/')) {
 				mkdir(FILESROOT . 'products/');
 			}
 			if (!is_dir($this->path)) {
 				mkdir($this->path);
 			}
-			$fp = fopen($this->path . $_POST['filename'], 'w');
+			$fp = fopen($this->path . $filename, 'w');
 			fwrite($fp, base64_decode(substr($_POST['filedata'], strpos($_POST['filedata'], 'base64') + 6)));
+			
+			$filename = mysql_real_escape_string($filename);
 		}
 		
 		$pageidx = '';
@@ -217,7 +229,17 @@ class productlist extends ContentElement {
 	function getProducts() {
 		$products = array();
 		
-		$q = 'SELECT product.*, page.url as pageurl, page.idx as pageidx FROM ' . $this->productTable() . ' product LEFT JOIN ' . PAGES . ' page ON (product.page_idx = page.idx) WHERE products_idx = '. $this->elementId;
+		$q = '
+			SELECT 
+				product.*,
+				COALESCE(richtext.value, description) as syncdescription,
+				page.url as pageurl, 
+				page.idx as pageidx 
+			FROM ' . $this->productTable() . ' product 
+			LEFT JOIN ' . PAGES . ' page ON (product.page_idx = page.idx) 
+			LEFT JOIN ' . $this->richtextTable() . ' richtext ON (product.element_idx = richtext.idx) 
+			WHERE products_idx = '. $this->elementId;
+
 		$res = mysql_query($q) or BailSQL('Couldn\'t retrieve product list', $q);
 		
 		while($row = mysql_fetch_array($res, MYSQL_ASSOC)) {

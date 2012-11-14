@@ -315,7 +315,7 @@ productlist = ContentElement.extend({
 			
 			
 			$('#productName').val(product.title);
-			$('#productDescription').html(product.description);
+			$('#productDescription').html(product.syncdescription);
 			
 			if (product.page_idx > 0) {
 				$('label[for="createpage"]').text('Keep and Update product page');

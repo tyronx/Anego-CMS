@@ -161,7 +161,11 @@ function CoreFunctions() {
 	var loadedJsFiles = Array();
 	var loadedCSSFiles = Array();
 	
-	var loadHooks = Array();
+	// Callbacks before page load (allows interuption of default page loading)
+ 	var loadHooks = Array();
+	// Callback after page load (only inform)
+	var loadedHooks = Array();
+
 	// Core.curPg is splitted object containing usfull infos about the current page
 	var curPg;
 	
@@ -351,7 +355,7 @@ function CoreFunctions() {
 		
 		//$('#name').append('f');
 		
-		var animated = false,loaded = false;
+		var animated = false, loaded = false;
 		var aw;	
 		var xdf = 0;
 		
@@ -361,8 +365,9 @@ function CoreFunctions() {
 			$('#content')
 				.css({opacity: 1.0})
 				.animate({opacity: 0.0}, anego.animatePageLoad, function() {
-					if (loaded && !animated) 
+					if (loaded && !animated) {
 						putLoadedText(aw);
+					}
 					animated=true;
 				});
 		}
@@ -410,8 +415,14 @@ function CoreFunctions() {
 			loadingPage=null;
 			
 			// Callback function from loadPage() parameter
-			if(typeof settings.afterContentLoaded != 'undefined')
+			if(typeof settings.afterContentLoaded != 'undefined') {
 				settings.afterContentLoaded(data);
+			}
+			
+			for(var i=0; i<loadedHooks.length; i++) {
+				loadedHooks[i]();
+			}
+
 		}
 		
 		return true;
@@ -587,6 +598,11 @@ function CoreFunctions() {
 	this.addloadPageHook=function(fn) {
 		loadHooks.push(fn);
 	}
+	
+	this.addPageLoadedHook=function(fn) {
+		loadedHooks.push(fn);
+	}
+
 
 	// Loads a javascript file dynamically by adding it to the documents <head>
 	// May also be a js module (ld.am); avoids also more or less duplicate loading of jsfiles / modules

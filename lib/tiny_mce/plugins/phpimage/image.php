@@ -440,7 +440,7 @@ function in_mb($val) {
 		</div>
 	</form>
 <script type="text/javascript">
-window.setTimeout(ImageDialog.addForm, 50);
+//window.setTimeout(ImageDialog.addForm, 50);
 window.setTimeout(ImageDialog.autoUpload, 250);
 </script>
 </body> 
