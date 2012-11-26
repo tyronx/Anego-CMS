@@ -43,7 +43,7 @@
 			var mouseDownCoords = [];
 			var dragger;
 			var dragging = false;
-			var draggerIcon = $('<img src="' + anego.path + 'styles/default/img/cleardot.gif" alt="" class="iconDrop"> ');
+			var draggerIcon = $('<img src="' + options.dragIcon + '" alt="" class="iconDrop"> ');
 			var $shadowNode;
 			
 			if (! options) options = {};

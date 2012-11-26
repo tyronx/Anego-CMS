@@ -5,8 +5,9 @@ $(document).ready(function() {
 		$('.menuTree').each(function() {
 			$(this).sortableTree({ 
 				moved: adminMenu.nodeMoved,
-				ignoreEventsOnElem: 'img.smallimgBin'
-			}); 
+				ignoreEventsOnElem: 'img.smallimgBin',
+				dragIcon: anego.path + 'styles/default/img/cleardot.gif'
+			});
 		});
 	});
 });
