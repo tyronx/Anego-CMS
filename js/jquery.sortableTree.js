@@ -49,9 +49,9 @@
 			if (! options) options = {};
 				
 			this.init = function() {
-				dragger = $('div.dragger.draggedElement');
+				dragger = $('div.dragger.draggedElement', tree);
 				if (dragger.length == 0) {
-					$('body').append(dragger = $('<div style="display:none;" class="dragger draggedElement"></div>'));
+					$(tree).append(dragger = $('<div style="display:none;" class="dragger draggedElement"></div>'));
 				}
 				
 				$(tree).find('li').each(function() {
@@ -187,7 +187,7 @@
 			function getElementDropAtOutside(event) {
 				// Element is at bottom of the tree
 				
-					// Within 50 px below the tree (y-coordinate)
+				// Within 50 px below the tree (y-coordinate)
 				if(	inside(event.pageY, $(tree).offset().top + $(tree).innerHeight(), $(tree).offset().top + $(tree).innerHeight() + 50)
 					// No more than 25px outside the tree (x-coordinate)
 					&& inside(event.pageX, $(tree).offset().left - 25, $(tree).offset().left + $(tree).width() + 25 )
@@ -198,7 +198,7 @@
 				
 				// Element is at bottom of the tree
 					
-					// Within 50 px above the tree (y-coordinate)
+				// Within 50 px above the tree (y-coordinate)
 				if(inside(event.pageY, $(tree).offset().top - 50, $(tree).offset().top)
 					// No more than 25px outside the tree (x-coordinate)
 					&& inside(event.pageX, $(tree).offset().left - 25, $(tree).offset().left + $(tree).width() + 25 )
