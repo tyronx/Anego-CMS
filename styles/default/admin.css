@@ -214,6 +214,7 @@ hr#insertMarker {
 	padding-left:0px;
 	margin:0;
 	padding-top: 5px;
+	padding-bottom: 1px;
 }
 
 .menuTree li { 
@@ -258,6 +259,11 @@ hr#insertMarker {
 	border-top:1px dashed gray;
 	padding-top:0px;
 }
+
+.menuTree.insertAbove {
+	padding-top:4px;
+}
+
 .insertBelow {
 	border-bottom:1px dashed gray;
 	padding-bottom:0px;
@@ -269,7 +275,7 @@ hr#insertMarker {
 	border:1px solid gray;
 	border-radius: 3px;
 	padding:1px;
-	position:absolute;
+	position:fixed;
 }
 
 .draggedElement {

@@ -99,25 +99,22 @@
 						dropAt = getElementDropAtElement(ov, event);
 						ovEl = $(listElements[ov]).find('span.listEl');
 						
+						tree.removeClass('insertAbove insertIn insertBelow');
+						tree.find('li').removeClass('insertAbove insertIn insertBelow');
+						
 						switch(dropAt) {
 							case 'above':
-								ovEl.addClass('insertAbove');
-								ovEl.removeClass('insertBelow');
-								ovEl.removeClass('insertIn');
+								ovEl.first().addClass('insertAbove');
 								dragger.find('img.iconDrop').attr('class','iconDrop iconDropBetween');
 							break;
 								
 							case 'under':
-								ovEl.addClass('insertBelow');
-								ovEl.removeClass('insertIn');
-								ovEl.removeClass('insertAbove');
+								ovEl.first().addClass('insertBelow');
 								dragger.find('img.iconDrop').attr('class','iconDrop iconDropBetween');
 							break;
 								
 							case 'in':
-								ovEl.addClass('insertIn');
-								ovEl.removeClass('insertBelow');
-								ovEl.removeClass('insertAbove');
+								ovEl.first().addClass('insertIn');
 								dragger.find('img.iconDrop').attr('class','iconDrop iconDropAdd');
 							break;
 						}
@@ -227,6 +224,7 @@
 					/* No place to drop found, put it back */
 					if ((overElement==-1 && dropAt!='bottom' && dropAt!='top') || dropAt=='none') {
 						var off = draggedAwayListNode.offset();
+
 						dragger.animate({
 							left: off.left,
 							top: off.top,

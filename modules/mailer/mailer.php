@@ -1,10 +1,10 @@
 <?
 /*
-Plugin Name: Formmailer
+Plugin Name: Contact Form
 Plugin Image: mailer.png
 Plugin URI: http://www.anego.at
 Plugin Type: ContentElement
-Description: Simple formmailer
+Description: A simple contact form element
 Version: 0.2
 Author: Tyron Madlener
 Author URI: http://www.tyron.at

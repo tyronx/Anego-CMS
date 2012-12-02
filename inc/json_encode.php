@@ -1,4 +1,5 @@
 <?
+// For Installations under PHP 5.0 or PHP 5.1
 function json_encode( $data ) {           
 	if( is_array($data) || is_object($data) ) { 
 		$islist = is_array($data) && ( empty($data) || array_keys($data) === range(0,count($data)-1) ); 

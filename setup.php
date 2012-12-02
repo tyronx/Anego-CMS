@@ -352,7 +352,6 @@ div#padder {
 	}
 	?>
 			</ol>
-		<div class="footer">&copy;2011 <a href="http://www.anego.at">Anego</a> Team. All rights reserved.</div>
 	</div>
 </div>
 
