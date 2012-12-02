@@ -5,6 +5,17 @@ if(typeof lngMain == 'undefined') {
 		configure: 'Konfigurieren',
 		configuration: 'Einstellungen'
 	};
+	
+	lngMain['Please enter your user name.'] = 'Bitte Benutzername eingeben';
+	lngMain['Please enter your password.'] = 'Bitte Password eingeben';
+	lngMain['Page Elements'] = 'Seitenelemente';
+	lngMain['Module of this Element not found, please install the module:'] = 'Modul dieses Elements nicht gefunden, bitte folgendes Modul installieren:';
+	lngMain['Type'] = 'Typ';
+	lngMain['Author'] = 'Autor';
+	lngMain['Disable'] = 'Deaktivieren';
+	lngMain['Enable'] = 'Aktivieren';
+	lngMain['Configure'] = 'Konfigurieren';
+
 
 	// Todo: refactor this into above property list
 	lng_uploading = "Hochladen...";

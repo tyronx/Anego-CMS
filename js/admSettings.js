@@ -1,13 +1,13 @@
 	settingsFunctions = function() {
 	/* General settings code */
 	
-	$('input[name="Save"]').click(function() {
+	$('input[name="SaveWebsite"]').click(function() {
 		$(this).attr('disabled','disabled');
 		$(this).parent().find('.ajaxLoad').show();
 		
 		var $self = $(this);
 
-		$.post('admin.php?a=savesetg', $('form[name="generalsettings"]').serialize(), function(data) {
+		$.post('admin.php?a=savesetweb', $('form[name="websitesettings"]').serialize(), function(data) {
 			$self.removeAttr('disabled');
 			$self.parent().find('.ajaxLoad').hide();
 			GetAnswer(data);
@@ -16,7 +16,22 @@
 		return false;
 	});
 	
+	$('input[name="SaveGeneral"]').click(function() {
+		$(this).attr('disabled','disabled');
+		$(this).parent().find('.ajaxLoad').show();
+		
+		var $self = $(this);
 
+		$.post('admin.php?a=savesetgen', $('form[name="generalsettings"]').serialize(), function(data) {
+			$self.removeAttr('disabled');
+			$self.parent().find('.ajaxLoad').hide();
+			GetAnswer(data);
+		});
+		
+		return false;
+	});
+
+	
 	/* Opens a dialog and loads config html from the module into it. 
 	 * When saving, it just sends back everything withing a <form> element.
 	 * Alternative idea: define a name ([module]_ok_callback) that the module should
@@ -63,11 +78,11 @@
 		var name = $module.data('name');
 		var installed = $module.data('installed');
 		var action = 'im';
-		var newname = 'Disable';
+		var newname = __('Disable');
 		
 		if(installed) {
 			action = 'uim';
-			newname = 'Enable';
+			newname = __('Enable');
 		}
 		
 		$.get('admin.php',{a: action, name:name}, function(data) {

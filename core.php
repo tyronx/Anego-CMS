@@ -67,7 +67,7 @@ function __($str) {
 }
 
 function i10n_smarty($source, $template) {
-     return preg_replace('!{__([^}]+)}!e', '__' . '("$1")', $source);
+     return preg_replace('!{__([^}]+)}!e', '__("$1")', $source);
 }
 
 /**** Table constants ****/
@@ -166,12 +166,11 @@ function setSetting($name, $value) {
 		BailErr('Failed applying setings', $q);
 }
 
-if (! isset($settings['menu_scroll'])) {
-	$settings['menu_scroll'] = '0';
-}
-
 $anego->AddJsPreload("\tanego.homepage=" . HomePage() . ';');
-$anego->AddJsPreload("\tanego.menu_scroll=" . $settings['menu_scroll'] . ";");
+
+if (@$settings['autoeditmode'] && LOGINOK) {
+	$anego->AddJsPreload("\tanego.editmode=1;");
+}
 
 if (isset($settings['keywords']) && strlen($settings['keywords'])) {
 	$anego->AddHeadHeader("\t" . '<meta name="keywords" content="' . htmlentities(utf8_decode($settings['keywords'])).'">');

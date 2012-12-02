@@ -173,7 +173,7 @@ switch($_GET['a']) {
 
 	/****** AJAX Callback handlers ******/
 	
-	case 'savesetg':
+	case 'savesetweb':
 		if(UserRole() < Role::Admin) BailErr(__('No permission to access this page, sorry.'));
 		
 		// Unfortunately can only be done one by one
@@ -185,7 +185,15 @@ switch($_GET['a']) {
 		exit("200\n");
 
 		break;
-	
+
+	case 'savesetgen':
+		if(UserRole() < Role::Admin) BailErr(__('No permission to access this page, sorry.'));
+		
+		mysql_query('REPLACE INTO '.SETTINGS.' (name,value) VALUES (\'autoeditmode\',\'' . intval($_POST['autoeditmode'])  . '\')');		
+		exit("200\n");
+
+		break;
+
 	/* Load modules list */
 	case 'lm':
 		if(UserRole() < Role::Admin) Bail(__('No permission to access this page, sorry.'));
@@ -445,7 +453,7 @@ switch($_GET['a']) {
 			$res = mysql_query($q);
 			list($idxWithSameUrl, $pgname) = mysql_fetch_row($res);
 			if (mysql_affected_rows() && $idxWithSameUrl != $id) {
-				echo "304\n" . __("The page '$pgname' already uses this URL-Alias, please choose another!");
+				echo "304\n" . sprintf(__("The page '%s' already uses this URL-Alias, please choose another!"), $pgname);
 				exit();
 			}
 		}

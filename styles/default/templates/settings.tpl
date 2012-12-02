@@ -1,14 +1,14 @@
 {capture name="content"}
 	<div id="adminpage">
 		<ul class="tabs">
-			<li><a href="#pagesettings">{__General}</a></li>
-			<li><a href="#pageoptions">{__Options}</a></li>
+			<li><a href="#pagesettings">{__Website}</a></li>
+			<li><a href="#pageoptions">{__General}</a></li>
 			<li><a href="#modules">{__Modules}</a></li>
 		</ul>
 			
 		<div class="tab_container">
 			<div id="pagesettings" class="tab_content">
-				<form name="generalsettings" onsubmit="return false">
+				<form name="websitesettings" onsubmit="return false">
 					{__Home page (The Page which the visitor gets to see first)}<br>
 					<select name="homepage">
 						{foreach from=$pagelist item=page name=page}
@@ -28,15 +28,20 @@
 					{__Website description (e.g. displayed in the google search results, without newlines)}<br>
 					<textarea name="description" rows="3" cols="60" style="width:100%">{$settings.description}</textarea>
 					<br><br>
-					<input type="button" name="Save" value="{__Save settings}">
+					<input type="button" name="SaveWebsite" value="{__Save settings}">
 					
 					<img src="{$anegopath}styles/default/img/progress_active.gif" class="ajaxLoad">
 				</form>
 			</div>
 			
 			<div id="pageoptions" class="tab_content">
-				<h2 style="float:left;">{__Options}</h2>
-				<input type="checkbox" name="stayineditmode" value="1"> When logged in, stay in editing mode when browsing pages.
+				<form name="generalsettings" onsubmit="return false">
+					<h2 style="float:left;">{__Options}</h2>
+					<br><br>
+					<input type="checkbox" name="autoeditmode" id="autoeditmode" value="1"{if $settings.autoeditmode} checked="checked"{/if}> <label for="autoeditmode">{__When logged in, automatically enter edit mode.}</label>
+					<br><br>
+					<input type="button" name="SaveGeneral" value="{__Save settings}">
+				</form>
 			</div>
 			
 			<div id="modules" class="tab_content">

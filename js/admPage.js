@@ -145,7 +145,7 @@ function DragDropElements(options) {
 						$miniToolbar.hide();
 					}
 				} else {
-					alert("Module of this Element not found, please install the module '" + splitID($(curEl).attr('id')).module_id + "'");
+					alert(__("Module of this Element not found, please install the module:") + " '" + splitID($(curEl).attr('id')).module_id + "'");
 				}
 			});
 			
@@ -162,7 +162,7 @@ function DragDropElements(options) {
 					if (pageElements[$(curEl).attr('id')] != undefined) {
 						pageElements[$(curEl).attr('id')].deleteElement(deleteCompleteFn);
 					} else {
-						alert("Module of this Element not found, please install the module '" + splitID($(curEl).attr('id')).module_id + "'");
+						alert(__("Module of this Element not found, please install the module:") + " '" + splitID($(curEl).attr('id')).module_id + "'");
 					}
 				}
 			});

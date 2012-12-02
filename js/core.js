@@ -1,6 +1,5 @@
-//setTimeout(function() { Core.editPage() }, 800);
-
 function __(str) {
+	if (lngMain[str]) return lngMain[str];
 	return str;
 }
 
@@ -49,23 +48,26 @@ Array.prototype.tostring=function() {
 Core = new CoreFunctions();
 
 // The page requires js to be loaded, but didn't load it yet (since we don't need it when another page is being loaded via anchor)
-if(typeof anego.pageJS != 'undefined') { // && !Core.pageInfo(window.location.hash.substr(1)).valid
+if(typeof anego.pageJS != 'undefined') { // && !
 	for(var i=0; i<anego.pageJS.length; i++)
 		Core.loadJavascript(anego.pageJS[i]);
-} else anego.noInit = true;
+} 
 
-/* anego.noInit:
- * Following situation: E.g. we have an aloha text editor on the home page (first page), but the user is loading [your domain]#pg20
- * This means aloha should not be loaded. In such cases anego.noIinit is set to true
- */
+// Don't initalize various things if another page is about to be loaded
+if (Core.splitURL(window.location.hash.substr(1)).isPage) {
+	anego.noInit = true;
+}
 
 
 $(document).ready(function() {
-	if (anego.editmode) {
-		Core.initPageContentEdit();
-	} else {
-		Core.initPageContent();
+	if (anego.noInit != true) {
+		if (anego.editmode) {
+			Core.initPageContentEdit();
+		} else {
+			Core.initPageContent();
+		}
 	}
+	
 	if (anego.pageLoad == 'ajax')
 		Core.ajaxifyMenu();
 	
@@ -222,7 +224,8 @@ function CoreFunctions() {
 	}
 	
 	this.initPageContentEdit=function(data) {
-		Core.editPage(Core.curPg.id, data);
+		if (Core.curPg)
+			Core.editPage(Core.curPg.id, data);
 	}
 	
 	/* Fix degraded links for ajax loading */
@@ -320,7 +323,7 @@ function CoreFunctions() {
 				get = { a: url[1], noheader: 1 };
 				$('#pageEditLink').parent().css('display','none');
 				
-				if(anego.editmode) {
+				if(anego.editmode && Core.endEdit) {
 					Core.endEdit({ ignorePage: true });
 				}
 				
@@ -398,7 +401,7 @@ function CoreFunctions() {
 			Core.loadJSONResult(data);
 			
 			/* Place the content */
-			if(anego.editmode) { // from admin.php
+			if(anego.editmode && url[0] != 'admin') { // from admin.php
 				$('#content').html(data.content);
 				that.initPageContentEdit(data);
 			} else {             // from index.php (ajax.php)
@@ -553,9 +556,10 @@ function CoreFunctions() {
 				Core.contentElementModules = data;
 			};
 			
-			if (! data) {
+			if (! data || !data.modules) {
 				$.get("index.php?a=gce&fgx=" + page, function(data) {
 					if (aw = GetAnswer(data)) {
+						
 						data = jQuery.parseJSON(aw);
 						// Loads js & css files associated with this response
 						Core.loadJSONResult(data);
