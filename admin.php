@@ -332,22 +332,28 @@ switch($_GET['a']) {
 	case 'movenode':
 		if(UserRole() < Role::ProMod) BailErr(__('No permission to access this page, sorry.'));
 		
-		if(!preg_match("/^node(\d+)$/",$_GET['movingNode'],$match)) exit("400\nProgramming error: wrong dropped node");
+		if (!preg_match("/^node(\d+)$/",$_GET['movingNode'],$match)) exit("400\nProgramming error: wrong dropped node");
 		$movingNodeId = $match[1];
 		
-		if(!preg_match("/^node(\d+)$/",$_GET['targetNode'],$match)) exit("400\nProgramming error: wrong target node");
+		if (!preg_match("/^node(\d+)$/",$_GET['targetNode'],$match)) exit("400\nProgramming error: wrong target node");
 		$targetNodeId = intval($match[1]);
+		
+		$trees = array('tree_major', 'tree_minor');
+		
+		if (!in_array($_GET['tree'], $trees)) exit("400\nProgramming error: wrong tree");
+		
+		$targetmenu = str_replace($trees, array('MAIN', 'MINOR'), $_GET['tree']);
 		
 		if($movingNodeId == $targetNodeId && $_GET['position'] == 'inside') exit("400\nProgramming error: dropped node == target node");
 		
 		$q = "SELECT idx,name,position,parent_idx,menu FROM ".PAGES." WHERE idx=$movingNodeId";
 		$res=mysql_query($q) or
-			BailErr(__('Failed moving page'),$q);
+			BailSQL(__('Failed moving page'),$q);
 		$movingNode = mysql_fetch_array($res);
 			
 		$q = "SELECT idx,name,position,parent_idx,menu FROM ".PAGES." WHERE idx=$targetNodeId";
 		$res=mysql_query($q) or
-			BailErr(__('Failed moving page'),$q);
+			BailSQL(__('Failed moving page'),$q);
 		$targetNode = mysql_fetch_array($res);
 		
 		// Prevent moving an element into its direct child
@@ -357,24 +363,24 @@ switch($_GET['a']) {
 		
 		/* Start the move */
 		mysql_query("START TRANSACTION") or 
-			BailErr('Couldn\'t start transaction',"START TRANSACTION");
+			BailSQL('Couldn\'t start transaction',"START TRANSACTION");
 		
 		// Free the space from old place
 		$q="UPDATE ".PAGES." SET position=position-1 WHERE position>".$movingNode['position']." AND parent_idx=".$movingNode['parent_idx']." AND menu='".$movingNode['menu']."'";
 		if(!($res=mysql_query($q)))
-			{ @mysql_query("ROLLBACK"); BailErr(__('Failed moving page'),$q); }
+			{ @mysql_query("ROLLBACK"); BailSQL(__('Failed moving page'),$q); }
 		
 		switch($_GET['position']) {
 			case 'before':
 				// Make space in new place
 				$q="UPDATE ".PAGES." SET position=position+1 WHERE position>=".$targetNode['position']." AND parent_idx=".$targetNode['parent_idx']." AND menu='".$targetNode['menu']."'";
 				if(!($res=mysql_query($q)))
-					{ @mysql_query("ROLLBACK"); BailErr(__('Failed moving page'),$q); }
+					{ @mysql_query("ROLLBACK"); BailSQL(__('Failed moving page'),$q); }
 				
 				// Move the node
 				$q="UPDATE ".PAGES." SET parent_idx=".$targetNode['parent_idx'].", position=".$targetNode['position'].", menu='".$targetNode['menu']."' WHERE idx=".$movingNode['idx'];
 				if(!($res=mysql_query($q)))
-					{ @mysql_query("ROLLBACK"); BailErr(__('Failed moving page'),$q); }
+					{ @mysql_query("ROLLBACK"); BailSQL(__('Failed moving page'),$q); }
 				
 				break;
 				
@@ -382,12 +388,12 @@ switch($_GET['a']) {
 				// Make space in new place
 				$q="UPDATE ".PAGES." SET position=position+1 WHERE position>".$targetNode['position']." AND parent_idx=".$targetNode['parent_idx']." AND menu='".$targetNode['menu']."'";
 				if(!($res=mysql_query($q)))
-					{ @mysql_query("ROLLBACK"); BailErr(__('Failed moving page'),$q); }
+					{ @mysql_query("ROLLBACK"); BailSQL(__('Failed moving page'),$q); }
 				
 				// Move the node
 				$q="UPDATE ".PAGES." SET parent_idx=".$targetNode['parent_idx'].", position=".$targetNode['position']."+1, menu='".$targetNode['menu']."' WHERE idx=".$movingNode['idx'];
 				if(!($res=mysql_query($q)))
-					{ @mysql_query("ROLLBACK"); BailErr(__('Failed moving page'),$q); }
+					{ @mysql_query("ROLLBACK"); BailSQL(__('Failed moving page'),$q); }
 					
 				break;
 				
@@ -395,28 +401,28 @@ switch($_GET['a']) {
 				// 'inside' always moves to the bottom of the target parent
 				$q='SELECT MAX(position) FROM '.PAGES.' WHERE parent_idx='.$targetNode['idx']." AND menu='".$targetNode['menu']."'";;
 				if(!($res=mysql_query($q)))
-					{ @mysql_query("ROLLBACK"); BailErr(__('Failed moving page'),$q); }
+					{ @mysql_query("ROLLBACK"); BailSQL(__('Failed moving page'),$q); }
 				list($newPos)=mysql_fetch_row($res);
 				$newPos++;
 				
 				// Move the node
 				$q="UPDATE ".PAGES." SET parent_idx=".$targetNode['idx'].", position=".$newPos.", menu='".$targetNode['menu']."' WHERE idx=".$movingNode['idx'];
 				if(!($res=mysql_query($q)))
-					{ @mysql_query("ROLLBACK"); BailErr(__('Failed moving page'),$q); }
+					{ @mysql_query("ROLLBACK"); BailSQL(__('Failed moving page'),$q); }
 			
 				break;
 				
 			case 'bottom':
-				$q='SELECT MAX(position) FROM '.PAGES.' WHERE parent_idx=0 AND menu=\''.$movingNode['menu'].'\'';
+				$q='SELECT MAX(position) FROM '.PAGES.' WHERE parent_idx=0 AND menu=\''.$targetmenu.'\'';
 				if(!($res=mysql_query($q)))
-					{ @mysql_query("ROLLBACK"); BailErr(__('Failed moving page'),$q); }
+					{ @mysql_query("ROLLBACK"); BailSQL(__('Failed moving page'),$q); }
 				list($newPos)=mysql_fetch_row($res);
 				$newPos++;
 				
+				$q="UPDATE ".PAGES." SET parent_idx=0, menu='".$targetmenu."', position=".$newPos." WHERE idx=".$movingNode['idx'];
 				// Move the node
-				$q="UPDATE ".PAGES." SET parent_idx=0, position=".$newPos." WHERE idx=".$movingNode['idx'];
 				if(!($res=mysql_query($q)))
-					{ @mysql_query("ROLLBACK"); BailErr(__('Failed moving page'),$q); }
+					{ @mysql_query("ROLLBACK"); BailSQL(__('Failed moving page'),$q); }
 				
 				break;
 				
@@ -425,7 +431,7 @@ switch($_GET['a']) {
 		}
 		
 		if(!mysql_query("COMMIT"))
-			BailErr("500\nCouldn't commit change","COMMIT");
+			BailSQL("500\nCouldn't commit change","COMMIT");
 
 		echo "200\n".PrintLinks();
 		exit();

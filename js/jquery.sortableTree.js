@@ -45,13 +45,14 @@
 			var dragging = false;
 			var draggerIcon = $('<img src="' + options.dragIcon + '" alt="" class="iconDrop"> ');
 			var $shadowNode;
+			var curTree;
 			
 			if (! options) options = {};
 				
 			this.init = function() {
 				dragger = $('div.dragger.draggedElement', tree);
 				if (dragger.length == 0) {
-					$(tree).append(dragger = $('<div style="display:none;" class="dragger draggedElement"></div>'));
+					$(tree).first().append(dragger = $('<div style="display:none;" class="dragger draggedElement"></div>'));
 				}
 				
 				$(tree).find('li').each(function() {
@@ -82,6 +83,7 @@
 						.css('position', 'relative');
 					
 					//draggedAwayListNode.hide();
+					curTree = closestTree(event.pageX, event.pageY);
 					
 					mouseDownOn = null;
 					dragging=true;
@@ -93,8 +95,9 @@
 					var ovEl;
 					var dy;
 					dragger.offset({left:event.pageX + 5,top:event.pageY + 15});
+					curTree = closestTree(event.pageX, event.pageY);
 					
-					// Element is over,above or below an element
+					// Element is over, above or below an element
 					if(ov != -1) {
 						dropAt = getElementDropAtElement(ov, event);
 						ovEl = $(listElements[ov]).find('span.listEl');
@@ -121,16 +124,16 @@
 						
 					// Element is outside the tree
 					} else {
-						dropAt = getElementDropAtOutside(event);
+						dropAt = getElementDropAtOutside(event.pageX, event.pageY);
 						
 						switch(dropAt) {
 							case 'top':
-								$(tree).addClass('insertAbove');
+								$(curTree).addClass('insertAbove');
 								dragger.find('img.iconDrop').attr('class','iconDrop iconDropOver');
 							break;
 							
 							case 'bottom':
-								$(tree).addClass('insertBelow');
+								$(curTree).addClass('insertBelow');
 								dragger.find('img.iconDrop').attr('class','iconDrop iconDropUnder');
 							break;
 						}
@@ -181,29 +184,34 @@
 				return 'none';
 			}
 			
-			function getElementDropAtOutside(event) {
-				// Element is at bottom of the tree
-				
-				// Within 50 px below the tree (y-coordinate)
-				if(	inside(event.pageY, $(tree).offset().top + $(tree).innerHeight(), $(tree).offset().top + $(tree).innerHeight() + 50)
-					// No more than 25px outside the tree (x-coordinate)
-					&& inside(event.pageX, $(tree).offset().left - 25, $(tree).offset().left + $(tree).width() + 25 )
-				) {
-					
-					return 'bottom';
-				}
+			function getElementDropAtOutside(x, y) {
+				var result = 'none';
 				
 				// Element is at bottom of the tree
+				$(tree).each(function() {
+					// Within 50 px below the tree (y-coordinate)
+					if(	inside(y, $(this).offset().top + $(this).innerHeight(), $(this).offset().top + $(this).innerHeight() + 50)
+						// No more than 25px outside the this (x-coordinate)
+						&& inside(x, $(this).offset().left - 25, $(this).offset().left + $(this).width() + 25 )
+					) {
+						result='bottom';
+						return false;
+					}
 					
-				// Within 50 px above the tree (y-coordinate)
-				if(inside(event.pageY, $(tree).offset().top - 50, $(tree).offset().top)
-					// No more than 25px outside the tree (x-coordinate)
-					&& inside(event.pageX, $(tree).offset().left - 25, $(tree).offset().left + $(tree).width() + 25 )
-				) {
-					return 'top';
-				}
+					// Element is at bottom of the this
+						
+					// Within 50 px above the this (y-coordinate)
+					if(inside(y, $(this).offset().top - 50, $(this).offset().top)
+						// No more than 25px outside the this (x-coordinate)
+						&& inside(x, $(this).offset().left - 25, $(this).offset().left + $(this).width() + 25 )
+					) {
+						result='top';
+						return false ;
+					}
 					
-				return 'none';
+				});
+					
+				return result;
 			}
 			
 			function onMouseUp(event) {
@@ -245,14 +253,14 @@
 						
 						switch(dropAt) {
 							case 'top':
-								$(tree).prepend(newNode);
+								$(curTree).prepend(newNode);
 								pos = 'before';
 								target = $(listElements[0]).attr('id');
 								break;
 							
 							case 'above': 
 								if (overElement==0) {
-									$(tree).prepend(newNode);
+									$(curTree).prepend(newNode);
 								} else {
 									atEl.before(newNode);
 								}
@@ -278,7 +286,7 @@
 								// useless value (might be the same as newNode), just to cause no error serverside
 								target = $(listElements[listElements.length-1]).attr('id'); 
 								pos = 'bottom';
-								$(tree).append(newNode);
+								$(curTree).append(newNode);
 								break;
 								
 							case 'in':
@@ -322,7 +330,7 @@
 					checkforLast(tree);
 					
 					if(options.moved && newNode)
-						options.moved(newNode.attr('id'), target, pos);
+						options.moved(newNode.attr('id'), target, pos, curTree);
 				}
 			}
 			
@@ -335,14 +343,38 @@
 			function isOverElement(x,y) {
 				var of,el,cur=-1;
 				
-				for(var i=0; i<listElements.length; i++) {
-					el=$(listElements[i]);
-					of=el.offset();
-					if(of.top <= y && of.left <= x &&
-						of.left + el.outerWidth() >= x &&
-						of.top  + el.outerHeight() >= y &&
-						(cur==-1 || $(listElements[cur]).offset().left < of.left))
-							cur = i;
+				for(var i=0; i < listElements.length; i++) {
+					el = $(listElements[i]);
+					of = el.offset();
+					
+					if (posInElem(x, y, el) && (cur==-1 || $(listElements[cur]).offset().left < of.left)) {
+						cur = i;
+					}
+				}
+				
+				return cur;
+			}
+			
+			function closestTree(x, y) {
+				var cur = null;
+				
+				$(tree).each(function() {
+					if (posInElem(x, y, this)) {
+						cur = this;
+					}
+				});
+				
+				// Maybe outside a quad somehwere?
+				if (!cur && getElementDropAtOutside(x, y) != 'none') {
+					
+					$(tree).each(function() {
+						of = $(this).offset();
+						if (posInRect(x, y, of.left - 25, of.top - 50, $(this).outerWidth() + 50, $(this).outerHeight() + 100)) {
+							
+							cur = this;
+							return false;
+						}
+					});
 				}
 				
 				return cur;
@@ -353,11 +385,9 @@
 					if (options.ignoreEventsOnElem) {
 						$el = $(this).find(options.ignoreEventsOnElem);
 						if ($el.length > 0) {
-							$eloff = $el.offset();
-							if (inside(event.pageX, $eloff.left, $eloff.left + $el.width())
-							 && inside(event.pageY, $eloff.top, $eloff.top + $el.height())) {
-								 return false;
-							 }
+							if (posInElem(event.pageX, event.pageY, $el)) {
+								return false;
+							}
 						}
 					}
 					
@@ -365,6 +395,16 @@
 					mouseDownCoords = { x: event.pageX, y: event.pageY };
 					return false;
 				});
+			}
+			
+			function posInElem(x, y, elem) {
+				var of = $(elem).offset();
+				return posInRect(x, y, of.left, of.top, $(elem).outerWidth(), $(elem).outerHeight());
+			}
+			
+			function posInRect(x, y, qx, qy, qw, qh) {
+				//console.log(x + ' >= ' + qx + ' && ' + x + ' <= ' + (qx+qw) + ' && '+ y + ' >= ' + qy + ' && ' + y + ' <= ' + (qy+qh) +  '       => ' + (x >= qx && x <= qx+qw && y>=qy && y<=qy+qh));
+				return x >= qx && x <= qx+qw && y>=qy && y<=qy+qh;
 			}
 			
 			function inside(val, x1, x2) {

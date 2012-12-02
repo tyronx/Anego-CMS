@@ -2,23 +2,23 @@ adminMenu = new AdminMenuFunctions();
 
 $(document).ready(function() {
 	$('.treeDiv').livequery(function() {
-		$('.menuTree').each(function() {
-			$(this).sortableTree({ 
-				moved: adminMenu.nodeMoved,
-				ignoreEventsOnElem: 'img.smallimgBin',
-				dragIcon: anego.path + 'styles/default/img/cleardot.gif'
-			});
+		$('.menuTree').sortableTree({
+			moved: adminMenu.nodeMoved,
+			ignoreEventsOnElem: 'img.smallimgBin',
+			dragIcon: anego.path + 'styles/default/img/cleardot.gif'
 		});
 	});
 });
 
 function AdminMenuFunctions() {
-	this.nodeMoved = function(movingNode, targetNode, position) {
+	this.nodeMoved = function(movingNode, targetNode, position, tree) {
+		
 		$.get('admin.php', { 
 			a: 'movenode', 
-			movingNode:movingNode, 
-			targetNode:targetNode, 
-			position:position 
+			movingNode: movingNode, 
+			targetNode: targetNode, 
+			position: position,
+			tree: $(tree).attr('id')
 		}, function(data) { 
 			var aw;
 			if(aw = GetAnswer(data)) {
