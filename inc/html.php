@@ -215,7 +215,9 @@ class Anego extends Smarty {
 			
 			$idx = $this->curPg;
 			while (($idx = @$pages_flat[$idx]['parent_idx']) != 0) {
-				$pages_flat[$idx]['childselected'] = true;
+				if (@$pages_flat[$idx]) {
+					$pages_flat[$idx]['childselected'] = true;
+				}
 			}
 		}
 		
