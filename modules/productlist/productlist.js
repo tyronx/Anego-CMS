@@ -63,7 +63,7 @@ productlist = ContentElement.extend({
 			});
 		});
 		
-		self.loadProducts();
+		self.loadProducts(function() { Core.callHooks('afterContentElementEditLoad', { contentElement: self }); });
 		
 		return true;
 	},
@@ -147,7 +147,7 @@ productlist = ContentElement.extend({
 	},
 	
 	
-	loadProducts: function() {
+	loadProducts: function(callback) {
 		var self = this;
 		var $container = $('#'+self.containerId);
 		
@@ -195,6 +195,8 @@ productlist = ContentElement.extend({
 				});
 				
 			}
+			
+			if (callback) callback();
 		});
 		
 	},

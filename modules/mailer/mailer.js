@@ -64,6 +64,8 @@ mailer = ContentElement.extend({
 						});
 					});
 				}
+				
+				Core.callHooks('afterContentElementEditLoad', { contentElement: self });
 			}
 		);
 			

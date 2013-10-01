@@ -49,7 +49,7 @@ function blogFunctions() {
 		return false;
 	}
 	
-	Core.addloadPageHook(this.onloadPage);
+	Core.addHook("beforePageLoad", this.onloadPage);
 	
 	this.newEntry = function(blog_id) {
 		OpenDialog({

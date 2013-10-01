@@ -163,11 +163,16 @@ function CoreFunctions() {
 	var loadedJsFiles = Array();
 	var loadedCSSFiles = Array();
 	
-	// Callbacks before page load (allows interuption of default page loading)
- 	var loadHooks = Array();
-	// Callback after page load (only inform)
-	var loadedHooks = Array();
-
+	var hooks = {
+		beforePageLoad: [],
+		afterPageLoad: [],
+		beforeBeginEdit: [],
+		beforeEndEdit: [],
+		afterBeginEdit: [],
+		afterEndEdit: [],
+		afterContentElementEditLoad: []
+	}
+	
 	// Core.curPg is splitted object containing usfull infos about the current page
 	var curPg;
 	
@@ -224,8 +229,9 @@ function CoreFunctions() {
 	}
 	
 	this.initPageContentEdit=function(data) {
-		if (Core.curPg)
+		if (Core.curPg) {
 			Core.editPage(Core.curPg.id, data);
+		}
 	}
 	
 	/* Fix degraded links for ajax loading */
@@ -285,17 +291,14 @@ function CoreFunctions() {
 		loadingPage = url.fullpath;
 		
 		//$('#name').html('b');
-			
-		for(var i=0; i<loadHooks.length; i++)
-			if(loadHooks[i](url.fullpath)) {
-				loadingPage=null;
-				return false;
-			}
+		
+		var cancel = Core.callHooks("beforePageLoad", url.fullpath);
+		if (cancel) return false;
 			
 		//$('#name').append('c');
 		
 		/* Don't load same page (also seems to be buggy in ie if loaded twice).*/
-		if(Core.curPg && url.fullpath == Core.curPg.fullpath && (typeof settings.forceLoad == 'undefined' || settings.forceLoad == false)) {
+		if (Core.curPg && url.fullpath == Core.curPg.fullpath && (typeof settings.forceLoad == 'undefined' || settings.forceLoad == false)) {
 			loadingPage = null;
 			return false;
 		}
@@ -415,17 +418,14 @@ function CoreFunctions() {
 			Core.curPg = url;
 			Core.curPg.pageId = data.pageId;
 			
-			loadingPage=null;
+			loadingPage = null;
 			
 			// Callback function from loadPage() parameter
-			if(typeof settings.afterContentLoaded != 'undefined') {
+			if (typeof settings.afterContentLoaded != 'undefined') {
 				settings.afterContentLoaded(data);
 			}
 			
-			for(var i=0; i<loadedHooks.length; i++) {
-				loadedHooks[i]();
-			}
-
+			Core.callHooks("afterPageLoad");
 		}
 		
 		return true;
@@ -510,6 +510,11 @@ function CoreFunctions() {
 	this.editPage = function(page, data) {
 		var aw;
 		
+		var cancel = Core.callHooks("beforeBeginEdit");
+		if (cancel) return false;
+		
+		$('#contents').addClass("editing");
+		
 		if (!page) {
 			page = Core.curPg.id;
 		}
@@ -554,6 +559,8 @@ function CoreFunctions() {
 				});
 				Core.dragdrop.init();
 				Core.contentElementModules = data;
+				
+				Core.callHooks("afterBeginEdit");
 			};
 			
 			if (! data || !data.modules) {
@@ -591,20 +598,22 @@ function CoreFunctions() {
 			}
 		}
 		
-		for(var i=0; i < loadHooks.length; i++)
-			loadHooks[i](url);
+		for (var i = 0; i < hooks.beforePageLoad.length; i++) {
+			hooks.beforePageLoad[i](url);
+		}
 	}
 	
-	// Through this function, custom page loading events can be implemented
-	// If added function returns true, Core.loadPage() will only call the hook and then exit
-	// Be really careful when calling loadpage inside a hook function, 
-	// as it will fire the loadPage event again, so make sure not to fall in a endless loop
-	this.addloadPageHook=function(fn) {
-		loadHooks.push(fn);
+	this.addHook = function(hookname, fn) {
+		hooks[hookname].push(fn);
 	}
 	
-	this.addPageLoadedHook=function(fn) {
-		loadedHooks.push(fn);
+	this.callHooks = function(hookname, context) {
+		for (var i = 0; i < hooks[hookname].length; i++) {
+			if (hooks[hookname][i](context)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 

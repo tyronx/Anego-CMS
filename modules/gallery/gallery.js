@@ -193,6 +193,8 @@ gallery = ContentElement.extend({
 					self.settings();
 				}
 			}
+			
+			Core.callHooks('afterContentElementEditLoad', { contentElement: self });
 		});
 		
 		$(document).filedrop({

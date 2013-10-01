@@ -6,6 +6,11 @@
 // TODO: Important! Call endedit of all content elements!! (otherwise may not correctly unbind events e.g. on $(document))
 Core.endEdit = function(options) {
 	if (!options) options = {};
+		
+	var cancel = Core.callHooks("beforeEndEdit");
+	if (cancel) return false;
+	
+	$('#contents').removeClass("editing");
 
 	var unloadDragDrop = function() {
 		anego.editmode = false; 
@@ -19,6 +24,8 @@ Core.endEdit = function(options) {
 		Core.dragdrop.destroy();
 		Core.dragdrop = null;
 		Core.pageEditDialog.closeDialog();
+		
+		Core.callHooks("afterEndEdit");
 	}
 	
 	/* When switching into an admin page, we don't have to load the old page again */

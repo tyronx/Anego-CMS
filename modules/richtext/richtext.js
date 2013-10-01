@@ -28,8 +28,11 @@ richtext = ContentElement.extend({
 				if(aw = GetAnswer(data)) {
 					self.html = aw;
 					$('#' + self.editorId).tinymce().setContent(aw);
+					Core.callHooks('afterContentElementEditLoad', { contentElement: self });
 				}
 			});
+		} else {
+			Core.callHooks('afterContentElementEditLoad', { contentElement: self });
 		}
 		
 		$container.find('.btn_sendrte').click(function() {

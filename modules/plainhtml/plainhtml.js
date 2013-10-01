@@ -46,6 +46,8 @@ plainhtml = ContentElement.extend({
 				$container.find('.btn_cancelrte').click(function() {
 					self.endEdit();
 				});
+				
+				Core.callHooks('afterContentElementEditLoad', { contentElement: self });
 			} else {
 				self.endEdit();
 			}

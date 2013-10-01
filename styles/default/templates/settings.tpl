@@ -36,7 +36,7 @@
 			
 			<div id="pageoptions" class="tab_content">
 				<form name="generalsettings" onsubmit="return false">
-					<h2 style="float:left;">{__Options}</h2>
+					<h2 style="display:inline;">{__Options}</h2>
 					<br><br>
 					<input type="checkbox" name="autoeditmode" id="autoeditmode" value="1"{if $settings.autoeditmode} checked="checked"{/if}> <label for="autoeditmode">{__When logged in, automatically enter edit mode.}</label>
 					<br><br>
