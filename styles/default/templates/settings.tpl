@@ -40,6 +40,8 @@
 					<br><br>
 					<input type="checkbox" name="autoeditmode" id="autoeditmode" value="1"{if $settings.autoeditmode} checked="checked"{/if}> <label for="autoeditmode">{__When logged in, automatically enter edit mode.}</label>
 					<br><br>
+					<input type="checkbox" name="developermode" id="developermode" value="1"{if $settings.developermode} checked="checked"{/if}> <label for="developermode">{__Developer Mode (disables Javascript caching and minifying for easier debugging).}</label>
+					<br><br>
 					<input type="button" name="SaveGeneral" value="{__Save settings}">
 				</form>
 			</div>

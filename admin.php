@@ -139,7 +139,6 @@ switch($_GET['a']) {
 		$res = mysql_query("SELECT * FROM ".SETTINGS);
 		while ($row = mysql_fetch_array($res)) {
 			$settings[$row['name']] = $row['value'];
-
 		}
 		
 		$res = mysql_query("SELECT idx, name FROM ".PAGES." WHERE nolink=0 AND file='' ORDER BY name");
@@ -189,7 +188,8 @@ switch($_GET['a']) {
 	case 'savesetgen':
 		if(UserRole() < Role::Admin) BailErr(__('No permission to access this page, sorry.'));
 		
-		mysql_query('REPLACE INTO '.SETTINGS.' (name,value) VALUES (\'autoeditmode\',\'' . intval($_POST['autoeditmode'])  . '\')');		
+		mysql_query('REPLACE INTO '.SETTINGS.' (name,value) VALUES (\'autoeditmode\',\'' . intval(@$_POST['autoeditmode'])  . '\')');
+		mysql_query('REPLACE INTO '.SETTINGS.' (name,value) VALUES (\'developermode\',\'' . intval(@$_POST['developermode'])  . '\')');
 		exit("200\n");
 
 		break;

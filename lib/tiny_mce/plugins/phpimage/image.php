@@ -163,7 +163,6 @@ if(isset($_POST['uploadImg'])) {
 
 function maxFileSize() {
 	return in_mb(min(ini_get('post_max_size'),ini_get('upload_max_filesize'))) . 'MB';
-	
 }
 
 function in_mb($val) {

@@ -31,56 +31,10 @@ if (isset($_REQUEST['_SESSION']) || isset($_REQUEST['_COOKIE'])) {
 	die("Get lost Muppet!");
 }
 
-/**** Setup code for the design ****/
+/**** Language specific initialisations ****/
+require "inc/lng_init.php";
 
-// Language setup
-// eng: 1
-// ger: 2
-$langnum = array("eng"=>1,"ger"=>2);
 
-if($language != 'auto' && !array_key_exists($language, $langnum)) {
-	$language = 'eng';
-}
-
-if ($language == 'auto') {
-	$language = GetCookie('lang');
-	if (!array_key_exists($language, $langnum))
-		$language='eng';
-}
-
-function addL10N($file) {
-	if (file_exists($file)) {
-		include($file);
-		$GLOBALS['lang'] = array_merge($GLOBALS['lang'], $lang);
-	}
-}
-
-function __($str) {
-	global $lang;
-	
-    if (isset($lang[$str]) && $lang[$str]) {
-        return $lang[$str];
-		
-    } else {
-        return $str;
-    }
-}
-
-function i10n_smarty($source, $template) {
-     return preg_replace('!{__([^}]+)}!e', '__("$1")', $source);
-}
-
-/**** Table constants ****/
-
-if ($language == 'ger') {
-	define("PAGES",$cfg['tablePrefix']."pages_ger");
-	define("SETTINGS",$cfg['tablePrefix']."settings_ger");
-	define("PAGE_ELEMENT",$cfg['tablePrefix']."pages_element_ger");
-} else {
-	define("PAGES",$cfg['tablePrefix']."pages_eng");
-	define("SETTINGS",$cfg['tablePrefix']."settings_eng");
-	define("PAGE_ELEMENT",$cfg['tablePrefix']."pages_element_eng");
-}
 
 // Main HTML output handler
 $anego = new Anego(STYLE);
@@ -132,29 +86,25 @@ define('MENU_MINOR','MINOR');
 
 
 /**** Init MySQL ****/
-if(!function_exists('mysql_connect')) Bail(__('No PHP MySQL Support on this Server. Please install it.'));
+require "inc/db_init.php";
 
-/**** Init MySQL ****/
-$sql_link=@mysql_connect(HOST,SQLUSER,SQLPASS)
-	or BailErr(__('Our Database is not reachable. Please try again later!'),mysql_error(),true);
 
-if(!@mysql_select_db(SQLDB)) {
-	$sql_link=0;
-	BailErr(__('Our Database is not reachable. Please try again later!'),mysql_error(),true);
-}
 
-/**** More setup code for the design ****/
+/***** Settings *****/
 
-$s=array();
+$s = array();
 // Todo: Reduce to the needed settings (dont retrieve all)
 $q = "SELECT * FROM ".SETTINGS;
 $res = mysql_query($q) or
 	BailSQLn(__('A database query failed.'),$q); 
-while($row = mysql_fetch_array($res))
-	$settings[$row['name']] = $row['value'];
 
-if (!isset($settings['pagetitle']))
+while($row = mysql_fetch_array($res)) {
+	$settings[$row['name']] = $row['value'];
+}
+
+if (!isset($settings['pagetitle'])) {
 	$settings['pagetitle'] = 'Anego CMS';
+}
 
 function getSetting($name) {
 	return $settings[$name];
@@ -165,6 +115,10 @@ function setSetting($name, $value) {
 	mysql_query($q) or
 		BailErr('Failed applying setings', $q);
 }
+
+
+/*** More Frontend Setup code ***/
+
 
 $anego->AddJsPreload("\tanego.homepage=" . HomePage() . ';');
 
@@ -185,135 +139,7 @@ $anego->assign('loginok', LOGINOK);
 $anego->assign('editablePage', LOGINOK && basename($_SERVER['SCRIPT_NAME']) == 'index.php');
 $anego->assign('basepath', $cfg['path']);
 
-/**** Error handling ****/
 
-// Todo: You can use this but info.log needs to be set up then in setup.php
-/*function LogInfo($file, $text) {
-	$fp=fopen('var/info.log','a');
-	fwrite($fp,$file.' '.date('d.m.Y H:i:s')."\t".$text."\n");
-	fclose($fp);
-}*/
-
-function Bail($msg,$no_header=0) {
-	ExitError($msg, "", 0, 0, $no_header);
-}
-
-// Bail after unsuccessfull SQL Query without header (only used when connecting to DB failed)
-function BailSQLn($msg,$q,$log_once=0) {
-	ExitError($msg, mysql_error() . "\r\nQuery: '$q'", 2, $log_once, true);
-}
-// Bail after unsuccessfull SQL Query with header
-function BailSQL($msg,$q,$log_once=0) {
-	if(IS_AJAX) {
-		logError($msg,$q);
-		exit("500\n$msg");
-	}
-	ExitError($msg, mysql_error()."\r\nQuery: '$q'", 2, $log_once);
-}
-// Normal Bail for non-Ajax Request
-function BailErr($msg , $log="", $log_once=0) {
-	if(IS_AJAX) {
-		logError($msg);
-		exit("500\n$msg");
-	}
-	ExitError($msg,$log,2,$log_once);
-}
-
-// Only writes extensive error messages to log file
-function logError($msg, $query = '') {
-	$mymsg = str_replace('<br>',"\n", 
-		sprintf(__('<br>There was an error, I\'m sorry I couldnt execute your request. The respsonsible php script '.
-				   'told me: %s<br><br>A detailed error message has been logged.'), $msg));
-	
-	$log = '';
-	if (strlen($query)) {
-		$log = mysql_error()."\nQuery: '$query'";
-	}
-	
-	$fp = fopen('var/error.log','a');
-	fwrite($fp, "ID: n/a\n");
-	fwrite($fp, "Time: ".time()." (".@date("H:i d.m.Y").")\n");
-	fwrite($fp, "Error: logError(".str_replace("\n\n","\n",$msg).")\n");
-	if (strlen($log)) {
-		fwrite($fp, "Log: ".str_replace("\n\n","\n",$log) . "\n");
-	}
-	fwrite($fp, '$_GET: '.serialize($_GET)."\n");
-	fwrite($fp, '$_POST: '.serialize($_POST)."\n");
-	fwrite($fp, "\n");
-	
-	fclose($fp);
-}
-
-// Writes error to log file and displays a generic error through smarty 
-// $severity:
-// 0 ... Print error, dont' log
-// 1 ... Print error, simple log msg
-// 2 ... Print error, extensive log msg (with serialized GET/POS vars)
-// $log_once:
-// 0 ... no effect
-// id ... check if error has been logged within last hour. if yes, dont log
-function ExitError($msg,$ToLog="", $severity=0, $log_once=0, $no_header=0) {
-	global $_GET, $_POST, $anego;
-	
-	if ($severity > 0) {
-		$mymsg = '<br>'.sprintf(__('<br>There was an error, I\'m sorry I couldnt execute your request. '.
-								   'The respsonsible php script told me: %s<br><br>A detailed error message has been logged.'), $msg);
-	} else {
-		$mymsg = "<br>$msg";
-	}
-	
-	if ($severity>0) {
-		if ($log_once>0 && file_exists('var/error.log')) {
-			$log = file_get_contents('var/error.log');
-			$entries = explode("\n\n",$log);
-			
-			foreach ($entries as $entry) {
-				if (intval(substr($entry,4,8)) == $log_once) {
-					if (time()-intval(substr($entry,strpos($entry,"\n")+6,strpos($entry,"("))) < 3600) {
-						//if($GLOBALS['sql_link'] && $no_header==0) {
-						if (!$no_header) {
-							$anego->AddContent($mymsg);
-							$anego->bail('index.tpl');
-						//} else echo $mymsg;
-						}
-						exit();
-					}
-				}
-			}
-		}
-		
-		$fp = fopen('var/error.log','a');
-		// if you change 'ID :' or 'Time: ' prefix, also change the substr the lines above!
-		fwrite($fp,"ID: " . $log_once . "\r\n");
-		fwrite($fp,"Time: " . time() . " (" . @date("H:i d.m.Y") . ")\r\n");
-		fwrite($fp,"Error: ". str_replace("\r\n\r\n", "\r\n", $msg) . "\r\n");
-		
-		if (strlen($ToLog)) {
-			fwrite($fp, "Log: " . str_replace("\r\n\r\n","\r\n",$ToLog) . "\r\n");
-		}
-		
-		if ($severity == 2) {
-			fwrite($fp, '$_GET: ' . serialize($_GET) . "\r\n");
-			fwrite($fp, '$_POST: ' . serialize($_POST) . "\r\n");
-		}
-		
-		fwrite($fp, "\r\n");
-		fclose($fp);
-	}
-	
-	$anego->AddJsPreload("\tanego.error=true;");
-	
-	if (isset($GLOBALS['sql_link']) && $GLOBALS['sql_link'] && $no_header==0 && !defined('DISPLAY_ATTEMPTED')) {
-		$anego->AddContent($mymsg);
-		$anego->Display('index.tpl');
-		//$anego->bail('index.tpl');
-	} else {
-		$anego->AddContent($mymsg);
-		$anego->bail('index.tpl');
-	}
-
-	exit();
-}
 
 /******* Page display *******/
 /* Determine which page to show - returns the current page to be shown */
