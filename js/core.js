@@ -48,9 +48,10 @@ Array.prototype.tostring=function() {
 Core = new CoreFunctions();
 
 // The page requires js to be loaded, but didn't load it yet (since we don't need it when another page is being loaded via anchor)
-if(typeof anego.pageJS != 'undefined') { // && !
-	for(var i=0; i<anego.pageJS.length; i++)
+if (typeof anego.pageJS != 'undefined') { // && !
+	for (var i = 0; i < anego.pageJS.length; i++) {
 		Core.loadJavascript(anego.pageJS[i]);
+	}
 } 
 
 // Don't initalize various things if another page is about to be loaded
@@ -68,9 +69,9 @@ $(document).ready(function() {
 		}
 	}
 	
-	if (anego.pageLoad == 'ajax')
+	if (anego.pageLoad == 'ajax') {
 		Core.ajaxifyMenu();
-	
+	}
 	
 	$.postOriginal = $.post;
 	$.getOriginal = $.get;
@@ -87,7 +88,7 @@ $(document).ready(function() {
 	}
 	
 	$.get = function(url, data, success, dataType) {
-		if(! url.match(/^http:/))
+		if (! url.match(/^http:/))
 			url = anego.path + url;
 		
 		if (typeof data == 'function') {
@@ -104,9 +105,9 @@ $(document).ready(function() {
 			}
 		};
 		
-		if(typeof success != 'undefined')
+		if (typeof success != 'undefined')
 			request.settings.success = success;
-		if(typeof dataType != 'undefined')
+		if (typeof dataType != 'undefined')
 			request.settings.dataType = dataType;
 		
 		Core.ajaxQueue.push(request);
@@ -136,10 +137,12 @@ $(document).ready(function() {
 			}
 		};
 		
-		if(typeof success != 'undefined')
+		if (typeof success != 'undefined') {
 			request.settings.success = success;
-		if(typeof dataType != 'undefined')
+		}
+		if (typeof dataType != 'undefined') {
 			request.settings.dataType = dataType;
+		}
 
 		
 		Core.ajaxQueue.push(request);
@@ -279,21 +282,30 @@ function CoreFunctions() {
 	 *  forceLoad: Ignores some checks to force reload the page on Core.EndEdit()
 	*/
 	this.loadPage = function(url, settings) {
-		if(typeof settings != 'object')
+		if (typeof settings != 'object') {
 			settings = new Object();
+		}
 		
-		if(typeof url != 'object')
+		if (typeof url != 'object') {
 			url = Core.splitURL(url);
+		}
 
-		if(! url.isPage) return false;
+		if (! url.isPage) {
+			return false;
+		}
 		/*  RSH calls loadPage() too => don't make requests twice */
-		if (loadingPage != null) return false;
+		if (loadingPage != null) {
+			return false;
+		}
+		
 		loadingPage = url.fullpath;
 		
 		//$('#name').html('b');
 		
 		var cancel = Core.callHooks("beforePageLoad", url.fullpath);
-		if (cancel) return false;
+		if (cancel) {
+			return false;
+		}
 			
 		//$('#name').append('c');
 		
@@ -309,7 +321,7 @@ function CoreFunctions() {
 		 * The browser will load a new site because he sees it as a different file, hence our GET request fails with an
 		 * empty error message. So: Don't load pages with ajax in such cases.
 		*/
-		if(location.pathname[location.pathname.length-1] != '/' && (typeof settings.forceLoad == 'undefined' || settings.forceLoad == false)) {
+		if (location.pathname[location.pathname.length-1] != '/' && (typeof settings.forceLoad == 'undefined' || settings.forceLoad == false)) {
 			loadingPage=null;
 			return false;
 		}
@@ -326,7 +338,7 @@ function CoreFunctions() {
 				get = { a: url[1], noheader: 1 };
 				$('#pageEditLink').parent().css('display','none');
 				
-				if(anego.editmode && Core.endEdit) {
+				if (anego.editmode && Core.endEdit) {
 					Core.endEdit({ ignorePage: true });
 				}
 				
@@ -382,13 +394,15 @@ function CoreFunctions() {
 		$.get(file, get, function(data) {
 			if (aw = GetAnswer(data)) {
 				if (animated) putLoadedText(aw);
-				loaded=true;
+				loaded = true;
 
-				if(settings.ok_callback) 
+				if(settings.ok_callback) { 
 					settings.ok_callback(aw);
+				}
 			} else {
-				if(settings.fail_callback) 
+				if(settings.fail_callback) {
 					settings.fail_callback(aw);
+				}
 			}
 		});
 
@@ -404,7 +418,7 @@ function CoreFunctions() {
 			Core.loadJSONResult(data);
 			
 			/* Place the content */
-			if(anego.editmode && url[0] != 'admin') { // from admin.php
+			if (anego.editmode && url[0] != 'admin') { // from admin.php
 				$('#content').html(data.content);
 				that.initPageContentEdit(data);
 			} else {             // from index.php (ajax.php)
@@ -412,9 +426,13 @@ function CoreFunctions() {
 				that.initPageContent();
 			}
 			
-			if(anego.animatePageLoad>0) 
+			if (anego.animatePageLoad > 0) {
 				$('#content').css({opacity: 0.0}).animate({opacity: 1.0}, anego.animatePageLoad);
-				
+			}
+			
+			$("#contents").toggleClass("admin", url[0] == "admin");
+			
+			
 			Core.curPg = url;
 			Core.curPg.pageId = data.pageId;
 			
@@ -425,7 +443,7 @@ function CoreFunctions() {
 				settings.afterContentLoaded(data);
 			}
 			
-			Core.callHooks("afterPageLoad");
+			Core.callHooks("afterPageLoad", url);
 		}
 		
 		return true;
