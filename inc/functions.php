@@ -220,7 +220,11 @@ function CopyResized($file, $width = 0, $height = 0, $proportional = true, $outp
 	
 		fastimagecopyresampled($image_resized, $image, 0, 0, $crop['x'] * $propX, $crop['y'] * $propY, $crop['w'], $crop['h'], $crop['w'] * $propX, $crop['h'] * $propY);
 	} else {
-		fastimagecopyresampled($image_resized, $image, 0, 0, 0, 0, $final_width, $final_height, $width_old, $height_old);
+		if ($info[2] == IMAGETYPE_PNG) {
+			imagecopyresampled ($image_resized, $image, 0, 0, 0, 0, $final_width, $final_height, $width_old, $height_old);
+		} else {
+			fastimagecopyresampled($image_resized, $image, 0, 0, 0, 0, $final_width, $final_height, $width_old, $height_old);
+		}
 	}
  
 
