@@ -181,7 +181,7 @@ productlist = ContentElement.extend({
 						$('.productpicture', $product).html('<img src="' + product.filename + '">');
 					}
 					
-					$('.producttitle', $product).html(product.title);
+					$('.producttitle', $product).html(product.title.replace(/\n/g,"<br>"));
 					$('a[href^="#editproduct"]', $product).attr('href','#editproduct-' + product.idx);
 					
 					$('.products', $container).append($product);
@@ -211,7 +211,7 @@ productlist = ContentElement.extend({
 		var dlgSettings = {
 			title: productid ? "Edit product" : "Create new product",
 			buttons: BTN_SAVECANCEL,
-			content: 'Name:<br><input style="width:90%;" type="text" id="productName" value=""><br>' +
+			content: 'Name:<br><textarea style="width:250px; height:50px;" id="productName" value=""></textarea><br>' +
 					'Image:<br><input id="productimage" type="file"><br><br>' +
 					'<input type="checkbox" name="createpage" id="createpage" value="1" checked="checked"> <label for="createpage">Create a new page for this product</label><br><br>' +
 					'<div class="productdesc">Description: <textarea style="width:100%" id="productDescription"></textarea></div>',
@@ -302,12 +302,7 @@ productlist = ContentElement.extend({
 			}
 	
 		}, false);
-
-		
-		$('input#createpage').change(function() {
-			$('div.productdesc').toggle($(this).is(':checked'));
-		});
-		
+	
 		if (productid) {
 			var product;
 			for (var i = 0; i < self.serverresponse.products.length; i++) {
@@ -325,8 +320,13 @@ productlist = ContentElement.extend({
 			} else {
 				$('#createpage').removeAttr('checked');
 			}
-			
 		}
+		
+		$('input#createpage').change(function() {
+			$('div.productdesc').toggle($(this).is(':checked'));
+		});
+		$('input#createpage').trigger('change');
+
 		
 	},
 	

@@ -240,22 +240,35 @@ class Anego extends Smarty {
 				
 				$page['itemclasses'] = 
 					(count($page['children']) 					? 'navParent ' : '') .
-					($cfg['submenuStyle'] == 'auto'				? 'canHover ' : '') .
+					($cfg['submenuStyle'] == 'auto'		? 'canHover ' : '') .
 					(@$page['selected']							? 'navSelected ' : '') .
-					(@$page['childselected']					? 'childSelected ' : '');// .
-					//($page['parent_idx'] && $page['selected']	? 'subnavSelected ' : '');
+					(@$page['childselected']					? 'childSelected ' : '') .
+					($page['nolink']								? 'textitem ' : 'menuitem');
 				
-				
+				/*
+					Submenu is hidden when
+						- submenuStyle set to 'auto' and page is not selected
+						- submenuStyle set to 'onselect' and page or childpages is not selected
+						- submenuStyle set to 'submenu onselect' and 2 level deep submenus appear when clicked, 1 level deep always visible
+				*/
 				$page['childcontainerclasses'] = 
-					($cfg['submenuStyle'] == 'auto'
-						&& !$page['selected']					? 'hidden ' : '') .
-					($cfg['submenuStyle'] == 'onselect' 
-						&& (!@$page['selected'] && !@$page['childselected'])
-						&& $depth > 0							? 'hidden ' : '') .
-					($cfg['submenuStyle'] == 'submenu onselect' 
-						&& (!$page['selected'] && !$page['childselected'])
-						&& $depth > 1							? 'hidden ' : '');
-				
+						(
+							$cfg['submenuStyle'] == 'auto' 
+							&& !$page['selected']
+						) ? 'hidden ' : '' 
+					.
+						(
+							$cfg['submenuStyle'] == 'onselect' 
+							&& (!@$page['selected'] && !@$page['childselected'])
+							&& $depth > 0
+						) ? 'hidden ' : ''
+					.
+						(
+							$cfg['submenuStyle'] == 'submenu onselect' 
+							&& (!$page['selected'] && !$page['childselected'])
+							&& $depth > 1
+						) ? 'hidden ' : ''
+					;
 				
 				$children[$page['idx']] = $page;
 			}
@@ -271,6 +284,8 @@ class Anego extends Smarty {
 		
 		$row['link'] = $cfg['path'];
 		$row['linkclass'] = '';
+		
+		if ($row['url']{0} == '/') $row['url'] = substr($row['url'], 1);
 		
 		if($cfg['fancyURLs']) {
 			if (@$row['url']) {

@@ -165,8 +165,9 @@ function CurrentPage() {
 
 /* Returns and defines constant HOMEPAGE, which is the first page to be shown when a visitor comes to the site */
 function HomePage() {
-	if(defined('HOMEPAGE'))
+	if(defined('HOMEPAGE')) {
 		return HOMEPAGE;
+	}
 		
 	$q = "SELECT value FROM ".SETTINGS." WHERE name='firstpage'";
 	$res = mysql_query($q) or
@@ -182,10 +183,20 @@ function HomePage() {
 		// Not even a page available? Damn.
 		if (mysql_affected_rows() == 0) $p = -1;
 	}
-	
+		
 	define('HOMEPAGE',$p);
 	
 	return intval($p);
+}
+
+function getURLFromPage($pageidx) {
+
+	$q = "SELECT url FROM ".PAGES." WHERE idx=" . intval($pageidx);
+	
+	$res = mysql_query($q) or
+		BailSQLn(__('Failed getting settings data'),$q);
+	list($url) = mysql_fetch_array($res);
+	return $url;
 }
 
 /* Admin links */
@@ -260,7 +271,8 @@ function PrintPage($p) {
 		$anego->AddJsPreload("\tanego.pageJS=new Array('" . implode("','",$js) . "');");
 	}
 	
-	if (strlen($row['file'])) {
+	
+	if (strlen($row['file']) && file_exists($row['file'])) {
 		/***** Page is file: include file *****/
 		include($row['file']);
 	} else {

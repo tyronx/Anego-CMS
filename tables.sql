@@ -77,15 +77,15 @@ CREATE TABLE IF NOT EXISTS `anego_pages_aloha` (
 
 CREATE TABLE IF NOT EXISTS `anego_pages_mailer` (
   `idx` int(11) NOT NULL AUTO_INCREMENT,
-  `subject` text NOT NULL,
-  `recipient` varchar(255) NOT NULL,
-  `mailtemplate` text NOT NULL,
+  `subject` text DEFAULT NULL,
+  `recipient` varchar(255) DEFAULT NULL,
+  `mailtemplate` text DEFAULT NULL,
   `hourlimit` smallint(6) NOT NULL DEFAULT '60',
-  `formhtml` text NOT NULL,
+  `formhtml` text DEFAULT NULL,
   `successmessage` text NOT NULL,
   `numsent_total` int(11) NOT NULL DEFAULT '0',
   `numsent_lasthour` int(11) NOT NULL DEFAULT '0',
-  `currenthour` int(11) NOT NULL,
+  `currenthour` int(11) DEFAULT NULL,
   PRIMARY KEY (`idx`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1;
 
@@ -129,7 +129,7 @@ CREATE TABLE IF NOT EXISTS `anego_pages_element_ger` (
 CREATE TABLE IF NOT EXISTS `anego_pages_eng` (
   `idx` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(150) NOT NULL DEFAULT '',
-  `url` varchar(255) NOT NULL,
+  `url` varchar(255) DEFAULT NULL,
   `info` varchar(150) NOT NULL DEFAULT '',
   `date` int(13) NOT NULL DEFAULT '0',
   `parent_idx` int(11) NOT NULL DEFAULT '0',
@@ -322,12 +322,12 @@ CREATE TABLE IF NOT EXISTS `anego_settings_ger` (
 
 CREATE TABLE IF NOT EXISTS `anego_pages_product` (
   `idx` int(11) NOT NULL AUTO_INCREMENT,
-  `products_idx` int(11) NOT NULL,
-  `page_idx` int(11) NOT NULL,
-  `element_idx` int(11) NOT NULL,
-  `title` text NOT NULL,
-  `description` text NOT NULL,
-  `filename` varchar(255) NOT NULL,
+  `products_idx` int(11) DEFAULT NULL,
+  `page_idx` int(11) DEFAULT NULL,
+  `element_idx` int(11) DEFAULT NULL,
+  `title` text DEFAULT NULL,
+  `description` text DEFAULT NULL,
+  `filename` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`idx`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
 
@@ -339,13 +339,13 @@ CREATE TABLE IF NOT EXISTS `anego_pages_product` (
 
 CREATE TABLE IF NOT EXISTS `anego_pages_products` (
   `idx` int(11) NOT NULL AUTO_INCREMENT,
-  `value` longtext NOT NULL,
+  `value` longtext DEFAULT NULL,
   `style` varchar(255) DEFAULT NULL,
-  `productswidth` int(11) NOT NULL,
-  `productwidth` smallint(6) NOT NULL,
-  `productheight` smallint(6) NOT NULL,
-  `producthorispacing` smallint(6) NOT NULL,
-  `productvertispacing` smallint(6) NOT NULL,
+  `productswidth` int(11) DEFAULT NULL,
+  `productwidth` smallint(6) DEFAULT NULL,
+  `productheight` smallint(6) DEFAULT NULL,
+  `producthorispacing` smallint(6) DEFAULT NULL,
+  `productvertispacing` smallint(6) DEFAULT NULL,
   PRIMARY KEY (`idx`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
 

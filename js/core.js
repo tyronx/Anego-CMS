@@ -471,12 +471,14 @@ function CoreFunctions() {
 	/* Overwrite this method if needed */
 	// Adds the correct "selected" css classes and shows menuitems where needed
 	this.selectPageInMenu = function(page) {
-		if(anego.submenuStyle == 'visible') return;
+		if (anego.submenuStyle == 'visible') return;
+		if (anego.pageLoad != 'ajax') return;
 		
 		var el = null;
 		if(page != null) {
 			el = $('.anegoNav li a[href="' + page.fullpath + '"]').parent();
 		}
+		
 		
 		// If this is a child of a child we just need to make sure its visible
 		if(el != null && el.hasClass('subsubitem')) {
@@ -499,11 +501,12 @@ function CoreFunctions() {
 			.removeClass('childSelected');
 		
 		
+		
 		// No page select => we just unselect the current page
-		if(page == null) return;
+		if (page == null) return;
 		
 		// If a sub page is clicked, leave submenu open and parent menu selected
-		if(el.parents().hasClass('subnavlist')) {
+		if (el.parents().hasClass('subnavlist')) {
 			// Remove other subpages selection
 			el.parents().find('li.navSelected').removeClass('navSelected');
 			// Menu selected, add class to the. <li>

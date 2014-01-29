@@ -4,7 +4,7 @@ Plugin Name: Product list
 Plugin Image: productlist.png
 Plugin URI: http://www.anego.at
 Plugin Type: ContentElement
-Description: Module for easy listing of products. WARNING: This is an Alpha Version, not recommended for production use.
+Description: Module for easy listing of products. 
 Version: 0.1alpha
 Author: Tyron Madlener
 Author URI: http://www.tyron.at
@@ -85,7 +85,7 @@ class productlist extends ContentElement {
 			if ($product['filename'])
 				$str .= '<div class="productpicture"><img src="' . $cfg['path'] . $this->path . $product['filename'] . '" alt="' . $product['title'] . '"></div>';
 			
-			$str .= '<div class="producttitle"><img src="' . $cfg['path'] . 'styles/sytech/img/pfeil.gif">'. $product['title'] . '</div>';
+			$str .= '<div class="producttitle">'. str_replace(array("  ", "\n"), array("&nbsp;&nbsp;", "<br>"), $product['title']) . '</div>';
 			
 			if ($product['page_idx']) {
 				$str .= '</a>';
@@ -179,8 +179,16 @@ class productlist extends ContentElement {
 		}
 
 		if ($_POST['createnew']) {
+			if ($createpage) {
+				$pageidx_insert = "'$pageidx'";
+				$elementidx_insert = "'$elementidx'";
+			} else {
+				$pageidx_insert = 'null';
+				$elementidx_insert = 'null';
+			}
+			
 			$q = "INSERT INTO " . $this->productTable() . " (products_idx, page_idx, element_idx, title, description, filename) VALUES
-				('".$this->elementId."','$pageidx','$elementidx','$title','$desc','$filename')";
+				('".$this->elementId."',$pageidx_insert,$elementidx_insert,'$title','$desc','$filename')";
 				
 			mysql_query($q) or BailSQL(__('Couldn\'t insert product'), $q);
 			
@@ -189,7 +197,7 @@ class productlist extends ContentElement {
 		} else {
 			$q = 'UPDATE ' . $this->productTable() . ' SET 
 				description=\'' . $desc . '\', '
-				. (($createpage == 1) ? 'page_idx='.$pageidx.', ' : '')
+				. (($createpage > 0) ? '' : 'page_idx=0, ')
 				. ($filename ? "filename='$filename', " : '')
 				. 'title=\'' . $title . '\' WHERE idx=' . $productid;
 		

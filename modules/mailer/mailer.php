@@ -43,7 +43,7 @@ class mailer extends ContentElement {
 		
 		$q = "INSERT INTO " . $this->databaseTable() . " (subject, mailtemplate, formhtml, successmessage) VALUES (" .
 			"'" . mysql_real_escape_string($subject) . "', '" . mysql_real_escape_string($template) . "'," .
-			"'" . mysql_real_escape_string($formhtml) . "', '" . mysql_real_escape_string($successmessage) ."')";
+			"'" . mysql_real_escape_string($formhtml) . "', '" . mysql_real_escape_string($successMessage) ."')";
 		
 		$res = mysql_query($q) or
 			BailSQL(__("Failed inserting element"), $q);

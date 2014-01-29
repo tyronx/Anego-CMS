@@ -2,11 +2,11 @@
 $lang = array(
 	'Failed getting form code' => 'Konnte form code nicht lesen',
 	'Failed updating mailer element' => 'Konnte mailer element nicht updaten',
-	'Mailer: No receiver E-Mail in DB found.' => 'Mailer: Kein Empfänger E-Mail in der Datenbank gefunden.',
-	'Sorry, hourly contact request limit reached. Please try again later.' => 'Das Limit an Kontaktanfragen wurde erreicht, bitte versuche es später noch einmal.',
+	'Mailer: No receiver E-Mail in DB found.' => 'Mailer: Kein EmpfÃ¤er E-Mail in der Datenbank gefunden.',
+	'Sorry, hourly contact request limit reached. Please try again later.' => 'Das Limit an Kontaktanfragen wurde erreicht, bitte versuche es spÃ¤ter noch einmal.',
 	'I\'m sorry, but I was unable to send out a mail. Something must be wrong with the server configuration' => 'I\'m sorry, but I was unable to send out a mail. Something must be wrong with the server configuration',
 	'Sending...' => 'Sende Nachricht...',
-	'Thank you for your message!' => 'Danke für deine Nachricht!',
+	'Thank you for your message!' => 'Danke fÃ¼r deine Nachricht!',
 	'From %s: A person used your e-mail form' => 'Von %s: Eine Person hat das Kontaktformular verwendet',
 	'mailtemplate' => 'Hello
 		
