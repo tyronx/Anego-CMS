@@ -45,6 +45,9 @@ body {
 .smallpadleft {
 	padding-left: 5px;
 }
+.nopadding {
+	padding:0px;
+}
 
 /**** Blog *****/
 
@@ -795,3 +798,10 @@ div.gallery div.pic img.thumbnail {
 .jPagination li a{   display:block; padding:3px 5px; color:#fff; background-color:#44b0dd; text-decoration:none;}  
 .jPagination li a.active {border:1px solid #000; color:#000; background-color:#fff;}  
 .jPagination li a.inactive {background-color:#eee; color:#777; border:1px solid #ccc;}  
+
+
+.product {
+	display: inline-block;
+	text-align:center;
+	margin-right:5px;
+}
