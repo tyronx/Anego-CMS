@@ -364,6 +364,10 @@ function BailSQLn($msg,$q,$log_once=0) {
 function BailSQL($msg,$q,$log_once=0) {
 	if(IS_AJAX) {
 		logError($msg,$q);
+		
+		if (substr($msg, -1) != '.') $msg .= '.';
+		$msg .= ' ' . __('Please check your error log for further information');
+		
 		exit("500\n$msg");
 	}
 	ExitError($msg, mysql_error()."\r\nQuery: '$q'", 2, $log_once);
@@ -372,6 +376,10 @@ function BailSQL($msg,$q,$log_once=0) {
 function BailErr($msg , $log="", $log_once=0) {
 	if(IS_AJAX) {
 		logError($msg);
+		
+		if (substr($msg, -1) != '.') $msg .= '.';
+		$msg .= __('Please check your error log for further information');
+		
 		exit("500\n$msg");
 	}
 	ExitError($msg,$log,2,$log_once);
