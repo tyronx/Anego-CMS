@@ -65,17 +65,19 @@ class Anego extends Smarty {
 	
 	// SQL-free display
 	function bail($template) {
-		$this->prepare();
+		$this->prepare(true);
 		
 		$this->assign('content', $this->content);
 		parent::display($template);	
 	}
 	
 	// Puts together all required header stuff
-	function prepare() {
+	function prepare($skipsql = false) {
 		global $cfg;
 		
-		$this->_addCustomCode();
+		if (!$skipsql) {
+			$this->_addCustomCode();
+		}
 		
 		if (LOGINOK) {
 			$this->AddCSSFile('styles/default/admin.css');
@@ -98,15 +100,18 @@ class Anego extends Smarty {
 		
 		define('DISPLAY_ATTEMPTED', 1);
 		
-		$pages = array(
-			'major' => $this->pageTreeByMenu('MAIN'),
-			'minor' => $this->pageTreeByMenu('MINOR')
-		);
+		if (!$skipsql) {
+			$pages = array(
+				'major' => $this->pageTreeByMenu('MAIN'),
+				'minor' => $this->pageTreeByMenu('MINOR')
+			);
+			
+			$this->assign('pages', $pages);
+			$this->assign('menuadmin',$this->MenuAdmin());
+		}
 		
-		$this->assign('menuadmin',$this->MenuAdmin());
+		
 		$this->assign('content', $this->content);
-		$this->assign('pages', $pages);
-		
 		
 		// general header
 		if (count($this->header_general)) {
