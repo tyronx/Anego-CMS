@@ -241,10 +241,6 @@ div#padder {
 					if($path[0] != '/') {
 						$path .= '/' . $path;
 					}
-					if($cfg['path'][0] == '/') {
-						$cfg['path'] = substr($cfg['path'], 1);
-					}
-					
 					if($path == $cfg['path']) {
 						echo $good;
 					} else { 
