@@ -14,6 +14,9 @@ require "inc/html.php";
 
 /**** Basic Checks ****/
 
+$cfg['path'] = strlen($cfg['path']) ? $cfg['path'] : $cfg['default_path'];
+$cfg['domain'] = strlen($cfg['domain']) ? $cfg['domain'] : $cfg['default_domain'];
+
 $cfg['domain'] .= ($cfg['path']{0} == '/') ? substr($cfg['path'],1) : $cfg['path'];
 
 

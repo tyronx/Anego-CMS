@@ -216,14 +216,21 @@ div#padder {
 					
 
 					// Inform about domain
-					$domain = 'http://'.$_SERVER['SERVER_NAME'].(($_SERVER['SERVER_PORT']!=80)?':'.$_SERVER['SERVER_PORT']:'');
-					if($domain[strlen($domain)-1]!='/') $domain.='/';
-					
-					if ($domain == $cfg['domain']) {
+					if (!strlen($cfg['domain'])) {
 						echo $warn;
-						echo 'No domain supplied. Will be using <i>' . $domain . '</i>';
+						echo 'No domain supplied. Will be using <i>' . $cfg['default_domain'] . '</i>';
 						echo '<div style="padding-left:20px;">from server configuration. Please configure <i>$cfg[\'domain\']</i> if this is incorrect. Wrong domain settings e.g. might prevent the TinyMCE from being loaded</div>';
+					} else {
+						if (substr($cfg['domain'], -1) != '/') {
+							echo $warn;
+							echo 'Domain is missing trailing slash (/), please add one to your $cfg[\'domain\']<br>';
+						} else {
+							echo $good.'Site Domain<br>';
+						}
 					}
+					
+					
+					
 					
 					// Check if we are in the server root directory - if not, anego needs to know about this
 					$path = dirname($_SERVER['REQUEST_URI']).'/';
@@ -231,8 +238,8 @@ div#padder {
 					if(preg_match('/Windows/i', php_uname("s"))) 
 						$path = str_replace('\\','/',$path);
 
-					if($path[0] == '/') {
-						$path = substr($path,1);
+					if($path[0] != '/') {
+						$path .= '/' . $path;
 					}
 					if($cfg['path'][0] == '/') {
 						$cfg['path'] = substr($cfg['path'], 1);
@@ -242,7 +249,7 @@ div#padder {
 						echo $good;
 					} else { 
 						echo $warn;
-						$err = '<div style="padding-left:20px;">Your Path settings might be incorrect. Try adding the following line to conf.inc.php:<div class="box">$cfg[\'path\']=\''.$path.'\';</div>';
+						$err = '<div style="padding-left:20px;">Your Path settings might be incorrect. Try adding/adjusting the following line in conf.inc.php:<div class="box">$cfg[\'path\']=\''.$path.'\';</div>';
 					}
 					echo 'Anego path'.$err;
 					

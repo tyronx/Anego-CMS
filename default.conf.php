@@ -86,11 +86,13 @@ $cfg['fancyURLs'] = true;
 /* Wether or not to display the secondary menu */
 $cfg['minorMenu'] = true;
 
-/* Domain of the website you want to use, overwrite if you don't want automatic detection. */
-$cfg['domain'] = 'http://'.$_SERVER['SERVER_NAME'].(($_SERVER['SERVER_PORT']!=80)?':'.$_SERVER['SERVER_PORT']:''); //.dirname($_SERVER['PHP_SELF']);
-if ($cfg['domain'][strlen($cfg['domain'])-1] != '/') $cfg['domain'].='/';
+/* Domain of the website you want to use, set in $cfg['domain']if you don't want automatic detection. */
+$cfg['default_domain'] = 'http://'.$_SERVER['SERVER_NAME'].(($_SERVER['SERVER_PORT']!=80)?':'.$_SERVER['SERVER_PORT']:'') . '/';
+$cfg['domain'] = '';
 
+/* If your site is not at the root of a domain, you can set a path here. e.g. www.domain.com/path */
 
+$cfg['default_path'] = '/';
 $cfg['path'] = '/';
 
 /* Database Tables */
