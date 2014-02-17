@@ -234,6 +234,9 @@ div#padder {
 					
 					// Check if we are in the server root directory - if not, anego needs to know about this
 					$path = dirname($_SERVER['REQUEST_URI']).'/';
+					if ($path == '//') $path = '/';
+					
+					
 					// dirname adds backslashes in windows O.o
 					if(preg_match('/Windows/i', php_uname("s"))) 
 						$path = str_replace('\\','/',$path);
@@ -255,10 +258,10 @@ div#padder {
 						echo $warn;
 						if(strlen($cfg['hash_salt']) < 15) {
 							echo "Your hash salt is very short.<br>";
-							echo '<div style="padding-left:20px;">How about something longer like this: '. genPwd(35) . '</div>';
+							echo '<div style="padding-left:20px;">How about something longer like this: '. htmlspecialchars(genPwd(35)) . '</div>';
 						} else {
 							echo 'You are using the default hash salt. Please add following (or similar) line to your config:<br>';
-							echo '<div style="padding-left:20px;"><div class="box">$cfg[\'hash_salt\'] = \'' . genPwd(35) . '\';</div>';
+							echo '<div style="padding-left:20px;"><div class="box">$cfg[\'hash_salt\'] = \'' . htmlspecialchars(genPwd(35)) . '\';</div>';
 						}
 					} else {
 						echo $good . 'Custom hash salt';
