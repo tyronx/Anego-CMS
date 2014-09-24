@@ -76,6 +76,7 @@ $anego->AddJsPreload("\tanego.animatePageLoad=".$cfg['ajaxloadFadeTimer'].";");
 $anego->AddJsPreload("\tanego.pageLoad='".$cfg['pageLoad']."';");
 $anego->AddJsPreload("\tanego.path='" . $cfg['path'] . "';");
 $anego->assign('anegopath', $cfg['path']);
+$anego->assign('submenustyle', $cfg['submenuStyle']);
 
 /***** Init database, etc. *****/ 
 

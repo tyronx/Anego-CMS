@@ -245,7 +245,7 @@ class Anego extends Smarty {
 				
 				$page['itemclasses'] = 
 					(count($page['children']) 					? 'navParent ' : '') .
-					($cfg['submenuStyle'] == 'auto'		? 'canHover ' : '') .
+					($cfg['submenuStyle'] == 'dropdown'? 'canHover ' : '') .
 					(@$page['selected']							? 'navSelected ' : '') .
 					(@$page['childselected']					? 'childSelected ' : '') .
 					($page['nolink']								? 'textitem ' : 'menuitem');
@@ -258,8 +258,8 @@ class Anego extends Smarty {
 				*/
 				$page['childcontainerclasses'] = 
 						(
-							$cfg['submenuStyle'] == 'auto' 
-							&& !$page['selected']
+							$cfg['submenuStyle'] == 'dropdown' 
+							//&& !@$page['selected']
 						) ? 'hidden ' : '' 
 					.
 						(

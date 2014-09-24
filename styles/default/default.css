@@ -27,6 +27,19 @@ body {
 
 /*** Standard Menu hover ***/
 
+#menu.dropdown li {
+	position: relative;
+}
+
+#menu.dropdown li:hover .subnavbox {
+	display:block;
+}
+
+#menu.dropdown .subnavbox {
+	display:none;
+	position:absolute;
+}
+
 .navParent.canHover:hover div.subnavbox {
 	display: block;
 }
@@ -45,6 +58,12 @@ body {
 .smallpadleft {
 	padding-left: 5px;
 }
+
+.smallpadu {
+	padding: 5px;
+	padding-top: 0px;
+}
+
 .nopadding {
 	padding:0px;
 }
