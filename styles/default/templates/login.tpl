@@ -4,7 +4,7 @@
 		<div class="loginBox">
 		<form id="loginForm" action="#" method="post" accept-charset="UTF-8" onsubmit="return false">
 			{__Name}<br>
-			<input type="text" name="username"><br><br>
+			<input type="text" name="username" value="{$username|escape}"><br><br>
 			{__Password}<br>
 			<input type="password" name="password"><br>
 			<input type="checkbox" name="staysigned" value="1" checked="checked"> {__Stay signed in}<br>

@@ -277,7 +277,8 @@ div#padder {
 			<?php
 						if(isset($_GET['a']) && $_GET['a']=='indb') {
 							if(file_exists('tables.sql')) {
-								if(createTables()) echo 'Tables created.<br>';
+								$result = createTables();
+								echo $result["message"];
 							} else {
 								echo '<b>Can\'t create tables, tables.sql file missing</b><br>';
 								$installOK=false;
@@ -409,23 +410,47 @@ function CheckWriteableRec($f) {
 function createTables() {
 	global $cfg;
 	
-	$sql=file('tables.sql');
+	$sql = file('tables.sql');
+	
+	$dir = opendir("modules");
+	$modulenames = array();
+	while ($modulename = readdir($dir)) {
+		if ($modulename == '.' || $modulename == '..') continue;
+		
+		if (file_exists("modules/{$modulename}/tables.sql")) {
+			$modulenames[] = $modulename;
+			
+			$sql = array_merge($sql, file("modules/{$modulename}/tables.sql"));
+		}
+	}
+	
 	$statement='';
-	foreach($sql as $line) {
-		if($cfg['tablePrefix']!='anego_' && preg_match('/CREATE/',$line))
-			$line=str_replace('anego_',$cfg['tablePrefix'],$line);
-		if($cfg['tablePrefix']!='anego_' && preg_match('/INSERT INTO/',$line))
-			$line=str_replace('anego_',$cfg['tablePrefix'],$line);
+	foreach ($sql as $line) {
+		if (preg_match("/^--/", $line)) continue;
+		
+		if ($cfg['tablePrefix'] != 'anego_' && preg_match('/CREATE/',$line)) {
+			$line = str_replace('anego_',$cfg['tablePrefix'],$line);
+		}
+		if ($cfg['tablePrefix'] != 'anego_' && preg_match('/INSERT INTO/',$line)) {
+			$line = str_replace('anego_',$cfg['tablePrefix'],$line);
+		}
 		
 		$statement.=$line;
 		
-		if(preg_match("/;$/",$line))
-			if(!@mysql_query($statement)) {
-				echo '<b>Automatic creation of tables failed, please create them manually (use tables.sql file)</b><br>';
-				echo '<span class="err">(Error was \''.mysql_error().'\')</span><br>';
-				return false;
+		if (preg_match("/;$/",$line)) {
+		
+			if (!@mysql_query($statement)) {
+				return array(
+					"success" => false,
+					"message" => '<b>Automatic creation of tables failed, please create them manually (use tables.sql file)</b><br>' . '<span class="err">(Error was \''.mysql_error().'\')</span><br>'
+				);
 				break;
 			} else $statement='';
+		}
 	}
-	return true;
+	
+	return array(
+		"success" => true,
+		"message" => "Created tables for Anego and Modules (".implode(", ", $modulenames).")<br>"
+	);
 }

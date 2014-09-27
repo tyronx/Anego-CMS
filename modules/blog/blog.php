@@ -22,9 +22,9 @@ class blog extends ContentElement {
 	   degrades properly to a text link
 	*/
 	function generateContent() {
-		global $cfg,$language;
+		global $cfg;
 		
-		include('modules/blog/'.$language.'.php');
+		include('modules/blog/'.$cfg['interfacelanguage'].'.php');
 		
 		if($cfg['fancyURLs']) {
 			$noscript = '<h1><a href="mdblog-v' . $this->elementId . '">' . $lng['blog']['gotomyblog'] . '</a></h1>';

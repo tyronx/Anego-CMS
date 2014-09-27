@@ -8,7 +8,7 @@ require "conf.inc.php";
 require "inc/auth.php";
 require "inc/functions.php";
 $lang = Array();
-require "lang/$language.php";
+require "lang/{$cfg['interfacelanguage']}.php";
 require "inc/html.php";
 
 
@@ -41,7 +41,7 @@ require "inc/lng_init.php";
 
 // Main HTML output handler
 $anego = new Anego(STYLE);
-$anego->assign('language',$language);
+$anego->assign('language', $cfg['interfacelanguage']);
 if (strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE')) {
 	$anego->assign('browser', 'ie');
 } else {
@@ -65,10 +65,10 @@ $defIcons = array(
 // Tells the loader to load all default javascript files
 $anego->AddJsModule('de');
 // Loads language related js files
-$anego->AddJsModule('ad'.$language);
+$anego->AddJsModule('ad'.$cfg['interfacelanguage']);
 // Settings required by js files
 $anego->AddJsPreload("\tanego=new Object();");
-$anego->AddJsPreload("\tanego.language='$language';");
+$anego->AddJsPreload("\tanego.language='{$cfg['interfacelanguage']}';");
 $anego->AddJsPreload("\tanego.style='".STYLE."';");
 $anego->AddJsPreload("\tanego.fancyURLs=".($cfg['fancyURLs']?'1':'0').";");
 $anego->AddJsPreload("\tanego.submenuStyle='".$cfg['submenuStyle']."';");
@@ -103,15 +103,21 @@ $res = mysql_query($q) or
 	BailSQLn(__('A database query failed.'),$q); 
 
 while($row = mysql_fetch_array($res)) {
-	$settings[$row['name']] = $row['value'];
+	$settings[$row['name']] = $row;
 }
 
 if (!isset($settings['pagetitle'])) {
-	$settings['pagetitle'] = 'Anego CMS';
+	$settings['pagetitle'] = array('value' => 'Anego CMS');
 }
 
-function getSetting($name) {
-	return $settings[$name];
+function getSetting($name, $full = false) {
+	global $settings;
+	
+	
+	if ($full) {
+		return isset($settings[$name]) ? $settings[$name] : null;
+	}
+	return isset($settings[$name]) ? $settings[$name]['value'] : null;
 }
 
 function setSetting($name, $value) {
@@ -126,19 +132,19 @@ function setSetting($name, $value) {
 
 $anego->AddJsPreload("\tanego.homepage=" . HomePage() . ';');
 
-if (@$settings['autoeditmode'] && LOGINOK) {
+if (getSetting('autoeditmode') && LOGINOK) {
 	$anego->AddJsPreload("\tanego.editmode=1;");
 }
 
-if (isset($settings['keywords']) && strlen($settings['keywords'])) {
-	$anego->AddHeadHeader("\t" . '<meta name="keywords" content="' . htmlentities(utf8_decode($settings['keywords'])).'">');
+if (getSetting('keywords')) {
+	$anego->AddHeadHeader("\t" . '<meta name="keywords" content="' . htmlentities(utf8_decode(getSetting('keywords'))).'">');
 }
 
-if (isset($settings['description']) && strlen($settings['description'])) {
-	$anego->AddHeadHeader("\t" . '<meta name="description" content="' . htmlentities(utf8_decode(str_replace("\n",' ',$settings['description']))).'">');
+if (getSetting('description')) {
+	$anego->AddHeadHeader("\t" . '<meta name="description" content="' . htmlentities(utf8_decode(str_replace("\n",' ',getSetting('description')))).'">');
 }
 
-$anego->assign('pagetitle', str_replace(array('<','>'),array('&lt;','&gt;'), $settings['pagetitle']));
+$anego->assign('pagetitle', str_replace(array('<','>'),array('&lt;','&gt;'), getSetting('pagetitle')));
 $anego->assign('loginok', LOGINOK);
 $anego->assign('editablePage', LOGINOK && basename($_SERVER['SCRIPT_NAME']) == 'index.php');
 $anego->assign('basepath', $cfg['path']);
@@ -301,7 +307,7 @@ function PrintPage($p) {
 
 // Returns required module-js files per page
 function pageLoadJs($p) {
-	global $language;
+	global $cfg;
 	
 	if(file_exists('var/installed_modules'))
 		$modules = unserialize(file_get_contents('var/installed_modules'));
@@ -317,13 +323,14 @@ function pageLoadJs($p) {
 	
 	while(list($mid)=mysql_fetch_row($res)) {
 		// typecast to array to allow non-array values in the module config
-		if(LOGINOK)
+		if(LOGINOK) {
 			$modjs=array_merge(@(array)$modules[$mid]['config']['js']['load'],@(array)$modules[$mid]['config']['js']['pageMod']);
-		else 
+		} else {
 			$modjs=array_merge(@(array)$modules[$mid]['config']['js']['load'],@(array)$modules[$mid]['config']['js']['pageView']);
+		}
 		
 		foreach($modjs as $idx=>$file)
-			$js[]='modules/'.$mid.'/'.str_replace('%lng',$language,$file);
+			$js[]='modules/'.$mid.'/'.str_replace('%lng', $cfg['interfacelanguage'], $file);
 	}
 	
 	return $js;

@@ -11,7 +11,7 @@ Author URI: http://www.tyron.at
 License: GPL2
 */
 
-addL10N('modules/mailer/' . @$language . '.php');
+addL10N('modules/mailer/' . @$cfg['interfacelanguage'] . '.php');
 
 class mailer extends ContentElement {
 	var $config;

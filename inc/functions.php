@@ -327,7 +327,6 @@ function addL10N($file) {
 
 function __($str) {
 	global $lang;
-	
     if (isset($lang[$str]) && $lang[$str]) {
         return $lang[$str];
 		

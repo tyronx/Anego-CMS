@@ -7,7 +7,7 @@ if (isset($_GET['a']) || isset($_POST['a'])) {
 	// Now set it back
 	chdir($cdir);
 	/* load language file */
-	include($language . '.php');
+	include('lang/'.$cfg['interfacelanguage'] . '.php');
 	
 	new BlogManager();
 }
@@ -19,7 +19,7 @@ class BlogManager {
 	var $readonly = false;
 	
 	function BlogManager() {
-		global $cfg, $lng, $cdir, $anego, $language;
+		global $cfg, $lng, $cdir, $anego;
 		
 		$this->blogTable = $cfg['tablePrefix'].$this->blogTable;
 		$this->cmtTable = $cfg['tablePrefix'].$this->cmtTable;
@@ -72,7 +72,7 @@ class BlogManager {
 					AdminBar(-1);
 					
 					$anego->AddContent($this->blogEntry($id, true));
-					$anego->appendJSFile('modules/blog/' . $language . '.js');
+					$anego->appendJSFile('modules/blog/lang/' . $cfg['interfacelanguage'] . '.js');
 					$anego->appendJSFile('modules/blog/admin.js');
 					$anego->display('index.tpl');
 				}
@@ -88,7 +88,7 @@ class BlogManager {
 					$anego->curPg = $pageId;
 					
 					$anego->AddContent($this->blogEntries($id));
-					$anego->appendJSFile('modules/blog/' . $language . '.js');
+					$anego->appendJSFile('modules/blog/lang/' . $cfg['interfacelanguage'] . '.js');
 					$anego->appendJSFile('modules/blog/admin.js');
 					$anego->display('index.tpl');
 				}

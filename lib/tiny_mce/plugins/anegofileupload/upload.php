@@ -18,7 +18,7 @@ require 'inc/auth.php';
 // Image resizing tools
 require 'inc/functions.php';
 // Some language strings
-require 'lang/'.$language.'.php';
+require 'lang/'.$cfg['interfacelanguage'].'.php';
 
 $cfg['domain'] .= ($cfg['path']{0} == '/') ? substr($cfg['path'],1) : $cfg['path'];
 

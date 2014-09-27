@@ -95,10 +95,6 @@ $cfg['domain'] = '';
 $cfg['default_path'] = '/';
 $cfg['path'] = '/';
 
-/* Database Tables */
-
-$cfg['tables']['forms'] = 'anego_forms';
-
 /* User roles */
 
 // A "Enum"

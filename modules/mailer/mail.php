@@ -3,9 +3,9 @@ if (!isset($_POST['mailerid'])) {
 	exit();
 } else {
 	chdir('../../');
-	$language = '';
+	$cfg['interfacelanguage'] = '';
 	include('core.php');
-	addL10N('modules/mailer/' . $language . '.php');
+	addL10N('modules/mailer/lang/' . $cfg['interfacelanguage'] . '.php');
 
 	class MailTemplate extends Smarty {	
 		function MailTemplate() {

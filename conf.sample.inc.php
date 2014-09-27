@@ -33,7 +33,8 @@ define ("SQLDB","database");
  * ger: German
  * auto: Autodetect language by browser/cookie (not fully implemented yet)
  */
-$language = 'eng';
+$cfg['interfacelanguage'] = 'eng';
+$cfg['websitelanguage'] = '';
 
 /* Edit this line, if your anego installation is in a subfolder, always with trailing slash
  * e.g. /anego/

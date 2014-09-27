@@ -290,7 +290,7 @@ class Anego extends Smarty {
 		$row['link'] = $cfg['path'];
 		$row['linkclass'] = '';
 		
-		if ($row['url']{0} == '/') $row['url'] = substr($row['url'], 1);
+		if (strlen($row['url']) && $row['url']{0} == '/') $row['url'] = substr($row['url'], 1);
 		
 		if($cfg['fancyURLs']) {
 			if (@$row['url']) {

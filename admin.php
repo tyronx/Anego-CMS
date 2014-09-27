@@ -1,13 +1,25 @@
 <?
 include("core.php");
 
-$anego->assign('pagetitle', $settings['pagetitle'] . " - Admin");
+$anego->assign('pagetitle', getSetting('pagetitle') . " - Admin");
 $anego->assign('showheader', !@$_GET['noheader']);
 
 if (!LOGINOK) {
 	$message = '';
 	/* Login */
 	if (@$_GET['a'] == 'li') {
+	
+		/* Slow down login attempts after the user entered the wrong password for 5 times */
+		$loginattempts = getSetting("loginattempts", true);
+		$attempts = 1;
+		
+		if ($loginattempts && time() - strtotime($loginattempts["lastmodified"]) < 60) {
+			$attempts += $loginattempts["value"];
+		}
+		setSetting("loginattempts", $attempts);
+		
+		usleep(min(10000, max(0, ($attempts - 5) * 500))*1000);
+		
 		/*
 			client_response = sha256(pass)
 			database_pass = sha256(salt+sha256(passwd))
@@ -25,6 +37,7 @@ if (!LOGINOK) {
 			
 		} else {
 			$message = __('Wrong username or password');
+			$anego->assign("username", $_POST["username"]);
 		}
 	}
 	

@@ -23,9 +23,12 @@ require 'inc/auth.php';
 // Image resizing tools
 require 'inc/functions.php';
 // Some language strings
-require 'lang/'.$language.'.php';
+require 'lang/'.$cfg['interfacelanguage'].'.php';
 
+$cfg['path'] = strlen($cfg['path']) ? $cfg['path'] : $cfg['default_path'];
+$cfg['domain'] = strlen($cfg['domain']) ? $cfg['domain'] : $cfg['default_domain'];
 $cfg['domain'] .= ($cfg['path']{0} == '/') ? substr($cfg['path'],1) : $cfg['path'];
+
 
 if (!LoggedOn())
 	exit("You are not logged on. Please log in as admin to upload a picture");
@@ -104,8 +107,9 @@ if(isset($_POST['insert'])) {
 		
 		// Delete old image if possible (if it wasnt a resize)
 		if ($_POST['isReplace'] && is_file($cfg['imagePath'] . basename($_POST['oldImage'])) && ! $justResize) {
-			@unlink($cfg['imagePath'] . basename($_POST['oldImage']));
-			@unlink($cfg['imagePath'] . resizedName(basename($_POST['oldImage'])));
+			// This does more damage than being useful
+			/*@unlink($cfg['imagePath'] . basename($_POST['oldImage']));
+			@unlink($cfg['imagePath'] . resizedName(basename($_POST['oldImage'])));*/
 		}
 
 		exit("200\n" . $cfg['domain'] . $cfg['imagePath'] . $name_sized . "\n" . $cfg['domain'] . $cfg['imagePath'] . $file);

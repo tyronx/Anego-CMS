@@ -4,24 +4,24 @@
 // ger: 2
 $langnum = array("eng"=>1, "ger"=>2);
 
-if($language != 'auto' && !array_key_exists($language, $langnum)) {
-	$language = 'eng';
+if ($cfg['interfacelanguage'] != 'auto' && !array_key_exists($cfg['interfacelanguage'], $langnum)) {
+	$cfg['interfacelanguage'] = 'eng';
 }
 
-if ($language == 'auto') {
-	$language = GetCookie('lang');
-	if (!array_key_exists($language, $langnum))
-		$language='eng';
+if ($cfg['websitelanguage'] == 'auto') {
+	$cfg['websitelanguage'] = GetCookie('lang');
+	if (!array_key_exists($cfg['websitelanguage'], $langnum))
+		$cfg['websitelanguage']='eng';
 }
 
 /**** Table constants ****/
 
-if ($language == 'ger') {
-	define("PAGES",$cfg['tablePrefix']."pages_ger");
-	define("SETTINGS",$cfg['tablePrefix']."settings_ger");
-	define("PAGE_ELEMENT",$cfg['tablePrefix']."pages_element_ger");
+if ($cfg['websitelanguage']) {
+	$tableappendix = "_" . $cfg['websitelanguage'];
 } else {
-	define("PAGES",$cfg['tablePrefix']."pages_eng");
-	define("SETTINGS",$cfg['tablePrefix']."settings_eng");
-	define("PAGE_ELEMENT",$cfg['tablePrefix']."pages_element_eng");
+	$tableappendix  = "";
 }
+
+define("PAGES",$cfg['tablePrefix']."pages".$tableappendix);
+define("SETTINGS",$cfg['tablePrefix']."settings".$tableappendix);
+define("PAGE_ELEMENT",$cfg['tablePrefix']."pages_element".$tableappendix);

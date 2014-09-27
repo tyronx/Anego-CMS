@@ -311,10 +311,10 @@ switch($ac) {
 		/* Also deliever what js files to load */
 		$json['js'] = pageLoadJs($row['idx']);
 
-		$settings['pagetitle'] = str_replace(array('&lt;', '&gt;'), array('<','>'), $settings['pagetitle']);
+		$pagetitle = str_replace(array('&lt;', '&gt;'), array('<','>'), getSetting('pagetitle'));
 		
 		$json['pageId'] = $row['idx'];
-		$json['title'] = $settings['pagetitle'] . " - " . $row['name'];
+		$json['title'] = $pagetitle . " - " . $row['name'];
 		$json['content'] = $anego->get_template_vars('content');
 				
 		

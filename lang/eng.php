@@ -60,5 +60,6 @@ $lang = array(
 	'Save settings' => 'Save settings',
 	'Options' => 'Options',
 	'When logged in, automatically enter edit mode.' => 'When logged in, automatically enter edit mode.',
-	'Available Modules' => 'Available Modules'
+	'Available Modules' => 'Available Modules',
+	'Developer Mode (disables Javascript caching and minifying for easier debugging).' => 'Developer Mode (disables Javascript caching and minifying for easier debugging).',
 );

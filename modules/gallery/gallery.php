@@ -43,6 +43,8 @@ class gallery extends ContentElement {
 	}
 	
 	function getConfig() {
+		global $cfg;
+		
 		$q = 'SELECT * FROM ' . $this->imageSizesTable();
 		$res = mysql_query($q) or BailSQL('Couldn\'t retrieve preview image sizes', $q);
 		
