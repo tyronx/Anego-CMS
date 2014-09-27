@@ -30,7 +30,7 @@ Project philosophy
 Copyright
 ---------
 
-Copyright (C) 2008-2012 Tyron Madlener (tyron.at)
+Copyright (C) 2008-2014 Tyron Madlener (tyron.at)
 
 
 License
