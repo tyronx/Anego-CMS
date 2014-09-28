@@ -3,7 +3,10 @@ if(typeof lngMain == 'undefined') {
 		edit_page: 'Seiten bearbeiten',
 		doneedit_page: 'Fertig bearbeitet',
 		configure: 'Konfigurieren',
-		configuration: 'Einstellungen'
+		configuration: 'Einstellungen',
+		error: 'Fehler',
+		reallydeleteelement: 'Element wirklich löschen?',
+		pleaseconfirm: 'Bitte bestätigen'
 	};
 	
 	lngMain['Please enter your user name.'] = 'Bitte Benutzername eingeben';
@@ -64,7 +67,6 @@ if(typeof lngMain == 'undefined') {
 	lng_savechanges = "Änderungen speichern";
 	lng_save = 'Speichern';
 	lng_cancelchanges = "Abbrechen";
-	lng_close = 'Schlie�en';
 
 	lng_imagelinks = 'Bilderlinks...';
 	lng_defImg = '<abbr title="Das Bild das statt dem Textlink angezeigt werden soll">Standard-Bild</abbr>';

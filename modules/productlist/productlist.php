@@ -287,9 +287,24 @@ class productlist extends ContentElement {
 	public static function installModule() {
 		return Array(
 			'js'=>Array(
-				'pageEdit'=>'productlist.js'
+				'pageEdit'=>array('lang/%lng.js', 'productlist.js')
 			)
 		);
+	}
+	
+	
+	public static function moduleInfos($language) {
+		if ($language == "ger") {
+			return array(
+				"name" =>  "Produkte",
+				"description" => "Erlaubt das erstellen einfacher Produktlisten"
+			);
+		} else {
+			return array(
+				"name" =>  "Products",
+				"description" => "Allows creation of simple Product lists"
+			);
+		}
 	}
 }
 ?>

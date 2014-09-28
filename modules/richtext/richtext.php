@@ -26,5 +26,20 @@ class richtext extends ContentElement {
 			)
 		);
 	}
+	
+	public static function moduleInfos($language) {
+		if ($language == "ger") {
+			return array(
+				"name" =>  "Text/Bilder",
+				"description" => "Formatierbarer Text und Bilder"
+			);
+		} else {
+			return array(
+				"name" =>  "Text/Pictures",
+				"description" => "Formattable Text and Pictures"
+			);
+		}
+	}
+
 }
 ?>

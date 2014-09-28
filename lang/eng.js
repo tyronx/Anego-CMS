@@ -3,7 +3,10 @@ if(typeof lngMain == 'undefined') {
 		edit_page: 'Edit page',
 		doneedit_page: 'Finished editing',
 		configure: 'Configure',
-		configuration: 'Configuration'
+		configuration: 'Configuration',
+		error: 'Error',
+		reallydeleteelement: 'Really delete this element?',
+		pleaseconfirm: 'Bitte confirm'
 	};
 	
 	// Todo: refactor all this into above property list

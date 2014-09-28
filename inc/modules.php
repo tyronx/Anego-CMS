@@ -99,6 +99,13 @@ abstract class ContentElement extends BasicModule {
 		return Array();
 	}
 	
+	public static function moduleInfos($language) {
+		return array(
+			"name" => "",
+			"description" => ""
+		);
+	}
+	
 }
 
 class PageManager {
@@ -211,7 +218,7 @@ class PageManager {
 	// Installs a module
 	function installModule($f) {
 		if (file_exists($this->modulePath . $f . '/' . $f . '.php')) {
-			$header = $this->parseHeader(file_get_contents($this->modulePath . $f . '/' . $f . '.php'));
+			
 			
 			// Load the file and get install settings
 			include_once($this->modulePath . $f . '/' . $f . '.php');
@@ -224,19 +231,10 @@ class PageManager {
 			include_once('lib/jsmin.php');
 			
 			// Todo: New module install system with anonymous functions for hooks as well as better js loading code over the js loader
-			$this->loadedModules[$f] = array(
-				'name'			=> $header['Plugin Name'], 
-				'image'			=> @$header['Plugin Image'],
-				'type'			=> trim($header['Plugin Type']),
-				'configurable'	=> @$header['Configurable'],
-				'plugin_uri'	=> @$header['Plugin URI'],
-				'description'	=> @$header['Description'],
-				'version'		=> @$header['Version'],
-				'author'		=> @$header['Author'],
+			$this->loadModule($f, array(
 				'config'		=> $install_config,
 				'installed'		=> true
-			);
-			
+			));
 			
 			$fp = @fopen('var/installed_modules','w') or
 				exit("400\nCannot open var/installed_modules for writing");
@@ -248,6 +246,33 @@ class PageManager {
 		} else {
 			return false;
 		}
+	}
+	
+	
+	function loadModule($name, $moredata) {
+		global $cfg;
+		$lng = $cfg["interfacelanguage"];
+		
+		$header = $this->parseHeader(file_get_contents($this->modulePath . $name. '/' . $name . '.php'));
+		
+		if (empty($header['Plugin Name'])) {
+			echo "error loading module {$name} - plugin name not found!";
+		}
+		
+		include_once($this->modulePath . $name . '/' . $name . '.php');
+		
+		eval('$moduleinfos = ' . $name . "::moduleInfos('{$lng}');");
+		
+		$this->loadedModules[$name] = array_merge(array(
+			'name'			=> !empty($moduleinfos['name']) ? $moduleinfos['name'] : $header['Plugin Name'], 
+			'image'			=> @$header['Plugin Image'],
+			'type'			=> trim($header['Plugin Type']),
+			'configurable'	=> @$header['Configurable'],
+			'plugin_uri'	=> @$header['Plugin URI'],
+			'description'	=> !empty($moduleinfos['description']) ? $moduleinfos['description'] : @$header['Description'],
+			'version'		=> @$header['Version'],
+			'author'		=> @$header['Author'],
+		), $moredata);
 	}
 	
 	// Uninstalls a module
@@ -282,24 +307,7 @@ class PageManager {
 		$d = opendir($this->modulePath);
 		while ($f = readdir($d)) {	
 			if (is_dir($this->modulePath . $f) && !preg_match("#[^\w_0-9]+#", $f)) {
-				$header = $this->parseHeader(file_get_contents($this->modulePath . $f . '/' . $f . '.php'));
-				if (!isset($header['Plugin Name'])) continue;
-				
-				if (isset($this->loadedModules[$f])) {
-					$this->loadedModules[$f]['installed'] = true;
-				} else {
-					$this->loadedModules[$f] = array(
-						'name'			=> $header['Plugin Name'], 
-						'image'			=> @$header['Plugin Image'],
-						'type'			=> trim($header['Plugin Type']),
-						'configurable'	=> @$header['Configurable'],
-						'plugin_uri'	=> @$header['Plugin URI'],
-						'description'	=> @$header['Description'],
-						'version'		=> @$header['Version'],
-						'author'		=> @$header['Author'],
-						'installed'	=> false
-					);
-				}
+				$this->loadModule($f, array("installed" => isset($this->loadedModules[$f]['installed'])));
 			}
 		}
 	}

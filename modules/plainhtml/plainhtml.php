@@ -25,5 +25,19 @@ class plainhtml extends ContentElement {
 			)
 		);
 	}
+	
+	public static function moduleInfos($language) {
+		if ($language == "ger") {
+			return array(
+				"name" =>  "HTML Code",
+				"description" => "Einfügen von direktem HTML Codes (für Entwickler)"
+			);
+		} else {
+			return array(
+				"name" =>  "HTML Code",
+				"description" => "Insert direct HTML Code (for developers)"
+			);
+		}
+	}
 }
 ?>

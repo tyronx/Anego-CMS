@@ -1,0 +1,20 @@
+var lngProductlist = {
+	newproduct: 'Neues Produkt',
+	settings: 'Einstellungen',
+	closebutton: 'Schliessen und Speichern',
+	settingswidth: 'Breite der Produktliste',
+	settingsproductwidthheight: 'Produktbreite und -höhe',
+	settingsproductspacing: 'Horizontaler und Vertikalerabstand zwischen Produkten',
+	editproduct: 'Produkt bearbeiten',
+	createnewproduct: 'Neues Produkt erstellen',
+	name: 'Name',
+	image: 'Bild',
+	createproductpage: 'Neue Seite für dieses Produkt erstellen',
+	description: 'Beschreibung',
+	reallydelete: 'Produkt wirklich löschen?',
+	deleteproduct: 'Produkt löschen',
+	cancel: 'Abbrechen',
+	onlyimages: "Bitte nur Bilder hochladen",
+	failedtoload: "Konnte Datei nicht laden",
+	keepandupdatepage: 'Produktseite beibehalten' 
+};

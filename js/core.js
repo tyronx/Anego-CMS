@@ -166,6 +166,9 @@ function CoreFunctions() {
 	var loadedJsFiles = Array();
 	var loadedCSSFiles = Array();
 	
+	var blinking;
+	var shaking;
+	
 	var hooks = {
 		beforePageLoad: [],
 		afterPageLoad: [],
@@ -720,6 +723,32 @@ function CoreFunctions() {
 			
 		} else alert('Cannot create a AJAX Request Object - to old browser?');
 	}
+	
+	this.blinkElements = function(elements) {
+		var count = 0;
+		clearInterval(Core.blinking);
+		
+		Core.blinking = setInterval(function() {
+			$(elements).toggleClass('errorhighlight', !(count % 2));
+			if (count == 3) {
+				clearInterval(Core.blinking);
+			}
+			count++;
+		}, 300);
+	}
+	
+	this.shakeElements = function(elements) {
+		if (Core.shaking) return;
+		Core.shaking = 1;
+		
+		$(elements)
+			.css("position", "relative")
+			.animate({'left':(-10)+'px'}, 100)
+			.animate({'left':(+10)+'px'}, 100)
+			.animate({'left':(-5)+'px'}, 100)
+			.animate({'left':(+5)+'px'}, 100)
+			.animate({'left':(0)+'px' }, { duration: 100, complete: function() { Core.shaking = 0; }});
+	}
 }
 
 /* Returns the class name of the argument or undefined if
@@ -746,6 +775,26 @@ var BTN_CLOSE = 3;
 var BTN_SAVECANCEL = 4;
 var BTN_NONE = 5;
 
+
+function AlertDialog(content) {
+	OpenDialog({
+		title: lngMain.error,
+		content: content,
+		buttons: BTN_CLOSE,
+		blocking: 1
+	});
+}
+
+function ConfirmDialog(content, yescallback) {
+	OpenDialog({
+		title: lngMain.pleaseconfirm,
+		content: content,
+		buttons: BTN_YESNO,
+		blocking: 1,
+		ok_callback: yescallback
+	});
+}
+
 /* Opens a dialog. Possible settings:
 	title:			The dialog title
 	content:		The actual html content of the dialog, this may be a jquery object 
@@ -768,20 +817,23 @@ function OpenDialog(settings) {
 	if (settings.collapse == undefined) settings.collapse = false;
 	if (settings.blocking == undefined) settings.blocking = true;
 	
-	if (settings.width != undefined) 
+	if (settings.width != undefined) {
 		w = 'width: ' + settings.width + 'px; ';
-	if (settings.height != undefined) 
+	}
+	if (settings.height != undefined) {
 		h = 'height: ' + settings.height + 'px; ';
+	}
 	
-	if ($("#inactive").length == 0)
+	if ($("#inactive").length == 0) {
 		$('body').append('<div id="inactive" style="display:none"></div>');
+	}
 	
 	$("#inactive").css('display','');
 
 	/*** Dialog HTML ***/
 	var str = 
 		'<div class="dlgBox" class="adminstyles" style="' + w + h + '">' +
-			'<div class="dlgTitle">' + 
+			'<div class="dlgTitle titleBar">' + 
 				settings.title + 
 				'<div class="dlgXBtn dlgBtn">X</div>' + 
 				'<div class="dlgMBtn dlgBtn">_</div>' + 
@@ -893,7 +945,7 @@ function OpenDialog(settings) {
 		}
 		
 		if(unblock) {
-			$('#inactive').removeClass('blocking').hide();
+			$('#inactive').removeClass('blocking');
 		}
 		
 		this.remove();
@@ -930,6 +982,18 @@ function OpenDialog(settings) {
 		var dx=0, dy=0;
 		var mouseDown = 0;
 		
+		if (Core.openDialogs.length == 1) {
+			$(window).resize(function() {
+				for (var i=0; i < Core.openDialogs.length; i++) {
+					$dlg = Core.openDialogs[i];
+					$dlg.css('top', BoundBy(parseFloat($dlg.css('top')), 3, $(window).height() - $dlg.height() - 3) + 'px');
+					$dlg.css('left', BoundBy(parseFloat($dlg.css('left')),3, $(window).width() - $dlg.width() - 3) + 'px'); 
+				}
+			});
+		}
+		
+		$(window).trigger('resize');
+		
 		/* Dialog collapse expand */
 		var expand = function() {
 			if(settings.height == undefined) {
@@ -943,7 +1007,12 @@ function OpenDialog(settings) {
 			$('.dlgContent', $dlgBox).show();
 			$('.dlgSep', $dlgBox).show();
 			
-			jQuery.cookie('dialogCollapseState-' + settings.title, false);
+			$dlgBox.css('top', BoundBy(parseFloat($dlgBox.data("prevtop")), 3, $(window).height() - $dlgBox.height() - 3) + 'px');
+			$dlgBox.css('left', BoundBy(parseFloat($dlgBox.data("prefleft")),3, $(window).width() - $dlgBox.width() - 3) + 'px'); 
+
+			$dlgBox.removeClass("minimized");
+			
+			//jQuery.cookie('dialogCollapseState-' + settings.title, false);
 		};
 		
 		var collapse = function() {
@@ -953,7 +1022,15 @@ function OpenDialog(settings) {
 			$('.dlgContent', $dlgBox).hide();
 			$('.dlgSep', $dlgBox).hide();
 			
-			jQuery.cookie('dialogCollapseState-' + settings.title, true);
+			$dlgBox.data("prevtop", $dlgBox.css('top'));
+			$dlgBox.data("prefleft", $dlgBox.css('left'));
+			
+			$dlgBox.css('top', ($(window).height() - $dlgBox.height() - 3) + 'px');
+			$dlgBox.css('left', '3px'); 
+			
+			$dlgBox.addClass("minimized");
+			
+			//jQuery.cookie('dialogCollapseState-' + settings.title, true);
 		};
 
 		/* Button callbacks */
@@ -997,7 +1074,7 @@ function OpenDialog(settings) {
 		}); 
 	
 		$(document).mouseup(function(event) {
-			if(mouseDown) {
+			if(mouseDown && !settings.collapse) {
 				localStorage.setItem("anego_dlg_" + settings.title + "_left", $dlgBox.css('left').substr(0, $dlgBox.css('left').length - 2));
 				localStorage.setItem("anego_dlg_" + settings.title + "_top", $dlgBox.css('top').substr(0, $dlgBox.css('top').length - 2));
 			}
@@ -1006,17 +1083,17 @@ function OpenDialog(settings) {
 		
 		$(document).mousemove(function(event) {
 			if(mouseDown) {
-				$dlgBox.css('top', BoundBy(event.pageY - dy,3, $(document).height() - $dlgBox.height() - 3) + 'px');
-				$dlgBox.css('left', BoundBy(event.pageX - dx,3, $(document).width() - $dlgBox.width() - 3) + 'px'); 
+				$dlgBox.css('top', BoundBy(event.pageY - dy,3, $(window).height() - $dlgBox.height() - 3) + 'px');
+				$dlgBox.css('left', BoundBy(event.pageX - dx,3, $(window).width() - $dlgBox.width() - 3) + 'px'); 
 			}
-		});	
+		});
 		
 		var boxColor = $dlgBox.css('backgroundColor');
 		var headerColor = $('.dlgTitle', $dlgBox).css('backgroundColor');
 		
-		if (jQuery.cookie('dialogCollapseState-' + settings.title)) {
+		/*if (jQuery.cookie('dialogCollapseState-' + settings.title)) {
 			$('.dlgMBtn', $dlgBox).trigger('click');
-		}
+		}*/
 
 		/* Autocollapse feature */
 		if(settings.autocollapse) {

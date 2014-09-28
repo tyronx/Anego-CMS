@@ -137,15 +137,24 @@ hr#insertMarker {
 	text-align:center;
 }
 
+.moduleIcon:hover img {
+	-webkit-box-shadow: 2px 2px 7px 0px rgba(50, 50, 50, 0.3);
+	-moz-box-shadow:    2px 2px 7px 0px rgba(50, 50, 50, 0.3);
+	box-shadow:         2px 2px 7px 0px rgba(50, 50, 50, 0.3);
+}
+
 .ceTemplate {
-	border:1px solid gray;
 	width:61px;
+	height: 44px;
 	z-index:1000;
+	display:inline-block;
 }
 
 .ceTemplate img {
+	border:1px solid gray;
 	margin:0;
 	padding:0;
+	background-color: #F6F8FE;
 }
 
 .draggableList .ceDraggable {
@@ -153,6 +162,13 @@ hr#insertMarker {
 
 .ceDraggable {
 	min-height:16px;
+}
+
+.ceDragged {
+	background-color: #F6F8FE;
+	-webkit-box-shadow: 4px 4px 10px 0px rgba(50, 50, 50, 0.3);
+	-moz-box-shadow:    4px 4px 10px 0px rgba(50, 50, 50, 0.3);
+	box-shadow:         4px 4px 10px 0px rgba(50, 50, 50, 0.3);
 }
 
 .ceEditing {

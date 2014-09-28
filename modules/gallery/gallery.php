@@ -545,5 +545,19 @@ EOF;
 			)
 		);
 	}
+	
+	public static function moduleInfos($language) {
+		if ($language == "ger") {
+			return array(
+				"name" =>  "Galerie",
+				"description" => "Für die Erstellung von Bildergalerien"
+			);
+		} else {
+			return array(
+				"name" =>  "Gallery",
+				"description" => "To create picture galleries"
+			);
+		}
+	}
 }
 ?>

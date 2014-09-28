@@ -87,6 +87,8 @@ function DragDropElements(options) {
 			'<div id="" class="ceDraggable ceTemplate">' +
 				'<img src=""/>' + 
 			'</div>' + 
+			'<br/>' +
+			'<span class="text"></span>' +
 			'' + 
 		'</div>';
 	
@@ -112,9 +114,8 @@ function DragDropElements(options) {
 		/* Parse content element modules and execute its js */
 		for (var i = 0; i < options.modules.length; i++) {
 			$elem = $(draggableElementTemplate);
-			$('.ceTemplate', $elem)
-				.attr('id', 'draggable' + i)
-				.after(options.modules[i]['name']);
+			$('.ceTemplate', $elem).attr('id', 'draggable' + i)
+			$('.text', $elem).text(options.modules[i]['name']);
 			
 			$('img', $elem).attr('src', anego.path + options.modules[i]['image']);
 
@@ -157,8 +158,8 @@ function DragDropElements(options) {
 			});
 			
 			$('.imgBin', $miniToolbar).click(function() {
-				var res = confirm("Really delete?");
-				if (res) {
+				ConfirmDialog(lngMain.reallydeleteelement, function() {
+					this.closeDialog();
 					var element2Delete = curEl;
 					var deleteCompleteFn = function() { 
 						$(element2Delete).remove();
@@ -171,7 +172,7 @@ function DragDropElements(options) {
 					} else {
 						alert(__("Module of this Element not found, please install the module:") + " '" + splitID($(curEl).attr('id')).module_id + "'");
 					}
-				}
+				});
 			});
 			
 			/* Add the minitoolbar to the html page */
@@ -182,20 +183,21 @@ function DragDropElements(options) {
 		for (var i = 0; i < options.modules.length; i++) {
 			$('#draggable'+i).mousedown(function(event) {
 				curEl = $(this).clone();
-				$(curEl).attr("id",'draggingItem'+parseInt(this.id.substr(prefix.length)));
+				$(curEl)
+					.attr("id",'draggingItem'+parseInt(this.id.substr(prefix.length)))
+					.addClass("ceDragged")
+					.hide();
+				
 				$('#inactive').append(curEl);
 				mouseDown = 1;
 				p = $(this).offset();
 				oldOffset = p;
-				$(curEl).offset({ top: p.top, left: p.left })
-				dx = event.pageX - p.left
-				dy = event.pageY - p.top;
 				
 				/* Track document wide mouse movements */
 				$(document)
 					.bind('mousemove.admPage', documentMouseMove)
 					.bind('mouseup.admPage', documentMouseUp);
-				
+								
 				return false;
 			});
 		}
@@ -335,21 +337,22 @@ function DragDropElements(options) {
 
 	function documentMouseMove(event) {
 		mouseMoved(event);
-		if (!mouseDown)
-			if (curEl && !outerInside($(curEl),event.pageX,event.pageY)) { 
+		if (!mouseDown) {
+			if (curEl && !outerInside($(curEl), event.pageX,event.pageY)) { 
 				$miniToolbar.hide();
 				$(curEl).removeClass('ceBorder'); 
 				curEl=null; 
 			}
+		}
 	}
 	
 	function mouseMoved(event) {
 		if (mouseDown && curEl.length > 0) {
-			var x = BoundBy(event.pageX+offsetX, 2, $(document).width() - curEl.width() - 4);
-			var y = BoundBy(event.pageY+offsetY, 2, $(document).height() - curEl.height() - 4);
+			var x = BoundBy(event.pageX+offsetX, 2, $(window).width() - curEl.width() - 4);
+			var y = BoundBy(event.pageY+offsetY, 2, $(window).height() - curEl.height() - 4);
 			
 			if($(curEl).hasClass('ceTemplate')) {
-				curEl.offset({ top: y, left: x});
+				curEl.show().offset({ top: y, left: x});
 			} else {
 				curEl.offset({ top: y });
 			}
@@ -407,7 +410,8 @@ function DragDropElements(options) {
 		mouseDown = 1;
 		p = $(oldEl).offset();
 		oldOffset=p;
-		$(curEl).offset({ top: p.top, left: p.left })		
+		$(curEl).offset({ top: p.top, left: p.left })
+
 		dx = event.pageX - p.left
 		dy = event.pageY - p.top;
 		

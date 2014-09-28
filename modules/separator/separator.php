@@ -31,5 +31,19 @@ class separator extends ContentElement {
 			)
 		);
 	}
+	
+	public static function moduleInfos($language) {
+		if ($language == "ger") {
+			return array(
+				"name" =>  "Trennlinie",
+				"description" => " "
+			);
+		} else {
+			return array(
+				"name" =>  "Seperating line",
+				"description" => " "
+			);
+		}
+	}
 }
 ?>

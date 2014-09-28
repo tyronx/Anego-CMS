@@ -30,7 +30,8 @@ function AdminMenuFunctions() {
 	this.addPage = function(intopage, menu) {
 		var submit = function() {
 			if ($('input[name=name]', this).val().length == 0) {
-				alert(lng_entername);
+				Core.blinkElements($('input[name=name]', this));
+				Core.shakeElements($(".dlgOK"));
 				return;
 			}
 
@@ -140,6 +141,7 @@ function AdminMenuFunctions() {
 		OpenDialog({
 			title: lng_addpage,
 			content: $cnt,
+			buttons: BTN_SAVECANCEL,
 			ok_callback: submit
 		});
 	}
@@ -216,9 +218,11 @@ function AdminMenuFunctions() {
 		var $dlg = OpenDialog({
 			title: lng_editpage,
 			content: $cnt,
+			buttons: BTN_SAVECANCEL,
 			ok_callback: function() {
 				if ($('input[name=name]', this).val().length == 0) {
-					alert(lng_entername);
+					Core.blinkElements($('input[name=name]', this));
+					Core.shakeElements($(".dlgOK"));
 					return;
 				}
 

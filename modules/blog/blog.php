@@ -59,7 +59,7 @@ EOT;
 			'allowdirectLoad' => true,
 			'js' => Array(
 				// js that should always load
-				'load' => Array('%lng.js'),
+				'load' => Array('lang/%lng.js'),
 				// js to be loaded when page is being edited
 				'pageEdit' => Array('blog.js'),
 				// js to be loaded when page is viewed & a mod is logged on

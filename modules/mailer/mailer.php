@@ -139,4 +139,18 @@ EOT;
 			)
 		);
 	}
+	
+	public static function moduleInfos($language) {
+		if ($language == "ger") {
+			return array(
+				"name" =>  "Kontaktformular",
+				"description" => "Versand von Formulardaten an eine E-Mail Adresse"
+			);
+		} else {
+			return array(
+				"name" =>  "Contact form",
+				"description" => "For sending form data to an email address"
+			);
+		}
+	}
 }

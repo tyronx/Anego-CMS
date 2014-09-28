@@ -3,11 +3,11 @@ productlist = ContentElement.extend({
 	editProductsTemplate:
 		'<div class="productsEditor">' +
 			'<div class="links">' + 
-				'<a class="createproduct" href="#">New Product</a> | <a class="productssettings" href="#">Settings</a>' +
+				'<a class="createproduct" href="#">' + lngProductlist.newproduct + '</a> | <a class="productssettings" href="#">' + lngProductlist.settings + '</a>' +
 			'</div>' + 
 			'<div class="products"></div>' +
 			'<div class="bothclear">&nbsp;</div>' +
-			'<button type="button" name="mew" class="btn_close" style="min-width:150px">Close and update page</button> <span class="productscount"></span>' +
+			'<button type="button" name="mew" class="btn_close" style="min-width:150px">' + lngProductlist.closebutton + '</button> <span class="productscount"></span>' +
 		'</div>', 
 
 	productTemplate:
@@ -20,10 +20,10 @@ productlist = ContentElement.extend({
 	
 	settingsTemplate: 
 		'<div class="settings">' +
-			'<label for="productswidth">Width of the Productlist:</label><br> <input size="3" type="text" name="productswidth" id="productswidth"><br><br> ' +
-			'<label for="productwidth">Width and Height of each Product:</label><br> <input size="3" type="text" name="productwidth" id="productwidth"> ' +
+			'<label for="productswidth">' + lngProductlist.settingswidth + ':</label><br> <input size="3" type="text" name="productswidth" id="productswidth"><br><br> ' +
+			'<label for="productwidth">' + lngProductlist.settingsproductwidthheight + ':</label><br> <input size="3" type="text" name="productwidth" id="productwidth"> ' +
 			'x <input size="3" type="text" name="productheight" id="productheight"> ' +
-			'<br><br><label for="producthorispacing">Horizontal and Vertical spacing between products:</label><br> <input size="3" type="text" name="producthorispacing" id="producthorispacing"> ' +
+			'<br><br><label for="producthorispacing">' + lngProductlist.settingsproductspacing + ':</label><br> <input size="3" type="text" name="producthorispacing" id="producthorispacing"> ' +
 			'x <input size="3" type="text" name="productvertispacing" id="productvertispacing"> ' +
 		'</div>',
 	
@@ -209,19 +209,19 @@ productlist = ContentElement.extend({
 		
 		
 		var dlgSettings = {
-			title: productid ? "Edit product" : "Create new product",
+			title: productid ? lngProductlist.editproduct : lngProductlist.createnewproduct,
 			buttons: BTN_SAVECANCEL,
-			content: 'Name:<br><textarea style="width:250px; height:50px;" id="productName" value=""></textarea><br>' +
-					'Image:<br><input id="productimage" type="file"><br><br>' +
-					'<input type="checkbox" name="createpage" id="createpage" value="1" checked="checked"> <label for="createpage">Create a new page for this product</label><br><br>' +
-					'<div class="productdesc">Description: <textarea style="width:100%" id="productDescription"></textarea></div>',
+			content: lngProductlist.name + ':<br><textarea style="width:250px; height:50px;" id="productName" value=""></textarea><br>' +
+					lngProductlist.image + ':<br><input id="productimage" type="file"><br><br>' +
+					'<input type="checkbox" name="createpage" id="createpage" value="1"> <label for="createpage">' + lngProductlist.createproductpage + '</label><br><br>' +
+					'<div class="productdesc">' + lngProductlist.description + ': <textarea style="width:100%" id="productDescription"></textarea></div>',
 			buttons: {}
 		};
 		
 		dlgSettings.buttons['Save'] = function() {
 			var $dlg = this;
 			this.waitResponse();
-							
+			
 			$.ajax({
 				type : 'POST',
 				url : 'index.php',
@@ -253,32 +253,34 @@ productlist = ContentElement.extend({
 		};
 			
 		
-		dlgSettings.buttons['Cancel'] = function() {
+		dlgSettings.buttons[lngProductlist.cancel] = function() {
 			$('#productDescription').tinymce().hide();
 			this.closeDialog();
 		};
 		
-
-		dlgSettings.buttons['Delete Product'] = function() {
-			var dlg = this;
-			if (confirm('Really delete Product?')) {
-				dlg.waitResponse();
-				$.post('index.php', {
-					a: 'callce',
-					fn: 'dp',
-					mid: self.module_id,
-					pid: self.page_id,
-					elid: self.element_id,
-					productid: productid
-				}, function(data) {
-					dlg.endWait();
-					if(aw = GetAnswer(data)) {
-						dlg.closeDialog();
-						self.loadProducts();
-					}
-				});
-			}
-		};
+		if (productid) {
+			dlgSettings.buttons[lngProductlist.deleteproduct] = function() {
+				var dlg = this;
+				
+				if (confirm(lngProductlist.reallydelete)) {
+					dlg.waitResponse();
+					$.post('index.php', {
+						a: 'callce',
+						fn: 'dp',
+						mid: self.module_id,
+						pid: self.page_id,
+						elid: self.element_id,
+						productid: productid
+					}, function(data) {
+						dlg.endWait();
+						if(aw = GetAnswer(data)) {
+							dlg.closeDialog();
+							self.loadProducts();
+						}
+					});
+				}
+			};
+		}
 		
 		OpenDialog(dlgSettings);
 		
@@ -292,13 +294,13 @@ productlist = ContentElement.extend({
 				r.onload = function(e) {
 					productimagedata = e.target.result;
 					if (productimage.type.indexOf('image') == -1) {
-						alert("Please select only images");
+						alert(lngProductlist.onlyimages);
 						$('#productimage').val('');
 					}
 				}
 				r.readAsDataURL(productimage);
 			} else { 
-				alert("Failed to load file");
+				alert(lngProductlist.failedtoload);
 			}
 	
 		}, false);
@@ -315,7 +317,7 @@ productlist = ContentElement.extend({
 			$('#productDescription').html(product.syncdescription);
 			
 			if (product.page_idx > 0) {
-				$('label[for="createpage"]').text('Keep and Update product page');
+				$('label[for="createpage"]').text(lngProductlist.keepandupdatepage);
 				$('#createpage').attr('value', '2');
 			} else {
 				$('#createpage').removeAttr('checked');
@@ -325,6 +327,7 @@ productlist = ContentElement.extend({
 		$('input#createpage').change(function() {
 			$('div.productdesc').toggle($(this).is(':checked'));
 		});
+		
 		$('input#createpage').trigger('change');
 
 		
