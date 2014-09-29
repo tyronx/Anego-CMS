@@ -319,6 +319,8 @@ class Anego extends Smarty {
 	}
 	
 	function MenuAdmin() {
+		global $cfg;
+		
 		ob_start();
 
 		if(!LOGINOK) return;
@@ -329,7 +331,7 @@ class Anego extends Smarty {
 			foreach($this->admin_links as $link)
 				echo '<li>'.$link.'</li>';
 		?>
-		<li><a href="admin.php?a=lo"><?=__('Logout')?></a></li>
+		<li><a href="<?=$cfg['path']?>admin/logout"><?=__('Logout')?></a></li>
 		</ul>
 		<?		
 		$str = ob_get_contents();

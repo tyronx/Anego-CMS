@@ -67,9 +67,14 @@ switch ($_GET['a']) {
 	/****** Page loads or ajax page loads ******/
 	
 	/* Logout */
-	case 'lo':
+	case 'logout':
 		setcookie($cfg['cookieName'],'dead.',100);
-		$anego->Reload();
+		if (!$_GET['noheader']) {
+			$anego->Reload();
+		} else {
+			$json = array("content" => '<script type="text/javascript">location.href="'.$cfg['path'].'"</script>');
+			exit("200\n".json_encode($json));
+		}
 		break;
 	
 	
@@ -79,9 +84,9 @@ switch ($_GET['a']) {
 		if(isset($_GET['noheader'])) {
 			if(UserRole() < Role::ProMod) BailErr(__('No permission to access this page, sorry.'));
 			
-			$json = Array();
+			$json = array();
 			$json['title'] = 'Anego - Admin';
-			$json['js'] = Array('ld.am');
+			$json['js'] = array('ld.am');
 			$json['content'] = PrintLinks();
 			
 			exit("200\n".json_encode($json));
