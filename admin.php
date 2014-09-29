@@ -7,7 +7,8 @@ $anego->assign('showheader', !@$_GET['noheader']);
 if (!LOGINOK) {
 	$message = '';
 	/* Login */
-	if (@$_GET['a'] == 'li') {
+	
+	if (@$_GET['a'] == 'login') {
 	
 		/* Slow down login attempts after the user entered the wrong password for 5 times */
 		$loginattempts = getSetting("loginattempts", true);
@@ -29,7 +30,9 @@ if (!LOGINOK) {
 		if (!empty($_POST['username']) && ValidAuth($_POST['username'], $saltedPw)) {
 			setcookie(
 				$cfg['cookieName'], 
-				strtolower($_POST['username']) . "," . $saltedPw, ($_POST['staysigned']==1) ? (time()+$cfg['cookieTime']*3600) : 0
+				strtolower($_POST['username']) . "," . $saltedPw, 
+				($_POST['staysigned']==1) ? (time()+$cfg['cookieTime']*3600) : 0,
+				$cfg['path']
 			);
 			
 			header('Location: ' . $cfg['path']);
@@ -56,7 +59,7 @@ if (!LOGINOK) {
 	exit();
 }
 
-if (!isset($_GET['a']) || $_GET['a']=='li') {
+if (!isset($_GET['a']) || $_GET['a']=='login') {
 	$anego->Reload($cfg['domain']);
 }
 
@@ -68,9 +71,10 @@ switch ($_GET['a']) {
 	
 	/* Logout */
 	case 'logout':
-		setcookie($cfg['cookieName'],'dead.',100);
+		setcookie($cfg['cookieName'], 'dead.', 0, $cfg['path']);
+		
 		if (!$_GET['noheader']) {
-			$anego->Reload();
+			$anego->Reload($cfg['domain']);
 		} else {
 			$json = array("content" => '<script type="text/javascript">location.href="'.$cfg['path'].'"</script>');
 			exit("200\n".json_encode($json));

@@ -14,7 +14,7 @@ function LoggedOn() {
 	
 	if (array_key_exists($cfg['cookieName'], $_COOKIE) && strlen(trim($_COOKIE[$cfg['cookieName']]))) {
 		$var = explode(",", $_COOKIE[$cfg['cookieName']]);
-		if (ValidAuth($var[0], $var[1])) {
+		if (count($var) == 2 && ValidAuth($var[0], $var[1])) {
 			return strtolower($var[0]);
 		}
 	}

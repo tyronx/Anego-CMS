@@ -1,5 +1,5 @@
 {capture name="content"}
-	<div align="center">
+	<div align="center" style="margin-top:20px;">
 		<div class="loginTitle">{__Anego CMS Administration Area}</div>
 		<div class="loginBox">
 		<form id="loginForm" action="#" method="post" accept-charset="UTF-8" onsubmit="return false">
@@ -20,7 +20,7 @@
 		</div>
 	</div>
 
-	<form id="submitForm" action="admin.php?a=li" method="post" accept-charset="UTF-8">
+	<form id="submitForm" action="{$anegopath}admin/login" method="post" accept-charset="UTF-8">
 		<input type="hidden" name="username">
 		<input type="hidden" name="response">
 		<input type="hidden" name="staysigned" value="0">
