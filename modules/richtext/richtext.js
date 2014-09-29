@@ -10,12 +10,13 @@ richtext = ContentElement.extend({
 		
 		
 		var loadnew = true;
+		var height = $container.height();
 
 		self.html = $container.html();
 		// Takes care that escaped html tags stay escaped
 		var escapedHTML = $("<div/>").text(self.html).html();
 		$container.html('<textarea style="width:100%" id="' + self.editorId + '">' + escapedHTML + '</textarea>' + buttons);
-		self.tinyfy();
+		self.tinyfy(height < 300 ? 300 : height + 100);
 		
 		if(loadnew) {
 			$.post('index.php', {
@@ -73,7 +74,9 @@ richtext = ContentElement.extend({
 		return true;
 	},
 	
-	tinyfy: function() {
+	tinyfy: function(height) {
+		if (!height) height = 300;
+		
 		var templates = [
 			{
 				title : "Two columns",
@@ -112,7 +115,7 @@ richtext = ContentElement.extend({
 			mode : 'none',
 			theme : "advanced",	
 			plugins : "advimagescale,table,tablegrid,advlink,preview,media,searchreplace,contextmenu,paste,fullscreen,xhtmlxtras,inlinepopups,phpimage,anegofileupload,template",
-			height : 350,
+			height : height,
 			theme_advanced_buttons1 : "bold,italic,strikethrough,|,justifyleft,justifycenter,justifyright,justifyfull,|,formatselect,fontselect,fontsizeselect,|,forecolor,backcolor",
 			theme_advanced_buttons2 : "pastetext,|,search,|,bullist,numlist,|,outdent,indent,|,undo,redo,|,link,unlink,|,charmap,template,media,phpimage,anegofileupload,|,hr,removeformat,|,sub,sup",
 			theme_advanced_buttons3 : "tablegrid,|,row_props,cell_props,|,row_before,row_after,delete_row,|,col_before,col_after,delete_col,|,split_cells,merge_cells,|,preview,code,fullscreen",

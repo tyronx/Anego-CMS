@@ -261,9 +261,9 @@ div.dlgBox {
 	-moz-border-radius:8px;
 	color:black;
 	font-size:14px;
-	-webkit-box-shadow: 4px 4px 10px 0px rgba(50, 50, 50, 0.3);
-	-moz-box-shadow:    4px 4px 10px 0px rgba(50, 50, 50, 0.3);
-	box-shadow:         4px 4px 10px 0px rgba(50, 50, 50, 0.3);
+	-webkit-box-shadow: 4px 4px 10px 0px rgba(0, 0, 0, 0.3);
+	-moz-box-shadow:    4px 4px 10px 0px rgba(0, 0, 0, 0.3);
+	box-shadow:         4px 4px 10px 0px rgba(0, 0, 0, 0.3);
 }
 
 div.dlgBox .loadingIcon {
@@ -305,22 +305,41 @@ div.dlgBox.minimized div.dlgTitle {
 
 div.dlgBox .dlgBtn {
 	float:right;
-	-moz-border-radius: 6px;
-	border-radius: 6px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
 	/*text-shadow:#1994E5 1px 1px 1px;*/
-	width:15px;
+	width:17px;
 	height:15px;
 	color:white;
 	text-align:center;
 	cursor:default;
 	padding:1px;
+	padding-top:2px;
 	font-size:12px;
+	margin-left: 4px;
 }
 
 div.dlgBox .dlgBtn:hover {
-	border:1px solid #ccc;
+	border-top: 1px solid #ccc;
 	background-color:#0a3959;
-	padding:0px;
+	/*padding:0px;*/
+	padding-top:1px;
+	background: -webkit-gradient(linear, left top, left bottom, from(#115B8F), to(#0a3959));
+	background: -webkit-linear-gradient(top, #115B8F, #0a3959);
+	background: -moz-linear-gradient(top, #115B8F, #0a3959);
+	background: -ms-linear-gradient(top, #115B8F, #0a3959);
+	background: -o-linear-gradient(top, #115B8F, #0a3959);
+	-webkit-box-shadow: rgba(0,0,0,1) 0 1px 0;
+	-moz-box-shadow: rgba(0,0,0,1) 0 1px 0;
+	box-shadow: rgba(0,0,0,1) 0 1px 0;
+}
+
+div.dlgBox .dlgBtn:active {
+	transform: translate(0, 1px);
+	border-top: 1px solid #999;
+	-webkit-box-shadow: rgba(0,0,0,0.5) 0 1px 0;
+	-moz-box-shadow: rgba(0,0,0,0.5) 0 1px 0;
+	box-shadow: rgba(0,0,0,0.5) 0 1px 0;
 }
 
 /* Button container of the dialog */
@@ -415,15 +434,24 @@ div.dlgBox hr.dlgSep {
 }
 .adminstyles input[type="submit"], .adminstyles input[type="button"] {
 	background-color:#F3F1ED;
-	color:#444;
+	color:#f3f3f3;
 	padding:2px;
-	padding-left:4px;
-	padding-right:4px;
+	padding-left:5px;
+	padding-right:5px;
 	vertical-align: middle;
 	min-width: 40px;
-	-webkit-box-shadow: 1px 1px 2px 0px rgba(50, 50, 50, 0.5);
-	-moz-box-shadow:    1px 1px 2px 0px rgba(50, 50, 50, 0.5);
-	box-shadow:         1px 1px 2px 0px rgba(50, 50, 50, 0.5);
+	-webkit-box-shadow: 1px 1px 2px 0px rgba(20, 20, 20, 0.7);
+	-moz-box-shadow:    1px 1px 2px 0px rgba(20, 20, 20, 0.7);
+	box-shadow:         1px 1px 2px 0px rgba(20, 20, 20, 0.7);
+	
+	background: -webkit-gradient(linear, left top, left bottom, from(#737F8B), to(#191B1E));
+	background: -webkit-linear-gradient(top, #737F8B, #191B1E);
+	background: -moz-linear-gradient(top, #737F8B, #191B1E);
+	background: -ms-linear-gradient(top, #737F8B, #191B1E);
+	background: -o-linear-gradient(top, #737F8B, #191B1E);
+
+	border: 0px;
+	border-top: 1px solid #f9f9f9;
 }
 
 .adminstyles input {
@@ -433,18 +461,13 @@ div.dlgBox hr.dlgSep {
 	outline: 0 !important;
 }
 
-.adminstyles input[type="submit"]:hover, .adminstyles input[type="button"]:hover {
-	background-color:#FBFAF9;
-	color:#666;
-	border-color:#8D8D8D;
-}
 .adminstyles input[type="submit"]:active, .adminstyles input[type="button"]:active {
 	/*background-color:#E3DED5;*/
 	
 	-webkit-box-shadow: 0px 0px;
 	-moz-box-shadow: 0px 0px;
 	box-shadow: 0px 0px;
-	border-color:#696969;
+	/*border-color:#696969;*/
 	
 	-webkit-box-shadow: 1px 1px 1px 0px rgba(50, 50, 50, 0.21);
 	-moz-box-shadow:    1px 1px 1px 0px rgba(50, 50, 50, 0.2);
