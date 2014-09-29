@@ -1,4 +1,12 @@
 <?
+/* Global Language setting (defaults to english)
+ * eng: English
+ * ger: German
+ * auto: Autodetect language by browser/cookie (not fully implemented yet)
+ */
+$cfg['interfacelanguage'] = 'eng';
+$cfg['websitelanguage'] = '';
+
 /* Salt for storing passwords */
 $cfg['hash_salt']="Vw_0Q3Z,e;y_!xyGo+tI";
 
