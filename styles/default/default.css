@@ -222,11 +222,23 @@ iframe.upload {
 
 .contentElement {
 	padding:5px;
+	border-color: transparent;
 }
 
-.ceBorder {
+#contents.editing .contentElement {
+	padding:4px;
+	border:1px dashed transparent;
+	
+	-webkit-transition: border-color 0.2s; /* For Safari 3.1 to 6.0 */
+	transition: border-color 0.2s;
+}
+
+#contents.editing .ceBorder {
 	border:1px dashed #6B77EB;
 	padding:4px;
+	
+	-webkit-transition: border-color 0.2s; /* For Safari 3.1 to 6.0 */
+	transition: border-color 0.2s;
 }
 
 

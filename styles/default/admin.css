@@ -164,6 +164,10 @@ hr#insertMarker {
 	min-height:16px;
 }
 
+.contentElement.ceDragged {
+	background-color:#F5F5F5;
+}
+
 .ceDragged {
 	background-color: #F6F8FE;
 	-webkit-box-shadow: 4px 4px 10px 0px rgba(50, 50, 50, 0.3);

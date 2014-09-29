@@ -257,7 +257,7 @@ function DragDropElements(options) {
 					'position': '',
 					'width': '',
 					'z-index': '1'
-				});
+				}).removeClass("ceDragged");
 				
 				$('#insertMarker').replaceWith(curEl);
 				$(oldEl).remove();
@@ -407,6 +407,8 @@ function DragDropElements(options) {
 		oldEl = curEl;
 		curEl = $(curEl).clone();
 		$('#inactive').append(curEl);
+		curEl.addClass("ceDragged");
+		
 		mouseDown = 1;
 		p = $(oldEl).offset();
 		oldOffset=p;

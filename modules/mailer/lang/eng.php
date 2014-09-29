@@ -6,7 +6,7 @@ $lang = array(
 	'Sorry, hourly contact request limit reached. Please try again later.' => 'Sorry, hourly contact request limit reached. Please try again later.',
 	'I\'m sorry, but I was unable to send out a mail. Something must be wrong with the server configuration' => 'I\'m sorry, but I was unable to send out a mail. Something must be wrong with the server configuration',
 	'Sending...' => 'Sending...',
-	'Thank you for your message!' => 'Thank you for your message!',
+	'Thank you for your message!' => 'Thank you for your message, we will contact you shortly!',
 	'From %s: A person used your e-mail form' => 'From %s: A person used your e-mail form',
 	'mailtemplate' => 'Hello
 		
