@@ -62,4 +62,5 @@ $lang = array(
 	'When logged in, automatically enter edit mode.' => 'Automatisch in den Editiermodus gehen wenn eingeloggt',
 	'Available Modules' => 'Verfügbare Module',
 	'Developer Mode (disables Javascript caching and minifying for easier debugging).' => 'Entwicklermodus (deaktiviert javascript caching)',
+	'When checked, you will be logged in for 10 days. Otherwise just until you close your browser.' => 'Wenn angehakt, bleibst du 10 Tage lange eingeloggt, andernfalls nur solange der Browser offen ist'
 );

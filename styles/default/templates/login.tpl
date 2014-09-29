@@ -7,7 +7,7 @@
 			<input type="text" name="username" value="{$username|escape}"><br><br>
 			{__Password}<br>
 			<input type="password" name="password"><br>
-			<input type="checkbox" name="staysigned" value="1" checked="checked"> {__Stay signed in}<br>
+			<input type="checkbox" name="staysigned" value="1" checked="checked"> <abbr title="{__When checked, you will be logged in for 10 days. Otherwise just until you close your browser.}">{__Stay signed in}</abbr><br>
 			<input type="button" onclick="login()" name="submit" value="{__Login}">
 			<div class="warning">
 				{$message}
@@ -35,17 +35,24 @@
 		function login() {
 			var loginForm = document.getElementById("loginForm");
 			if (loginForm.username.value == "") {
-				alert(__('Please enter your user name.'));
+				Core.blinkElements(loginForm.username);
+				$(loginForm.username).focus();
+				Core.shakeElements($("input[name='submit']"));
 				return false;
 			}
 			if (loginForm.password.value == "") {
-				alert(__('Please enter your password.'));
+				Core.blinkElements(loginForm.password);
+				$(loginForm.password).focus();
+				Core.shakeElements($("input[name='submit']"));
 				return false;
 			}
+			
 			var submitForm = document.getElementById("submitForm");
 			submitForm.username.value = loginForm.username.value;
-			if(loginForm.staysigned.checked)
+			
+			if(loginForm.staysigned.checked) {
 				submitForm.staysigned.value = '1';
+			}
 			else submitForm.staysigned.value = '0';
 			submitForm.response.value = hex_sha256(loginForm.password.value);
 			submitForm.submit();

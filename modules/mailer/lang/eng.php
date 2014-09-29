@@ -22,11 +22,11 @@ Request:
   - Anego CMS Mailer Module on %s
 ',
 	'formhtml' => '<p><label for="yourname">Your name:</label><br>
-<input type="text" id="yourname" name="name">
+<input type="text" id="yourname" name="name" class="mandatory">
 </p><p><label for="youremail">Your email or phone number:</label><br>
 <input type="text" id="yourmail" name="email"><br>
 </p><br>
-<p><label for="yourrequest">Your Request:</label><br>
+<p><label for="yourrequest" class="mandatory">Your Request:</label><br>
 <textarea rows="10" cols="50" name="request" id="yourrequest"></textarea>
 <br>
 <p><input type="submit" name="send" value="Submit form">'

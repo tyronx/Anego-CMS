@@ -25,8 +25,8 @@ if (!LOGINOK) {
 			database_pass = sha256(salt+sha256(passwd))
 			sha256(salt + client_response) == db_pass
 		*/
-		$saltedPw = hash('sha256',$cfg['hash_salt'].$_POST['response']);
-		if (ValidAuth($_POST['username'], $saltedPw)) {
+		$saltedPw = hash('sha256',$cfg['hash_salt'].@$_POST['response']);
+		if (!empty($_POST['username']) && ValidAuth($_POST['username'], $saltedPw)) {
 			setcookie(
 				$cfg['cookieName'], 
 				strtolower($_POST['username']) . "," . $saltedPw, ($_POST['staysigned']==1) ? (time()+$cfg['cookieTime']*3600) : 0
@@ -37,7 +37,7 @@ if (!LOGINOK) {
 			
 		} else {
 			$message = __('Wrong username or password');
-			$anego->assign("username", $_POST["username"]);
+			$anego->assign("username", @$_POST["username"]);
 		}
 	}
 	

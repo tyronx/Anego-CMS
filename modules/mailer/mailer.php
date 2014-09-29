@@ -99,43 +99,23 @@ class mailer extends ContentElement {
 		$form = preg_replace("#(<(input|select|textarea).+name=('|\"))([^\\3]+)\\3#Usi", "\\1formdata[\\4]\\3", $form);
 		
 		$path = $cfg['path'];
-		$js = <<<EOT
-		<script type="text/javascript">
-			sendFormMail = function(id) {
-				\$form = \$('form[name="mailer' + id + '"]');
-				$.post('modules/mailer/mail.php', \$form.serialize(),
-					function(data) {
-						var aw;
-						if(aw = GetAnswer(data)) {
-							\$form.html(aw);
-						}
-						$('.sending', \$form).hide();
-						$('input[type="submit"], button[type="submit"]', \$form).removeAttr('disabled');
-					}
-				);
-				
-				$('.sending', \$form).show();
-				$('input[type="submit"], button[type="submit"]', \$form).attr('disabled', 'disabled');
-				
-				
-				return false;
-			}
-			</script>
-EOT;
+		
 		
 		return 
 			'<form name="mailer' . $this->elementId . '" onsubmit="return sendFormMail(' . $this->elementId . ')">' .
 			'<input type="hidden" name="mailerid" value="' . $this->elementId . '"> ' .
 			$form . 
 			'<span class="sending" style="display:none;"><img style="vertical-align: middle;" src="' . $cfg['path'] . 'styles/default/img/progress_active.gif" alt="Ajax ">' . __('Sending...') . '</span>' .
-			'</form>' . $js;
+			'</form>';
 	}
 	
 
 	public static function installModule() {
-		return Array(
-			'js'=>Array(
-				'pageEdit'=>'mailer.js'
+		return array(
+			'js' => array(
+				'pageEdit'=>'maileredit.js',
+				// js that should always load
+				'load' => 'mailer.js',
 			)
 		);
 	}

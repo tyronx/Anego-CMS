@@ -32,6 +32,7 @@ function AdminMenuFunctions() {
 			if ($('input[name=name]', this).val().length == 0) {
 				Core.blinkElements($('input[name=name]', this));
 				Core.shakeElements($(".dlgOK"));
+				$($('input[name=name]', this)).focus();
 				return;
 			}
 
