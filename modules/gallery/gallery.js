@@ -550,25 +550,9 @@ gallery = ContentElement.extend({
 	addFiles: function() {
 		OpenDialog({
 			title: "Add files",
-			content: '<b>Hint:</b> You can just Drag&Drop Images into your browser window!<br>(Requires a modern browser)<br><br><input type="file" name="picupload" multiple /> <= not implemented yet'
+			content: 'Use Drag&Drop to move Images into your browser window!<br>',
+			buttons: BTN_CLOSE
 		});
-		//OpenDialog("<div id)
-		/*function makeFileList() {
-			var input = document.getElementById("filesToUpload");
-			var ul = document.getElementById("fileList");
-			while (ul.hasChildNodes()) {
-				ul.removeChild(ul.firstChild);
-			}
-			for (var i = 0; i < input.files.length; i++) {
-				var li = document.createElement("li");
-				li.innerHTML = input.files[i].name;
-				ul.appendChild(li);
-			}
-			if(!ul.hasChildNodes()) {
-				var li = document.createElement("li");
-				li.innerHTML = 'No Files Selected';
-				ul.appendChild(li);
-			}*/
 		return false;
 	}
 	
