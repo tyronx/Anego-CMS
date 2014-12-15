@@ -1,6 +1,6 @@
 <?php
 $lang = array(
-	'Wrong username or password' => 'Falscher Benutzername oder Passwort',
+	'Wrong username or password.' => 'Falscher Benutzername oder Passwort.',
 	'No permission to access this page, sorry.' => 'Nicht genügend Zugriffsrechte für diese Funktion.',
 	'add file' => 'Datei hinzufügen',
 	'add folder' => 'Order hinzufügen',

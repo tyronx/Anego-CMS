@@ -20,7 +20,7 @@
 		</div>
 	</div>
 
-	<form id="submitForm" action="{$anegopath}admin/login" method="post" accept-charset="UTF-8">
+	<form id="submitForm" action="{$anegopath}{if $cfg.fancyURLs}admin/login{else}admin.php?a=login{/if}" method="post" accept-charset="UTF-8">
 		<input type="hidden" name="username">
 		<input type="hidden" name="response">
 		<input type="hidden" name="staysigned" value="0">

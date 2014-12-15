@@ -14,33 +14,35 @@ if (!LOGINOK) {
 		$loginattempts = getSetting("loginattempts", true);
 		$attempts = 1;
 		
-		if ($loginattempts && time() - strtotime($loginattempts["lastmodified"]) < 60) {
+		if ($loginattempts && time() - strtotime($loginattempts["lastmodified"]) < 150) {
 			$attempts += $loginattempts["value"];
 		}
 		setSetting("loginattempts", $attempts);
 		
-		usleep(min(10000, max(0, ($attempts - 5) * 500))*1000);
-		
-		/*
-			client_response = sha256(pass)
-			database_pass = sha256(salt+sha256(passwd))
-			sha256(salt + client_response) == db_pass
-		*/
-		$saltedPw = hash('sha256',$cfg['hash_salt'].@$_POST['response']);
-		if (!empty($_POST['username']) && ValidAuth($_POST['username'], $saltedPw)) {
-			setcookie(
-				$cfg['cookieName'], 
-				strtolower($_POST['username']) . "," . $saltedPw, 
-				($_POST['staysigned']==1) ? (time()+$cfg['cookieTime']*3600) : 0,
-				$cfg['path']
-			);
-			
-			header('Location: ' . $cfg['path']);
-			exit();
-			
+		if ($attempts > 15) {
+			$message = __('To many attempts, please wait some minutes then try again.');
 		} else {
-			$message = __('Wrong username or password');
-			$anego->assign("username", @$_POST["username"]);
+			/*
+				client_response = sha256(pass)
+				database_pass = sha256(salt+sha256(passwd))
+				sha256(salt + client_response) == db_pass
+			*/
+			$saltedPw = hash('sha256',$cfg['hash_salt'].@$_POST['response']);
+			if (!empty($_POST['username']) && ValidAuth($_POST['username'], $saltedPw)) {
+				setcookie(
+					$cfg['cookieName'], 
+					strtolower($_POST['username']) . "," . $saltedPw, 
+					($_POST['staysigned']==1) ? (time()+$cfg['cookieTime']*3600) : 0,
+					$cfg['path']
+				);
+				
+				header('Location: ' . $cfg['path']);
+				exit();
+				
+			} else {
+				$message = __('Wrong username or password.');
+				$anego->assign("username", @$_POST["username"]);
+			}
 		}
 	}
 	

@@ -77,6 +77,7 @@ $anego->AddJsPreload("\tanego.pageLoad='".$cfg['pageLoad']."';");
 $anego->AddJsPreload("\tanego.path='" . $cfg['path'] . "';");
 $anego->assign('anegopath', $cfg['path']);
 $anego->assign('submenustyle', $cfg['submenuStyle']);
+$anego->assign("cfg", $cfg['fancyURLs']);
 
 /***** Init database, etc. *****/ 
 
@@ -212,20 +213,17 @@ function AdminBar($p) {
 	
 	$userRole = UserRole();
 	if(LOGINOK && $userRole>=Role::ProMod) {
-		if($p!=-1)
+		if($p!=-1) {
 			$anego->AddLink("<a href=\"javascript:Core.editPage()\" id=\"pageEditLink\">" . __('Edit page') . "</a>");
+		}
+		
+		$pgadurl = $cfg['path'] . ($cfg['fancyURLs'] ? 'admin/pgad' : 'admin.php?a=pgad');
+		$setgurl = $cfg['path'] . ($cfg['fancyURLs'] ? 'admin/setg' : 'admin.php?a=setg');
 			
-		if($cfg['pageLoad'] == 'ajax') {
-			$anego->AddLink('<a href="' . $cfg['path'] . 'admin/pgad">' . __('Edit Menu') . '</a>');
-			
-			if($userRole>=Role::Admin) 
-				$anego->AddLink('<a href="' . $cfg['path'] . 'admin/setg">' . __('Settings') . '</a>');
-		} else {
-			$anego->AddLink('<a href="' . $cfg['path'] . 'admin/pgad">' . __('Edit Menu') . '</a>');
-			//$anego->AddLink('<a href="' . $cfg['path'] . 'admin/filad">' . __('Manage files') . '</a>');
-			
-			if($userRole>=Role::Admin) 
-				$anego->AddLink('<a href="' . $cfg['path'] . 'admin/setg">' . __('Settings') . '</a>');
+		$anego->AddLink('<a href="' . $pgadurl . '">' . __('Edit Menu') . '</a>');
+		
+		if ($userRole>=Role::Admin) {
+			$anego->AddLink('<a href="' . $setgurl . '">' . __('Settings') . '</a>');
 		}
 	}
 }

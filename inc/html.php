@@ -324,6 +324,8 @@ class Anego extends Smarty {
 		ob_start();
 
 		if(!LOGINOK) return;
+		
+		$logouturl = $cfg['path'] . ($cfg['fancyURLs'] ? 'admin/logout' : 'admin.php?a=logout');
 
 		?>
 		<ul class="nav adminnav">
@@ -331,7 +333,7 @@ class Anego extends Smarty {
 			foreach($this->admin_links as $link)
 				echo '<li>'.$link.'</li>';
 		?>
-		<li><a href="<?=$cfg['path']?>admin/logout"><?=__('Logout')?></a></li>
+		<li><a href="<?=$logouturl?>"><?=__('Logout')?></a></li>
 		</ul>
 		<?		
 		$str = ob_get_contents();
