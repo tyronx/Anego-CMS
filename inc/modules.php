@@ -204,8 +204,19 @@ class PageManager {
 			
 			include_once($this->modulePath . $mid . '/' . $mid . '.php');
 			
+			$stylecss = "";
+			if ($row["alignment"] == "left" || $row["alignment"] == "right") {
+				$stylecss .= "float: " . $row["alignment"] . ";";
+			}
+			if ($row["padding"]) {
+				$stylecss .= " padding: " . $row["padding"] . ";";
+			}
+			if (strlen($stylecss)) {
+				$stylecss = ' style="' . $stylecss . '"';
+			}
+			
 			$ce = new $mid($page_id, $row['element_id']);
-			$txt.= '<div id="' . $mid.'_' . $row['element_id'] . '" class="contentElement ceDraggable">' . $ce->generateContent() . '</div>';
+			$txt.= '<div id="' . $mid.'_' . $row['element_id'] . '" class="contentElement ceDraggable ' . $row['style'] . '"'.$stylecss.'>' . $ce->generateContent() . '</div>';
 		}
 		
 		$q = "UPDATE ".PAGES." SET content_prepared='" . mysql_real_escape_string($txt) . "' WHERE idx=$page_id";

@@ -120,14 +120,19 @@ hr#insertMarker {
 }
 
 .miniToolbar {
-	width:49px;
-	height:20px;
-	z-index:10;
+	width: 87px;
+	height: 20px;
+	z-index: 10;
 	background-image:url(img/blueAlpha.png);
-	padding:2px;
-	padding-bottom:4px;
+	padding: 2px;
+	padding-bottom: 4px;
 	border: 1px dashed #6B77EB;
-	position:absolute;
+	position: absolute;
+}
+
+.miniToolbar img {
+	margin-left: 2px;
+	margin-right: 4px;
 }
 
 .moduleIcon {
@@ -188,6 +193,13 @@ hr#insertMarker {
 	height:0px;
 }
 
+.layoutDlgcontent {
+	padding: 5px;
+}
+
+.layoutDlgcontent input[name^="padding"] {
+	width: 20px;
+}
 
 /******** Menu manager *******/
 

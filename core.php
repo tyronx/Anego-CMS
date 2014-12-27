@@ -286,22 +286,28 @@ function PrintPage($p) {
 			$row['content']="<i id=\"hasnoContent\">". __('This page has not been filled with content yet. Please use the \'Edit this page\' Link to enter your text') . "</i>";
 		}
 		if(!strlen($row['content_prepared']) && strlen($row['content']) && $p!=-1) {
-			include('inc/modules.php');	
-			$pmg = new PageManager();
-			$pmg->loadModules();
-			$pmg->generatePage($p);
-			// Also updates the DB
-			$row['content_prepared'] = $pmg->generatePage($p);
+			$row['content_prepared'] = refreshPageCache($p);
 		}
 		
 		$anego->AddContent($row['content_prepared']);
 		$anego->assign('currentpage', $p);
 		$anego->assign('currentpageid', $row['idx']);
-		if(!$anego->get_template_vars('pageTitle'))
+		if (!$anego->get_template_vars('pageTitle')) {
 			$anego->assign('pageTitle',$row['name']);
+		}
 		$anego->display('index.tpl');
 	}
 }
+
+
+function refreshPageCache($p) {
+	include_once('inc/modules.php');	
+	$pmg = new PageManager();
+	$pmg->loadModules();
+	// Also updates the DB
+	return $pmg->generatePage($p);
+}
+
 
 // Returns required module-js files per page
 function pageLoadJs($p) {

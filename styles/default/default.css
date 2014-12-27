@@ -147,6 +147,15 @@ body {
 	background-image:url(img/pencil_hover.png);
 }
 
+.imgLayout {
+	background-image:url(img/layout.png);
+}
+
+.imgLayout:hover {
+	background-image:url(img/layout_hover.png);
+}
+
+
 /****** Admin Elements ******/
 
 

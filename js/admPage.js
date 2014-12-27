@@ -94,9 +94,35 @@ function DragDropElements(options) {
 	
 	var miniToolbarTemplate = 
 		'<div style="display:none;" class="miniToolbar">' + 
+			'<img src="' + anego.path + 'styles/default/img/cleardot.gif" class="imgLayout icon">' +
 			'<img src="' + anego.path + 'styles/default/img/cleardot.gif" class="imgEdit icon">' +
 			'<img src="' + anego.path + 'styles/default/img/cleardot.gif" class="imgBin icon">' +
 		'</div>';
+
+
+	var layoutTemplate =
+		'<div class="layoutDlgcontent">' +
+		'	' + __('Style') + '<br>' +
+		'	<select name="style">' +
+		'		<option value="standard">' + __('Standard') + '</option>' +
+		'		<option value="shadow">' + __('Box with Shadows') + '</option>' +
+		'	</select>' +
+		'	<br><br>' +
+		'	' + __('Padding (in px)') + '<br>' +
+		'	' + __('T') + ' <input name="padding0" type="text"> ' +
+		'	' + __('R') + ' <input name="padding1" type="text"> ' +
+		'	' + __('B') + ' <input name="padding2" type="text"> ' +
+		'	' + __('L') + ' <input name="padding3" type="text"> ' +
+		'	<br><br>' +
+		'	' + __('Alignment') + '<br>' +
+		'	<select name="alignment">' +
+		'		<option value="standard">' + __('None') + '</option>' +
+		'		<option value="left">' + __('Left') + '</option>' +
+		'		<option value="right">' + __('Right') + '</option>' +
+		'	</select>' +
+		
+		'</div>'
+		;
 
 	function rebindElementEvents(container) {
 		container.bind('mousemove.admPage', elementMouseMove);
@@ -135,7 +161,60 @@ function DragDropElements(options) {
 		/* Create element mini toolbar & bind events */	
 		if($miniToolbar.length == 0) {
 			$miniToolbar = $(miniToolbarTemplate);
-
+			
+			var saveSettings = function() {
+				var padding = "";
+				var havepadding = false;
+				
+				for (var i = 0; i < 4; i++) {
+					havepadding = havepadding || $('input[name="padding' + i + '"]', this).val().length > 0;
+					if (i > 0) padding += ' ';
+					padding += $('input[name="padding' + i + '"]', this).val() + 'px';
+					
+				}
+				if (!havepadding) padding = "";
+				
+				$dlg.waitResponse();
+				
+				$.post("admin.php?a=ses", { 
+					style: $('select[name="style"]', this).val(),
+					padding: padding,
+					alignment: $('select[name="alignment"]', this).val(),
+					page_id: Core.curPg.pageId,  
+					element_id: splitID($(curEl).attr('id')).elem_id
+				}, function(data) { 
+					GetAnswer(data); 
+					$dlg.closeDialog();
+				});
+			}
+			
+			var openDialog = function(data) {
+				var json = $.parseJSON(GetAnswer(data));
+				
+				var $content = $(layoutTemplate);
+				var padding = json.padding.split(' ');
+				
+				for (var i = 0; i < 4; i++) {
+					if (padding[i]) {
+						$('input[name="padding' + i + '"]', $content).val(parseInt(padding[i]));
+					}
+				}
+				
+				$('select[name="style"]', $content).val(json.style);
+				$('select[name="alignment"]', $content).val(json.alignment);
+				
+				var $dlg = OpenDialog({
+						buttons: BTN_SAVECANCEL,
+						title: __('Layout'),
+						content: $content,
+						ok_callback: saveSettings
+				});
+			}
+			
+			$('.imgLayout', $miniToolbar).click(function() {
+				$.get("admin.php?a=ges",  { page_id: Core.curPg.pageId,  element_id: splitID($(curEl).attr('id')).elem_id }, openDialog);
+			});
+			
 			$('.imgEdit', $miniToolbar).click(function() {
 				var targetElem = pageElements[$(curEl).attr('id')];
 				

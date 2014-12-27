@@ -23,6 +23,9 @@ CREATE TABLE IF NOT EXISTS `anego_pages_element` (
   `element_id` int(11) NOT NULL,
   `module_id` varchar(100) NOT NULL,
   `position` int(11) NOT NULL,
+  `style` text NOT NULL,
+  `padding` text NOT NULL,
+  `alignment` text NOT NULL,
   KEY `page_id` (`page_id`,`element_id`),
   KEY `page_id_2` (`page_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
