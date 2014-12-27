@@ -197,7 +197,7 @@ hr#insertMarker {
 	padding: 5px;
 }
 
-.layoutDlgcontent input[name^="padding"] {
+.layoutDlgcontent input[name^="padding"], .layoutDlgcontent input[name^="margin"] {
 	width: 25px;
 	margin-right: 5px;
 }

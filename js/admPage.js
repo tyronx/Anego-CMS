@@ -114,6 +114,12 @@ function DragDropElements(options) {
 		'	' + __('B') + ' <input name="padding2" type="text"> ' +
 		'	' + __('L') + ' <input name="padding3" type="text"> ' +
 		'	<br><br>' +
+		'	' + __('Margin (in px)') + '<br>' +
+		'	' + __('T') + ' <input name="margin0" type="text"> ' +
+		'	' + __('R') + ' <input name="margin1" type="text"> ' +
+		'	' + __('B') + ' <input name="margin2" type="text"> ' +
+		'	' + __('L') + ' <input name="margin3" type="text"> ' +
+		'	<br><br>' +
 		'	' + __('Alignment') + '<br>' +
 		'	<select name="alignment">' +
 		'		<option value="standard">' + __('None') + '</option>' +
@@ -166,19 +172,29 @@ function DragDropElements(options) {
 				var padding = "";
 				var havepadding = false;
 				
+				var margin = "";
+				var havemargin = false;
+				
 				for (var i = 0; i < 4; i++) {
 					var value = $('input[name="padding' + i + '"]', this).val();
 					havepadding = havepadding || value.length > 0;
 					if (i > 0) padding += ' ';
 					padding += (value.length > 0 ? value : 0) + 'px';
+					
+					var value = $('input[name="margin' + i + '"]', this).val();
+					havemargin = havemargin || value.length > 0;
+					if (i > 0) margin += ' ';
+					margin += (value.length > 0 ? value : 0) + 'px';
 				}
 				if (!havepadding) padding = "";
+				if (!havemargin) margin = "";
 				
 				$dlg.waitResponse();
 				
 				$.post("admin.php?a=ses", { 
 					style: $('select[name="style"]', this).val(),
 					padding: padding,
+					margin: margin,
 					alignment: $('select[name="alignment"]', this).val(),
 					page_id: Core.curPg.pageId,  
 					element_id: splitID($(curEl).attr('id')).elem_id
@@ -193,10 +209,14 @@ function DragDropElements(options) {
 				
 				var $content = $(layoutTemplate);
 				var padding = json.padding.split(' ');
+				var margin = json.margin.split(' ');
 				
 				for (var i = 0; i < 4; i++) {
 					if (padding[i]) {
 						$('input[name="padding' + i + '"]', $content).val(parseInt(padding[i]));
+					}
+					if (margin[i]) {
+						$('input[name="margin' + i + '"]', $content).val(parseInt(margin[i]));
 					}
 				}
 				

@@ -211,6 +211,9 @@ class PageManager {
 			if ($row["padding"]) {
 				$stylecss .= " padding: " . $row["padding"] . ";";
 			}
+			if ($row["margin"]) {
+				$stylecss .= " margin: " . $row["margin"] . ";";
+			}
 			if (strlen($stylecss)) {
 				$stylecss = ' style="' . $stylecss . '"';
 			}

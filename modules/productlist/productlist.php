@@ -174,7 +174,7 @@ class productlist extends ContentElement {
 			
 			$elementidx = mysql_insert_id();
 			
-			$q = "INSERT INTO ". PAGE_ELEMENT . " (page_id, element_id, module_id, position) VALUES ('$pageidx', '$elementidx', 'richtext', 0)";
+			$q = "INSERT INTO ". PAGE_ELEMENT . " (page_id, element_id, module_id, position,style,padding,margin,alignment) VALUES ('$pageidx', '$elementidx', 'richtext', 0, '', '', '', '')";
 			mysql_query($q) or BailSQL(__('Couldn\'t insert richtext into page'), $q);
 		}
 
