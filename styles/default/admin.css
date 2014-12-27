@@ -198,7 +198,8 @@ hr#insertMarker {
 }
 
 .layoutDlgcontent input[name^="padding"] {
-	width: 20px;
+	width: 25px;
+	margin-right: 5px;
 }
 
 /******** Menu manager *******/

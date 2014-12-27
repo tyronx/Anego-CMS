@@ -167,10 +167,10 @@ function DragDropElements(options) {
 				var havepadding = false;
 				
 				for (var i = 0; i < 4; i++) {
-					havepadding = havepadding || $('input[name="padding' + i + '"]', this).val().length > 0;
+					var value = $('input[name="padding' + i + '"]', this).val();
+					havepadding = havepadding || value.length > 0;
 					if (i > 0) padding += ' ';
-					padding += $('input[name="padding' + i + '"]', this).val() + 'px';
-					
+					padding += (value.length > 0 ? value : 0) + 'px';
 				}
 				if (!havepadding) padding = "";
 				
