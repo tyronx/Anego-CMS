@@ -124,7 +124,7 @@ richtext = ContentElement.extend({
 			theme_advanced_statusbar_location : "bottom",
 			theme_advanced_resizing : true,
 			theme_advanced_font_sizes : "7pt,8pt,9pt,10pt,11pt,12pt,13pt,14pt,15pt,17pt,19pt,21pt,23pt,25pt",
-			theme_advanced_styles : "Gray Frame=grayframe;Small padding right=smallpadright;Small padding left=smallpadleft;Small padding left+right+bottom=smallpadu; No padding=nopadding",
+			theme_advanced_styles : "Gray Frame=grayframe;Small padding right=smallpadright;Small padding left=smallpadleft;Small padding left+right+bottom=smallpadu;Small padding all sides=smallpadding;Large padding all sides=largepadding; No padding=nopadding",
 			language : mcelang, 
 			advlink_styles: "Spam Protected E-Mail Address=hiddenEmail",
 			paste_text_use_dialog: true,
@@ -132,7 +132,7 @@ richtext = ContentElement.extend({
 			advimagescale_noresize_all: true,
 			extended_valid_elements: "form[name|id|action|method|enctype|accept-charset|onsubmit|onreset|target],input[id|name|type|value|size|maxlength|checked|accept|src|width|height|disabled|readonly|tabindex|accesskey|onfocus|onblur|onchange|onselect|onclick|onkeyup|onkeydown|required|style],textarea[id|name|rows|cols|maxlength|disabled|readonly|tabindex|accesskey|onfocus|onblur|onchange|onselect|onclick|onkeyup|onkeydown|required|style],option[name|id|value|selected|style],select[id|name|type|value|size|maxlength|checked|width|height|disabled|readonly|tabindex|accesskey|onfocus|onblur|onchange|onselect|onclick|multiple|style]",	
 			button_tile_map : true,
-			content_css : anego.path + "styles/" + anego.style + "/text.css", /* style var defined by Anego */
+			content_css : anego.path + "styles/default/default-text.css" + "," + anego.path + "styles/" + anego.style + "/text.css",   /* style var defined by Anego */
 			external_link_list_url : anego.path + "modules/richtext/linkList.js.php",
 			external_image_list_url : anego.path + "modules/richtext/imageList.js.php",
 			convert_urls : false,

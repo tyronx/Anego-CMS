@@ -1,0 +1,39 @@
+body {
+	width:100%;
+	height:100%;
+	padding:0;
+	margin:0;
+}
+
+
+/**** TinyMCE classses *****/
+.grayframe {
+	padding: 3px;
+	border: 1px solid #DDD;
+	margin: 3px;
+}
+
+.smallpadright {
+	padding-right: 5px;
+}
+
+.smallpadleft {
+	padding-left: 5px;
+}
+
+.smallpadu {
+	padding: 5px;
+	padding-top: 0px;
+}
+
+.smallpadding {
+	padding: 5px;
+}
+
+.largepadding {
+	padding: 20px;
+}
+
+.nopadding {
+	padding:0px;
+}
