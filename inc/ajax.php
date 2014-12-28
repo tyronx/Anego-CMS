@@ -72,7 +72,7 @@ switch($ac) {
 			
 			mysql_query("UPDATE ".PAGE_ELEMENT." SET position=position+1 WHERE page_id=$page AND position>=$position");
 			
-			$q = "INSERT INTO ".PAGE_ELEMENT." (page_id,element_id,module_id,position,style,padding,margin,alignment) VALUES ('$page','" . $json['id'] . "','$mid','$position', '', '', '', '')";
+			$q = "INSERT INTO ".PAGE_ELEMENT." (page_id,element_id,module_id,position,style,padding,margin,alignment, width) VALUES ('$page','" . $json['id'] . "','$mid','$position', '', '', '', '')";
 			mysql_query($q) or
 				BailSQL("500\nFailed inserting page_element", $q);
 				

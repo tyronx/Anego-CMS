@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS `anego_pages_element` (
   `padding` text NOT NULL,
   `margin` text NOT NULL,
   `alignment` text NOT NULL,
+  `width` int default null,
   KEY `page_id` (`page_id`,`element_id`),
   KEY `page_id_2` (`page_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;

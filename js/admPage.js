@@ -126,7 +126,9 @@ function DragDropElements(options) {
 		'		<option value="left">' + __('Left') + '</option>' +
 		'		<option value="right">' + __('Right') + '</option>' +
 		'	</select>' +
-		
+		'	<br><br>' +
+		'	' + __('Fixed Width') + '<br>' +
+		'	' + ' <input name="width" style="width:30px;" type="text"> ' +
 		'</div>'
 		;
 
@@ -196,6 +198,7 @@ function DragDropElements(options) {
 					padding: padding,
 					margin: margin,
 					alignment: $('select[name="alignment"]', this).val(),
+					width: $('input[name="width"]', this).val(),
 					page_id: Core.curPg.pageId,  
 					element_id: splitID($(curEl).attr('id')).elem_id
 				}, function(data) { 
@@ -221,6 +224,7 @@ function DragDropElements(options) {
 				}
 				
 				$('select[name="style"]', $content).val(json.style);
+				$('input[name="width"]', $content).val(json.width);
 				$('select[name="alignment"]', $content).val(json.alignment);
 				
 				var $dlg = OpenDialog({

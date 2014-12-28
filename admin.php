@@ -464,14 +464,14 @@ switch ($_GET['a']) {
 	case 'ges':
 		if (UserRole() < Role::Admin) Bail(__('No permission to access this page, sorry.'));
 		
-		$q = "SELECT module_id, element_id, style, padding, margin, alignment from " . PAGE_ELEMENT . " where page_id=" . intval($_GET['page_id']) . " and element_id=" . intval($_GET["element_id"]);
+		$q = "SELECT module_id, element_id, style, padding, margin, alignment, width from " . PAGE_ELEMENT . " where page_id=" . intval($_GET['page_id']) . " and element_id=" . intval($_GET["element_id"]);
 		$res = mysql_query($q);
 
 		exit("200\n" . json_encode(mysql_fetch_array($res, MYSQL_ASSOC)));
 	
 	// Save element settings
 	case 'ses':
-		$q = "UPDATE " . PAGE_ELEMENT . " SET style='".mysql_real_escape_string($_POST['style'])."', padding='".mysql_real_escape_string($_POST['padding'])."', margin='".mysql_real_escape_string($_POST['margin'])."', alignment='".mysql_real_escape_string($_POST['alignment'])."' where page_id=" . intval($_POST['page_id']) . " and element_id=" . intval($_POST["element_id"]);
+		$q = "UPDATE " . PAGE_ELEMENT . " SET style='".mysql_real_escape_string($_POST['style'])."', padding='".mysql_real_escape_string($_POST['padding'])."', margin='".mysql_real_escape_string($_POST['margin'])."', alignment='".mysql_real_escape_string($_POST['alignment'])."', width='".mysql_real_escape_string($_POST['width'])."' where page_id=" . intval($_POST['page_id']) . " and element_id=" . intval($_POST["element_id"]);
 		
 		mysql_query($q) or
 			BailErr(__('Failed saving element settings'), $q);
