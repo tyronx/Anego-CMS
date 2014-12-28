@@ -207,6 +207,8 @@ class PageManager {
 			$stylecss = "";
 			if ($row["alignment"] == "left" || $row["alignment"] == "right") {
 				$stylecss .= "float: " . $row["alignment"] . ";";
+			} else {
+				$stylecss .= "clear: both;";
 			}
 			if ($row["padding"]) {
 				$stylecss .= " padding: " . $row["padding"] . ";";
