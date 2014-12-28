@@ -214,6 +214,10 @@ class PageManager {
 			if ($row["margin"]) {
 				$stylecss .= " margin: " . $row["margin"] . ";";
 			}
+			if ($row["width"]) {
+				$stylecss .= " width: " . $row["width"] . "px;";
+			}
+
 			if (strlen($stylecss)) {
 				$stylecss = ' style="' . $stylecss . '"';
 			}
