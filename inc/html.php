@@ -307,7 +307,7 @@ class Anego extends Smarty {
 			if (preg_match("/^http/", $row['file'])) {
 				$row['link'] = $row['file'];
 			} else {
-				$row['link'] = $cfg['path'] . $row['file'];
+				$row['link'] = ($row['file']{0} != '#' ?$cfg['path'] : "") . $row['file'];
 			}
 			
 		}

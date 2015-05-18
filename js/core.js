@@ -897,7 +897,7 @@ function OpenDialog(settings) {
 	$("#inactive").append($dlgBox);
 	
 	// Focus the first field
-	$('input').first().focus();
+	$('input', $dlgBox).first().focus();
 	
 	/* settings.blocking defines wether the user is still 
 	 * allowed to interact with the site or not (blocking or non blocking dialog) 

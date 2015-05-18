@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS `anego_pages_element` (
   `width` int default null,
   KEY `page_id` (`page_id`,`element_id`),
   KEY `page_id_2` (`page_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 -- --------------------------------------------------------
@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS `anego_pages` (
   `hoverimg` varchar(255) DEFAULT NULL,
   `activeimg` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`idx`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
 
 --
@@ -69,6 +69,6 @@ CREATE TABLE IF NOT EXISTS `anego_settings` (
   `value` text NOT NULL,
    `lastmodified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------

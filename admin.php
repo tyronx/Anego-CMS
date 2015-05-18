@@ -235,35 +235,20 @@ switch ($_GET['a']) {
 			
 		
 		if (! $intopage) {
-			// Add page to the bottom of the root tree
-			$q = "SELECT MAX(position) as pos FROM ".PAGES." WHERE parent_idx=0 AND menu='".$menu."'";
-			$res = mysql_query($q) or
-				BailSQL(__('Failed freeing a position for new page'),$q);
-			$row = mysql_fetch_array($res);
-
-			$pos = $row['pos'] + 1;
+			$intopage = 0;
 			$par = 0;
 		} else {
-			// Note: This code is currently not in use and might be buggy
-			// It allows to create new pages inside existing pages
-			
-			$q="SELECT * FROM ".PAGES." WHERE idx=".$intopage;
-			$res = mysql_query($q) or
-				BailSQL(__('Failed getting page info'),$q);
-			$row = mysql_fetch_array($res);
-
-			$q = "SELECT idx FROM ".PAGES." WHERE parent_idx=".$row['idx']." LIMIT 1";
-			$res2=mysql_query($q) or
-				BailSQL(__('Failed getting idx from '),$q);
-				
-			if (mysql_affected_rows()) {
-				$q = "UPDATE ".PAGES." SET position=position+1 WHERE parent_idx=".$row['idx']." AND menu=".$row['menu'];
-				mysql_query($q) or
-					BailSQL(__('Failed freeing a position for new page'),$q);
-			}
-			$pos = 0;
-			$par = $row['idx'];
+			$par = $intopage;
 		}
+		
+		// Add page to the bottom of the tree
+		$q = "SELECT MAX(position) as pos FROM ".PAGES." WHERE parent_idx=$intopage AND menu='".$menu."'";
+		$res = mysql_query($q) or
+			BailSQL(__('Failed freeing a position for new page'),$q);
+		$row = mysql_fetch_array($res);
+
+		$pos = $row['pos'] + 1;
+		
 		
 		if  (isset($_POST['filename'])) {
 			$fname = $_POST['filename'];
@@ -568,6 +553,8 @@ function PrintLinksRec($parent, $menu, $first=0) {
 		echo '</span>';
 		echo "<a href=\"#\" onclick=\"return adminMenu.delPage(".$row['idx'].")\">";
 		echo "<img class=\"adp smallIcon smallimgBin\" alt=\"". __('Delete Page') ."\" title=\"". __('Delete Page') ."\" src=\"" . $cfg['path'] . "styles/default/img/cleardot.gif\"></a>\n";
+		echo " <a href=\"javascript:adminMenu.addPage(".$row['idx'].",'$menu',$id)\"><img height=\"15\" alt=\"\" title=\"" . __('New page') ."\" class=\"adp\" src=\"".$defIcons['add']."\"></a>"; 
+		
 		PrintLinksRec($row['idx'], $menu);
 		echo "</li>\n\n";
 		

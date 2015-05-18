@@ -7,4 +7,4 @@ CREATE TABLE IF NOT EXISTS `anego_pages_richtext` (
   `value` longtext NOT NULL,
   `style` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`idx`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;

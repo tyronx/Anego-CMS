@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS `anego_comments_blog` (
   `date` int(11) NOT NULL,
   `comment` text NOT NULL,
   PRIMARY KEY (`idx`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Table structure for table `anego_elements_blog`
@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS `anego_elements_blog` (
   `value` longtext NOT NULL,
   `style` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`idx`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -37,6 +37,6 @@ CREATE TABLE IF NOT EXISTS `anego_elements_blog_entry` (
   `entry` text NOT NULL,
   `comments` int(11) NOT NULL,
   PRIMARY KEY (`idx`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------

@@ -90,42 +90,37 @@ function prettyName($name, $path = '') {
 	return $name;
 }
 
-function CopyResized($file, $width = 0, $height = 0, $proportional = true, $output = 'file', $ext='_thumb', $newfile='', $crop=null) {
-	$use_linux_commands = false;
-	
-	if ( $height <= 0 && $width <= 0 ) {
+function CopyResized($file, $width = 0, $height = 0, $proportional = true, $output = 'file', $ext = '_thumb', $newfile = '', $crop = null) {
+	if ($height <= 0 && $width <= 0) {
 		return false;
 	}
-
  
 	$info = getimagesize($file);
+	list($width_old, $height_old) = $info;
+	
 	$image = '';
- 
 	$final_width = 0;
 	$final_height = 0;
-	list($width_old, $height_old) = $info;
- 
-
-	if( $info[2] != IMAGETYPE_GIF && 
+	
+	if ($info[2] != IMAGETYPE_GIF && 
 		$info[2] != IMAGETYPE_JPEG && 
 		$info[2] != IMAGETYPE_PNG) return false;
 	
 	$filename = NULL;
-	switch ( strtolower($output) ) {
+	switch (strtolower($output)) {
 		case 'browser':
 			$mime = image_type_to_mime_type($info[2]);
 			header("Content-type: $mime");
 			break;
+		
 		case 'file':
-			if(strlen($newfile)) {
+			if (strlen($newfile)) {
 				$filename = $newfile;
 			} else {
 				$filename = preg_replace("/(?U)(.*)(\.\w+)$/","\\1$ext\\2",$file);
 			}
 			break;
-		case 'return':
-			return $image_resized;
-			break;
+		
 		default:
 			break;
 	}
@@ -155,7 +150,7 @@ function CopyResized($file, $width = 0, $height = 0, $proportional = true, $outp
 		$final_height = $height_old;
 	}
 	
-	switch ( $info[2] ) {
+	switch ($info[2]) {
 	  case IMAGETYPE_GIF:
 		$image = imagecreatefromgif($file);
 	  break;
@@ -169,52 +164,47 @@ function CopyResized($file, $width = 0, $height = 0, $proportional = true, $outp
 		return false;
 	}
 
-	if($crop) {
+	if ($crop) {
 		$image_resized = imagecreatetruecolor( $crop['w'], $crop['h'] );
 	} else {
 		$image_resized = imagecreatetruecolor( $final_width, $final_height );
 	}
  
-	if ( ($info[2] == IMAGETYPE_GIF) || ($info[2] == IMAGETYPE_PNG) ) {
-	  $trnprt_indx = imagecolortransparent($image);
- 
-	  // If we have a specific transparent color
-	  if ($trnprt_indx >= 0) {
- 
-		// Get the original image's transparent color's RGB values
-		$trnprt_color    = imagecolorsforindex($image, $trnprt_indx);
- 
-		// Allocate the same color in the new image resource
-		$trnprt_indx    = imagecolorallocate($image_resized, $trnprt_color['red'], $trnprt_color['green'], $trnprt_color['blue']);
- 
-		// Completely fill the background of the new image with allocated color.
-		imagefill($image_resized, 0, 0, $trnprt_indx);
- 
-		// Set the background color for new image to transparent
-		imagecolortransparent($image_resized, $trnprt_indx);
- 
- 
-	  } 
-	  // Always make a transparent background color for PNGs that don't have one allocated already
-	  elseif ($info[2] == IMAGETYPE_PNG) {
- 
-		// Turn off transparency blending (temporarily)
-		imagealphablending($image_resized, false);
- 
-		// Create a new transparent color for image
-		$color = imagecolorallocatealpha($image_resized, 0, 0, 0, 127);
- 
-		// Completely fill the background of the new image with allocated color.
-		imagefill($image_resized, 0, 0, $color);
- 
-		// Restore transparency blending
-		imagesavealpha($image_resized, true);
-	  }
+	if (($info[2] == IMAGETYPE_GIF) || ($info[2] == IMAGETYPE_PNG)) {
+		$trnprt_indx = imagecolortransparent($image);
+
+		// If we have a specific transparent color
+		if ($trnprt_indx >= 0) {
+			// Get the original image's transparent color's RGB values
+			$trnprt_color    = imagecolorsforindex($image, $trnprt_indx);
+	 
+			// Allocate the same color in the new image resource
+			$trnprt_indx    = imagecolorallocate($image_resized, $trnprt_color['red'], $trnprt_color['green'], $trnprt_color['blue']);
+	 
+			// Completely fill the background of the new image with allocated color.
+			imagefill($image_resized, 0, 0, $trnprt_indx);
+	 
+			// Set the background color for new image to transparent
+			imagecolortransparent($image_resized, $trnprt_indx);
+	 
+		// Always make a transparent background color for PNGs that don't have one allocated already
+		} elseif ($info[2] == IMAGETYPE_PNG) {
+	   
+			// Turn off transparency blending (temporarily)
+			imagealphablending($image_resized, false);
+	 
+			// Create a new transparent color for image
+			$color = imagecolorallocatealpha($image_resized, 0, 0, 0, 127);
+	 
+			// Completely fill the background of the new image with allocated color.
+			imagefill($image_resized, 0, 0, $color);
+	 
+			// Restore transparency blending
+			imagesavealpha($image_resized, true);
+		}
 	}
  
-	//imagecopyresampled($image_resized, $image, 0, 0, 0, 0, $final_width, $final_height, $width_old, $height_old);
-	//bool imagecopyresampled(resource $dst_image, resource $src_image, int $dst_x, int $dst_y, int $src_x, int $src_y, int $dst_w, int $dst_h, int $src_w, int $src_h )
-	if($crop) {
+	if ($crop) {
 		$propX = $width_old / $final_width;
 		$propY = $height_old / $final_height;
 	
@@ -228,7 +218,7 @@ function CopyResized($file, $width = 0, $height = 0, $proportional = true, $outp
 	}
  
 
-	switch ( $info[2] ) {
+	switch ($info[2]) {
 		case IMAGETYPE_GIF:
 			imagegif($image_resized, $filename);
 			break;
@@ -245,7 +235,7 @@ function CopyResized($file, $width = 0, $height = 0, $proportional = true, $outp
 			return false;
 	}
  
-	if(strtolower($output) == 'file') {
+	if (strtolower($output) == 'file') {
 		@chmod($filename, 0664);
 		return $filename;
 	}

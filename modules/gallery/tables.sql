@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS `anego_image_sizes` (
   `width` smallint(6) NOT NULL,
   `height` smallint(6) NOT NULL,
   PRIMARY KEY (`idx`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=3 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=3 ;
 
 --
 -- Dumping data for table `test_image_sizes`
@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS `anego_pages_gallery` (
   `original_default_size_id` int(11) NOT NULL DEFAULT '1',
   `preview_default_size_id` int(11) NOT NULL DEFAULT '2',
   PRIMARY KEY (`idx`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS `anego_pages_gallerypicture` (
   `prev_w` smallint(6) DEFAULT NULL,
   `prev_h` smallint(6) DEFAULT NULL,
   PRIMARY KEY (`idx`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
 
 
@@ -69,4 +69,4 @@ CREATE TABLE IF NOT EXISTS `anego_pages_picture` (
   `value` longtext NOT NULL,
   `style` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`idx`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
