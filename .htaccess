@@ -15,7 +15,7 @@
 	RewriteRule ^rwcheck$  index.php?rewrite=1
 	
 	RewriteCond $1 !^(admin\.php|index\.php|setup\.php|jsld\.php|files|js|tmp|modules|lang|lib|styles)
-	RewriteRule ^(.+)$ index.php/?p=$1 [L]
+	RewriteRule ^(.+)$ index.php/?p=$1 [QSA,L]
 	
 	# Block GET requests that contain /etc/
 	RewriteCond %{REQUEST_URI} (ftp|https?):|/etc/ [NC,OR]

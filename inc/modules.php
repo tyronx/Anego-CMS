@@ -94,6 +94,13 @@ abstract class ContentElement extends BasicModule {
 		return true;
 	}
 	
+	
+	/* Expiration date for the content, after this passes by, the page will be regenerated. Default is 10 years */
+	public function contentValidUntil() {
+		return time() + 24 * 3600 * 365 * 10;
+	}
+	
+	
 	/* Function that should return all required hooks and install settings of the module */
 	public static function installModule() {
 		return Array();
@@ -190,6 +197,7 @@ class PageManager {
 	/* Rebuilds a page's HTML by calling each individual module generateContent() method and stitching that together */
 	function generatePage($page_id) {
 		$page_id = intval($page_id);
+		$validuntil = time() + 24*3600*365*99;
 		
 		$q = "SELECT * FROM ".PAGE_ELEMENT." WHERE page_id=$page_id ORDER BY position";
 		$res = mysql_query($q) or
@@ -225,13 +233,17 @@ class PageManager {
 			}
 			
 			$ce = new $mid($page_id, $row['element_id']);
+			
 			$txt.= '<div id="' . $mid.'_' . $row['element_id'] . '" class="contentElement ceDraggable ' . $row['style'] . '"'.$stylecss.'>' . $ce->generateContent() . '</div>';
+			
+			$validuntil = min($validuntil, $ce->contentValidUntil());
 		}
 		
-		$q = "UPDATE ".PAGES." SET content_prepared='" . mysql_real_escape_string($txt) . "' WHERE idx=$page_id";
+		$q = "UPDATE ".PAGES." SET `content_prepared`='" . mysql_real_escape_string($txt) . "', `content_validuntil`='".$validuntil."' WHERE idx=$page_id";
+		
 		$res = mysql_query($q) or
 			BailErr("Failed generating page",$q);
-			
+		
 		return $txt;
 	}
 	

@@ -233,7 +233,7 @@ function PrintPage($p) {
 	global $anego, $cfg;
 	
 	
-	if($p==-1) {
+	if($p == -1) {
 		$anego->AddContent(__('<i>No start page set up yet. Please check your settings.</i>'));
 		AdminBar(-1);
 		$anego->display('index.tpl');
@@ -248,13 +248,13 @@ function PrintPage($p) {
 		$selection = "(url='" . mysql_real_escape_string($p) . "' AND nolink=0 AND file='')";
 	}
 
-	$q = "SELECT idx, name, file, content, content_prepared FROM ".PAGES." WHERE " . $selection . ' ' . (!LOGINOK?"AND (visibility&1)=1":"");
+	$q = "SELECT idx, name, file, content, content_prepared, content_validuntil FROM ".PAGES." WHERE " . $selection . ' ' . (!LOGINOK?"AND (visibility&1)=1":"");
 	
 	$res = mysql_query($q) or
 		BailSQL("Failed getting page data for page $p<br>",$q);
-	$row = mysql_fetch_array($res);
+	$page = mysql_fetch_array($res);
 	
-	AdminBar($row['idx']);
+	AdminBar($page['idx']);
 	
 	if(!mysql_affected_rows()) {
 		$anego->AddContent(__('Page nonexistant or no permission to see it'));
@@ -262,38 +262,44 @@ function PrintPage($p) {
 		exit();
 	}
 	
-	$anego->curPg = $row['idx'];
-	$anego->AddJsPreload("\tanego.curPg = 'pages/" . $row['idx'] . "';");
+	$anego->curPg = $page['idx'];
+	$anego->AddJsPreload("\tanego.curPg = 'pages/" . $page['idx'] . "';");
 	
 	
 
 	
-	$anego->assign('pagetitle', $row['name'] . " - " . $anego->get_template_vars('pagetitle'));
-	$anego->assign('pagename', $row['name']);
+	$anego->assign('pagetitle', $page['name'] . " - " . $anego->get_template_vars('pagetitle'));
+	$anego->assign('pagename', $page['name']);
 	
-	$js = pageLoadJs($row['idx']);
-	if (count($js)) {
-		$anego->AddJsPreload("\tanego.pageJS=new Array('" . implode("','",$js) . "');");
+	$pageloadfiles = pageLoadFiles($page['idx']);
+	if (count($pageloadfiles['js'])) {
+		$anego->AddJsPreload("\tanego.pageJS=new Array('" . implode("','",$pageloadfiles['js']) . "');");
+	}
+	if (count($pageloadfiles['css'])) {
+		foreach ($pageloadfiles['css'] as $css) {
+			$anego->AddCSSFile($css);
+		}
 	}
 	
 	
-	if (strlen($row['file']) && file_exists($row['file'])) {
+	if (strlen($page['file']) && file_exists($page['file'])) {
 		/***** Page is file: include file *****/
-		include($row['file']);
+		include($page['file']);
 	} else {
 		/***** Otherwise set up and display page *****/		
-		if(!strlen($row['content'])) {
-			$row['content']="<i id=\"hasnoContent\">". __('This page has not been filled with content yet. Please use the \'Edit this page\' Link to enter your text') . "</i>";
-		}
-		if(!strlen($row['content_prepared']) && strlen($row['content']) && $p!=-1) {
-			$row['content_prepared'] = refreshPageCache($p);
+		if (!strlen($page['content'])) {
+			$page['content']="<i id=\"hasnoContent\">". __('This page has not been filled with content yet. Please use the \'Edit this page\' Link to enter your text') . "</i>";
 		}
 		
-		$anego->AddContent($row['content_prepared']);
+		if ((!strlen($page['content_prepared']) && strlen($page['content'])) || $page["content_validuntil"] < time()) {
+			$page['content_prepared'] = refreshPageCache($page["idx"]);
+		}
+		
+		$anego->AddContent($page['content_prepared']);
 		$anego->assign('currentpage', $p);
-		$anego->assign('currentpageid', $row['idx']);
+		$anego->assign('currentpageid', $page['idx']);
 		if (!$anego->get_template_vars('pageTitle')) {
-			$anego->assign('pageTitle',$row['name']);
+			$anego->assign('pageTitle', $page['name']);
 		}
 		$anego->display('index.tpl');
 	}
@@ -309,36 +315,52 @@ function refreshPageCache($p) {
 }
 
 
-// Returns required module-js files per page
-function pageLoadJs($p) {
+// Returns required module-js and module-css files per page
+function pageLoadFiles($p) {
 	global $cfg;
 	
-	if(file_exists('var/installed_modules'))
+	if (file_exists('var/installed_modules')) {
 		$modules = unserialize(file_get_contents('var/installed_modules'));
-	else $modules = Array();
+	} else {
+		$modules = array();
+	}
 		
 	// Optimize: Save this information in PAGES so we can eliminate this query
 	$q = 'SELECT module_id FROM '.PAGE_ELEMENT.' WHERE page_id='.$p.' GROUP BY module_id';
 	$res = mysql_query($q) or
 		BailErr("Failed getting page data for page $p<br>",$q);
 	
-	$js = Array();
-	$modjs=Array();
+	$js = array();
+	$modjs = array();
+	$modcss = array();
+	$css = array();
 	
-	while(list($mid)=mysql_fetch_row($res)) {
+	while (list($mid) = mysql_fetch_row($res)) {
 		// typecast to array to allow non-array values in the module config
-		if(LOGINOK) {
-			$modjs=array_merge(@(array)$modules[$mid]['config']['js']['load'],@(array)$modules[$mid]['config']['js']['pageMod']);
+		if (LOGINOK) {
+			$modjs = array_merge(@(array)$modules[$mid]['config']['js']['load'],@(array)$modules[$mid]['config']['js']['pageMod']);
 		} else {
-			$modjs=array_merge(@(array)$modules[$mid]['config']['js']['load'],@(array)$modules[$mid]['config']['js']['pageView']);
+			$modjs = array_merge(@(array)$modules[$mid]['config']['js']['load'],@(array)$modules[$mid]['config']['js']['pageView']);
 		}
 		
-		foreach($modjs as $idx=>$file)
-			$js[]='modules/'.$mid.'/'.str_replace('%lng', $cfg['interfacelanguage'], $file);
+		$modcss = array_merge(@(array)$modules[$mid]['config']['css']['load'],@(array)$modules[$mid]['config']['css']['pageView']);
+		
+		foreach($modjs as $idx => $file) {
+			$js[] = 'modules/'.$mid.'/'.str_replace('%lng', $cfg['interfacelanguage'], $file);
+		}
+		foreach($modcss as $idx => $file) {
+			$css[] = 'modules/'.$mid.'/'.str_replace('%lng', $cfg['interfacelanguage'], $file);
+		}
 	}
 	
-	return $js;
+	return array(
+		"js" => $js,
+		"css" => $css
+	);
 }
+
+
+
 
 // Returns required module-js files per page when editing
 function pageEditJs() {

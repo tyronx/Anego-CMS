@@ -53,7 +53,7 @@ body {
 	text-align:center;
 }
 div#name {
-	padding-top:30px;
+	padding-top:20px;
 	font-size:18pt;
 	color:#555;
 	text-shadow: 1px 1px 0 #fff;
@@ -99,7 +99,7 @@ div#name {
 	
 	text-shadow: 1px 1px 0 #DADADA;
 	border:1px solid #444;
-	
+	border-bottom: 0px;
 }
 
 #contents {

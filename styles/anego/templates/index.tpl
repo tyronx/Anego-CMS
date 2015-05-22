@@ -14,7 +14,12 @@
 <body>
 	<div id="keyboard"></div>
 		<div id="outer">
-			<div id="header" class="shadow"><div id="name" onclick="location.href='http://tyron.at'">Anego CMS<br></div></div>
+			<div id="header" class="shadow">
+				<div id="name" onclick="location.href='http://tyron.at'">Anego CMS<br></div>
+				<form action="search-results" method="get">
+					<input type="text" name="searchtext" value="{$searchtext|escape}" style="width: 80px;"> <input type="submit" value="Search">
+				</form>
+			</div>
 			<div id="admin">{$menuadmin}</div>
 			<div id="menu">
 				{include file='menu.tpl' pagetree=$pages.major menuname="mainnav"}

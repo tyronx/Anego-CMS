@@ -1,0 +1,11 @@
+.searchresult {
+	padding-bottom: 20px;
+}
+.searchresult .pagename {
+	font-weight: bold;
+	font-size: 115%;
+}
+
+.searchresult .searchmatch {
+	font-weight: bold;
+}

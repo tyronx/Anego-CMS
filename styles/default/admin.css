@@ -272,20 +272,21 @@ hr#insertMarker {
 }
 
 .menuTree .listEl {
-	padding-left:2px;
-	padding-right:2px;
-}
-
-.menuTree .listEl:before {
-	content:url(img/page_white.png);
-	padding-right:5px;
+	background-image: url(img/page_white.png);
+	background-repeat: no-repeat;
+	padding: 4px;
+	padding-left: 19px;
+	background-position: 1px 3px;
+	line-height: 22px;
 }
 
 .menuTree .listEl:hover, .menuTree .insertIn {
 	background-color:#DDD;
 	border:1px solid gray;
 	border-radius: 3px;
-	padding:1px;
+	padding:3px;
+	padding-left: 18px;
+	background-position: 0px 2px;
 }
 
 .insertAbove {

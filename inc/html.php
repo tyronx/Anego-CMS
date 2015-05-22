@@ -1,7 +1,7 @@
 <?
 require(SMARTYPATH.'Smarty.class.php');
 
-define('MAXDEPTH', 9);
+define('MAXDEPTH', 6);
 
 /* Main HTML Output class based on Smarty */
 class Anego extends Smarty {
@@ -240,7 +240,7 @@ class Anego extends Smarty {
 			if ($page['parent_idx'] == $parentidx) {
 			
 				if ($depth < MAXDEPTH) {
-					$page['children'] = $this->addChildren($page['idx'], $pages, $depth++);
+					$page['children'] = $this->addChildren($page['idx'], $pages, $depth+1);
 				}
 				
 				$page['itemclasses'] = 
