@@ -30,7 +30,15 @@ class search extends ContentElement {
 	function generateContent() {
 		global $cfg;
 		
-		if (!empty($_GET["searchtext"])) {
+		include('modules/search/lang/'.$cfg['interfacelanguage'].'.php');
+		
+		if (isset($_GET["searchtext"])) {
+			$_GET["searchtext"] = trim($_GET["searchtext"]);
+			
+			if (strlen($_GET["searchtext"]) < 3) {
+				return '<div class="searchresult">' . $lng["search"]["tooshort"] . '</div>';
+			}
+			
 			$searchresults = $this->getSearchResults($_GET["searchtext"]);
 			$str = "";
 			
@@ -40,6 +48,11 @@ class search extends ContentElement {
 					'<div class="surroundingtext">'. $page['searchresults'] . '</div>' .
 				'</div>';
 			}
+			
+			if (empty($searchresults)) {
+				$str .= '<div class="searchresult">' . $lng["search"]["noresults"] . '</div>';
+			}
+			
 			return $str ;
 		} else {
 			return "";
@@ -99,7 +112,7 @@ class search extends ContentElement {
 	
 	
 	function getMatch($searchtext, $text) {
-		$text = strip_tags($text);
+		$text = html_entity_decode(strip_tags($text));
 		
 		$weight = 9;
 		$occurrences = $this->fullSearchMatches($searchtext, $text);
@@ -130,9 +143,9 @@ class search extends ContentElement {
 			$match["surroundingtexts"] .= 
 				'<p>' . 
 				(($occurrence[1] > 0) ? "..." : "") .
-				substr($text, max(0, $occurrence[1] - DISPLAYRANGE), DISPLAYRANGE) .
+				mb_substr($text, max(0, $occurrence[1] - DISPLAYRANGE), DISPLAYRANGE, "UTF-8") .
 				'<span class="searchmatch">' . $occurrence[0] . '</span>' .
-				substr($text, min(strlen($text) - DISPLAYRANGE, $occurrence[1] + strlen($occurrence[0])), DISPLAYRANGE) .
+				mb_substr($text, min(strlen($text) - DISPLAYRANGE, $occurrence[1] + strlen($occurrence[0])), DISPLAYRANGE, "UTF-8") .
 				((strlen($text) > $occurrence[1]) ? "..." : "") .
 				'</p>'
 			;
@@ -145,7 +158,7 @@ class search extends ContentElement {
 	function fullSearchMatches($searchtext, $text) {
 		$occurences = array();
 		
-		if (preg_match_all("/(^|\s){$searchtext}($|\s)/i", $text, $matches, PREG_OFFSET_CAPTURE) > 0) {
+		if (preg_match_all("/(^|\s)".preg_quote($searchtext)."($|\s)/i", $text, $matches, PREG_OFFSET_CAPTURE) > 0) {
 			foreach ($matches[0] as $match) {
 				$occurences[] = $match;
 			}
@@ -170,7 +183,7 @@ class search extends ContentElement {
 		
 		$words = explode(" ", $searchtext);
 		foreach ($words as $word) {
-			if (preg_match_all("/{$searchtext}/i", $text, $matches, PREG_OFFSET_CAPTURE) > 0) {
+			if (preg_match_all("/".preg_quote($searchtext)."/i", $text, $matches, PREG_OFFSET_CAPTURE) > 0) {
 				foreach ($matches[0] as $match) {
 					$occurences[] = $match;
 				}

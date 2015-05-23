@@ -13,3 +13,4 @@ styles/anego/templates_c/*
 tmp/*
 var/*
 !var/.htaccess
+/styles/anego2/img/concept
