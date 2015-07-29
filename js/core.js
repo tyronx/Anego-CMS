@@ -1450,6 +1450,39 @@ jQuery.cookie = function (key, value, options) {
 })();
 
 
+
+function makeTabs() {
+	//When page loads...
+	$(".tab_content").hide(); //Hide all content
+	
+	var child = 1;
+	if (typeof tabpage == "number") {
+		child = tabpage;
+	}
+	
+	$("ul.tabs").each(function() { $("li:nth-child(" + child+ ")", this).addClass("active").show(); });
+	$(".tab_container").each(function() { $(".tab_content:nth-child(" + child + ")", this).show(); });
+
+	$("ul.tabs li").click(function() {
+		if ($(this).hasClass("disabled")) {
+			return false;
+		}
+		
+		var otherclasses = $(this).parent().attr("class").replace("tabs ", "").replace(" ", ".");
+		if (otherclasses.length > 0) otherclasses = "." + otherclasses;
+		
+		$("ul.tabs li").removeClass("active");
+		$(this).addClass("active");
+		
+		$(".tab_container"+otherclasses+" .tab_content").hide();
+		console.log($(".tab_container"+otherclasses+" .tab_content"));
+		var activeTab = $(this).find("a").attr("href");
+		console.log(activeTab);
+		$(activeTab).show();
+		return false;
+	});
+}
+
 /* ContentElement base class
  * This class takes over element creation, deleting and basic editing handling.
  * You should however implement onStartEdit at least for your module.

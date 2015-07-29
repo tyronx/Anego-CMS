@@ -12,10 +12,10 @@ if (!isset($_POST['mailerid'])) {
 			$this->template_dir = '';
 			$this->compile_dir = 'tmp';
 			$this->register_resource('string', array(
-						'string_get_template',
-						'string_get_timestamp',
-						'string_get_secure',
-						'string_get_trusted'));
+				'string_get_template',
+				'string_get_timestamp',
+				'string_get_secure',
+				'string_get_trusted'));
 		}
 	}
 

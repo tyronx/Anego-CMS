@@ -12,7 +12,7 @@ License: GPL2
 */
 
 // How many chars left and right should be displayed in the search result
-define("DISPLAYRANGE", 50);
+define("DISPLAYRANGE", 45);
 
 class search extends ContentElement {
 	var $pageidswithsearch = -1;
@@ -112,7 +112,7 @@ class search extends ContentElement {
 	
 	
 	function getMatch($searchtext, $text) {
-		$text = html_entity_decode(strip_tags($text));
+		$text = html_entity_decode(strip_tags($text), ENT_COMPAT | ENT_HTML401, "UTF-8");
 		
 		$weight = 9;
 		$occurrences = $this->fullSearchMatches($searchtext, $text);
@@ -135,18 +135,22 @@ class search extends ContentElement {
 			"weight" => count($occurrences) * $weight,
 			"surroundingtexts" => ""
 		);
-		
+				
 		foreach ($occurrences as $occurrence) {
 			// [0] = found text
 			// [1] == position
+			
+			// Super weird behavior, position is kinda off by the multibyte characters
+			// I guess because all the preg_ functions are without the /u modifier but if I add it, then the regex doesn't work at all :/
+			$occurrence[1]+= strlen(utf8_decode(substr($text, 0, $occurrence[1]))) - mb_strlen(substr($text, 0, $occurrence[1]));
 			
 			$match["surroundingtexts"] .= 
 				'<p>' . 
 				(($occurrence[1] > 0) ? "..." : "") .
 				mb_substr($text, max(0, $occurrence[1] - DISPLAYRANGE), DISPLAYRANGE, "UTF-8") .
 				'<span class="searchmatch">' . $occurrence[0] . '</span>' .
-				mb_substr($text, min(strlen($text) - DISPLAYRANGE, $occurrence[1] + strlen($occurrence[0])), DISPLAYRANGE, "UTF-8") .
-				((strlen($text) > $occurrence[1]) ? "..." : "") .
+				mb_substr($text, min(mb_strlen($text) - DISPLAYRANGE, $occurrence[1] + mb_strlen($occurrence[0])), DISPLAYRANGE, "UTF-8") .
+				((mb_strlen($text) > $occurrence[1]) ? "..." : "") .
 				'</p>'
 			;
 			
