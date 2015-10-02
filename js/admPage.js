@@ -128,7 +128,10 @@ function DragDropElements(options) {
 		'	</select>' +
 		'	<br><br>' +
 		'	' + __('Fixed Width') + '<br>' +
-		'	' + ' <input name="width" style="width:30px;" type="text"> ' +
+		'	' + ' <input name="width" style="width:40px;" type="text"> ' +
+		'	<br><br>' +
+		'	' + __('Max Width') + '<br>' +
+		'	' + ' <input name="maxwidth" style="width:40px;" type="text"> ' +
 		'</div>'
 		;
 
@@ -199,6 +202,7 @@ function DragDropElements(options) {
 					margin: margin,
 					alignment: $('select[name="alignment"]', this).val(),
 					width: $('input[name="width"]', this).val(),
+					maxwidth: $('input[name="maxwidth"]', this).val(),
 					page_id: Core.curPg.pageId,  
 					element_id: splitID($(curEl).attr('id')).elem_id
 				}, function(data) { 

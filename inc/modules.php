@@ -225,7 +225,12 @@ class PageManager {
 				$stylecss .= " margin: " . $row["margin"] . ";";
 			}
 			if ($row["width"]) {
-				$stylecss .= " width: " . $row["width"] . "px;";
+				if ($row["width"] == intval($row["width"])) $row["width"] .= "px";
+				$stylecss .= " width: " . $row["width"] . ";";
+			}
+			if ($row["maxwidth"]) {
+				if ($row["maxwidth"] == intval($row["maxwidth"])) $row["maxwidth"] .= "px";
+				$stylecss .= " maxwidth: " . $row["maxwidth"] . ";";
 			}
 
 			if (strlen($stylecss)) {
