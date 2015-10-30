@@ -17,6 +17,10 @@ body {
 	padding-right: 5px;
 }
 
+.mediumpadright {
+	padding-right: 15px;
+}
+
 .smallpadleft {
 	padding-left: 5px;
 }

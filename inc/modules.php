@@ -230,7 +230,7 @@ class PageManager {
 			}
 			if ($row["maxwidth"]) {
 				if ($row["maxwidth"] == intval($row["maxwidth"])) $row["maxwidth"] .= "px";
-				$stylecss .= " maxwidth: " . $row["maxwidth"] . ";";
+				$stylecss .= " max-width: " . $row["maxwidth"] . ";";
 			}
 
 			if (strlen($stylecss)) {

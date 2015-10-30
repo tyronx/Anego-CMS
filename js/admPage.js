@@ -229,6 +229,7 @@ function DragDropElements(options) {
 				
 				$('select[name="style"]', $content).val(json.style);
 				$('input[name="width"]', $content).val(json.width);
+				$('input[name="maxwidth"]', $content).val(json.maxwidth);
 				$('select[name="alignment"]', $content).val(json.alignment);
 				
 				var $dlg = OpenDialog({

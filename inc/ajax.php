@@ -309,7 +309,7 @@ switch($ac) {
 		$anego->prepare();
 
 		/* Also deliever what js files to load */
-		$json['js'] = pageLoadJs($row['idx']);
+		$json = array_merge($json, pageLoadFiles($row['idx']));
 
 		$pagetitle = str_replace(array('&lt;', '&gt;'), array('<','>'), getSetting('pagetitle'));
 		

@@ -1,12 +1,12 @@
 {capture name="content"}
 	<div id="adminpage">
-		<ul class="tabs">
+		<ul class="tabs settings">
 			<li><a href="#pagesettings">{__Website}</a></li>
 			<li><a href="#pageoptions">{__General}</a></li>
 			<li><a href="#modules">{__Modules}</a></li>
 		</ul>
 			
-		<div class="tab_container">
+		<div class="tab_container settings">
 			<div id="pagesettings" class="tab_content">
 				<form name="websitesettings" onsubmit="return false">
 					{__Home page (The Page which the visitor gets to see first)}<br>
