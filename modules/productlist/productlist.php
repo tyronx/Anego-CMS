@@ -112,7 +112,15 @@ class productlist extends ContentElement {
 		$settings = mysql_fetch_array($res);
 
 	
-		return "200\n" . json_encode(array ("products" => $products, 'css' => $this->getCSS(true), 'productswidth' => $settings['productswidth']));
+		$q = "SELECT idx,name,url FROM ".PAGES." WHERE nolink=0 order by name asc";
+		$res = mysql_query($q) or BailSQL('Couldn\'t read pages', $q);
+		
+		$pages = array();
+		while ($row = mysql_fetch_array($res)) {
+			$pages[] = $row;
+		}
+	
+		return "200\n" . json_encode(array ("pages" => $pages, "products" => $products, 'css' => $this->getCSS(true), 'productswidth' => $settings['productswidth']));
 	}
 	
 	function saveProduct() {
@@ -125,17 +133,23 @@ class productlist extends ContentElement {
 		$title = mysql_real_escape_string(@$_POST['title']);
 		// TODO SECURITY RISC
 		$filename = @$_POST['filename'];
-		$createpage = intval(@$_POST['createpage']);
+		$target = intval(@$_POST['target']);
 		$productid = intval(@$_POST['productid']);
+		$pageidx = intval(@$_POST['pageidx']);
 		
+		$oldproduct = null;
+		$elementidx = 'null';
+		if ($productid) {
+			$q = 'SELECT * FROM ' . $this->productTable() . ' WHERE idx='.$productid;
+			$res = mysql_query($q) or BailSQL(__('Couldn\'t get product info'), $q);
+			$oldproduct  = mysql_fetch_row($res);
+			
+			$elementidx = $oldproduct["element_idx"];
+		}
 		
 		if ($filename) {
-			$q = 'SELECT filename FROM ' . $this->productTable() . ' WHERE idx='.$productid;
-			$res = mysql_query($q) or BailSQL(__('Couldn\'t get product info'), $q);
-			list ($oldfilename) = mysql_fetch_row($res);
-			
-			if ($oldfilename) {
-				@unlink($this->path . $oldfilename);
+			if (!empty($oldproduct['filename'])) {
+				@unlink($this->path . $oldproduct['filename']);
 			}
 			
 			$filename = prettyName($filename, $this->path);
@@ -152,80 +166,78 @@ class productlist extends ContentElement {
 			$filename = mysql_real_escape_string($filename);
 		}
 		
-		$pageidx = '';
-		$elementidx = '';
-		if ($createpage == 1) {
-			// Add page to the bottom of the root tree
-			$q = "SELECT MAX(position) as pos FROM ".PAGES." WHERE parent_idx=".$this->pageId;
-			$res = mysql_query($q) or
-				BailErr(__('Failed getting position for new page'),$q);
-			$row = mysql_fetch_array($res);
-			$pos = $row['pos'] + 1;
-			
-			$q = "INSERT INTO ". PAGES . " (name, date, parent_idx, visibility, position, menu)
-				VALUES ('$title','".time()."','".$this->pageId."', 3, '$pos', 'MAIN')";
-			
-			mysql_query($q) or BailSQL(__('Couldn\'t insert page'), $q);
-			
-			$pageidx = mysql_insert_id();
-			
-			$q = "INSERT INTO ". $this->richtextTable() ." (value) VALUES('".$desc."')";
-			mysql_query($q) or BailSQL(__('Couldn\'t insert richtext'), $q);
-			
-			$elementidx = mysql_insert_id();
-			
-			$q = "INSERT INTO ". PAGE_ELEMENT . " (page_id, element_id, module_id, position,style,padding,margin,alignment) VALUES ('$pageidx', '$elementidx', 'richtext', 0, '', '', '', '')";
-			mysql_query($q) or BailSQL(__('Couldn\'t insert richtext into page'), $q);
+		if ($target == 0) {
+			$pageidx = 'null';
+			$elementidx = 'null';
+		}
+		
+		if ($target == 1) {
+			$elementidx = 'null';
 		}
 
-		if ($_POST['createnew']) {
-			if ($createpage) {
-				$pageidx_insert = "'$pageidx'";
-				$elementidx_insert = "'$elementidx'";
-			} else {
-				$pageidx_insert = 'null';
-				$elementidx_insert = 'null';
-			}
+		
+		if ($target == 2) {
+			// Create new page
+			if(!$productid || empty($oldproduct["page_idx"])) {
+				// Add page to the bottom of the root tree
+				$q = "SELECT MAX(position) as pos FROM ".PAGES." WHERE parent_idx=".$this->pageId;
+				$res = mysql_query($q) or
+					BailErr(__('Failed getting position for new page'),$q);
+				$row = mysql_fetch_array($res);
+				$pos = $row['pos'] + 1;
+				
+				$q = "INSERT INTO ". PAGES . " (name, date, parent_idx, visibility, position, menu)
+					VALUES ('$title','".time()."','".$this->pageId."', 3, '$pos', 'MAIN')";
+				
+				mysql_query($q) or BailSQL(__('Couldn\'t insert page'), $q);
+				
+				$pageidx = mysql_insert_id();
+				
+				$q = "INSERT INTO ". $this->richtextTable() ." (value) VALUES('".$desc."')";
+				mysql_query($q) or BailSQL(__('Couldn\'t insert richtext'), $q);
+				
+				$elementidx = mysql_insert_id();
+				
+				$q = "INSERT INTO ". PAGE_ELEMENT . " (page_id, element_id, module_id, position,style,padding,margin,alignment) VALUES ('$pageidx', '$elementidx', 'richtext', 0, '', '', '', '')";
+				mysql_query($q) or BailSQL(__('Couldn\'t insert richtext into page'), $q);
 			
-			$q = "INSERT INTO " . $this->productTable() . " (products_idx, page_idx, element_idx, title, description, filename) VALUES
-				('".$this->elementId."',$pageidx_insert,$elementidx_insert,'$title','$desc','$filename')";
+			// Update existing page
+			} else {
+				if ($elementidx) {
+					$q = 'UPDATE ' . $this->richtextTable() . ' SET 
+						value=\'' . $desc . '\' 
+						WHERE idx=' . $elementidx;
+				
+					mysql_query($q) or BailSQL(__('Couldn\'t update product page info'), $q);
+					
+					$pmg = new PageManager();
+					$pmg->generatePage($pageidx);
+				}
+			}
+		}
+		
+		
+		// Insert/Update product itself
+		if ($productid) {
+			$q = 'UPDATE ' . $this->productTable() . ' SET 
+				description=\'' . $desc . '\', '
+				. 'page_idx='.$pageidx.', '
+				. 'element_idx='.$elementidx.', '
+				. ($filename ? "filename='$filename', " : '')
+				. 'title=\'' . $title . '\' WHERE idx=' . $productid;
 				
 			mysql_query($q) or BailSQL(__('Couldn\'t insert product'), $q);
 			
 			return "200\n" . mysql_insert_id();
 			
 		} else {
-			$q = 'UPDATE ' . $this->productTable() . ' SET 
-				description=\'' . $desc . '\', '
-				. (($createpage > 0) ? '' : 'page_idx=0, ')
-				. ($filename ? "filename='$filename', " : '')
-				. 'title=\'' . $title . '\' WHERE idx=' . $productid;
-		
-		
-			mysql_query($q) or BailSQL(__('Couldn\'t update product info'), $q);
+			$q = "INSERT INTO " . $this->productTable() . " (products_idx, page_idx, element_idx, title, description, filename) VALUES
+				('".$this->elementId."',$pageidx,$elementidx,'$title','$desc','$filename')";
 			
-			$q = 'SELECT page_idx, element_idx FROM ' . $this->productTable() . ' WHERE idx='.$productid;
-			$res = mysql_query($q) or BailSQL(__('Couldn\'t get product info'), $q);
-			list ($pageidx, $elementidx) = mysql_fetch_row($res);
+			mysql_query($q) or BailSQL(__('Couldn\'t insert product'), $q);
 			
-			if ($elementidx) {
-				$q = 'UPDATE ' . $this->richtextTable() . ' SET 
-					value=\'' . $desc . '\' 
-					WHERE idx=' . $elementidx;
-			
-				mysql_query($q) or BailSQL(__('Couldn\'t update product page info'), $q);
-				
-				if (!mysql_affected_rows()) {
-					// Now rows affeccted when desc doesnt change O.o
-					//return "500\nDescription on page got deleted. Can't update page anymore. Please contact System Administrator";
-				}
-				
-				$pmg = new PageManager();
-				$pmg->generatePage($pageidx);
-			}
+			return "200\nok";
 		}
-		
-		return "200\nok";
 	}
 	
 	function deleteProduct() {
@@ -246,8 +258,9 @@ class productlist extends ContentElement {
 			FROM ' . $this->productTable() . ' product 
 			LEFT JOIN ' . PAGES . ' page ON (product.page_idx = page.idx) 
 			LEFT JOIN ' . $this->richtextTable() . ' richtext ON (product.element_idx = richtext.idx) 
-			WHERE products_idx = '. $this->elementId;
-
+			WHERE products_idx = '. $this->elementId . '
+			ORDER BY products_idx';
+			
 		$res = mysql_query($q) or BailSQL('Couldn\'t retrieve product list', $q);
 		
 		while($row = mysql_fetch_array($res, MYSQL_ASSOC)) {

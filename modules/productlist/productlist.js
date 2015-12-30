@@ -213,7 +213,14 @@ productlist = ContentElement.extend({
 			buttons: BTN_SAVECANCEL,
 			content: lngProductlist.name + ':<br><textarea style="width:250px; height:50px;" id="productName" value=""></textarea><br>' +
 					lngProductlist.image + ':<br><input id="productimage" type="file"><br><br>' +
-					'<input type="checkbox" name="createpage" id="createpage" value="1"> <label for="createpage">' + lngProductlist.createproductpage + '</label><br><br>' +
+					'<p><strong>' + lngProductlist.target + '</strong></p>' +
+					'<label><input type="radio" name="target" id="targetdontlink" value="0"><span>' + lngProductlist.dontlink + '</span></label><br>' +
+					'<label><input type="radio" name="target" id="targetlinkpage" value="1"><span>' + lngProductlist.linkpage + '</span></label><br><br>' +
+					'<label><input type="radio" name="target" id="targetnewpage" value="2"><span>' + lngProductlist.createproductpage + '</span></label><br>' +
+					'<div class="pagelist">' +
+						'<select name="pageidx">' +
+						'</select>' +
+					'</div>' +
 					'<div class="productdesc">' + lngProductlist.description + ': <textarea style="width:100%" id="productDescription"></textarea></div>',
 			buttons: {}
 		};
@@ -234,9 +241,9 @@ productlist = ContentElement.extend({
 					recache: true,
 					description: $('#productDescription').tinymce().getContent(),
 					title: $('#productName').val(),
-					createpage: $('#createpage').is(':checked') ? $('#createpage').val() : 0 ,
+					target: $("input[name='target']:checked").val(),
 					productid: productid,
-					createnew: productid ? 0 : 1,
+					pageidx: $("select[name='pageidx']").val(),
 					filename: productimage.name,
 					filedata: productimagedata 
 				},
@@ -305,6 +312,9 @@ productlist = ContentElement.extend({
 	
 		}, false);
 	
+		$("input#targetdontlink").prop("checked", true);
+		
+		
 		if (productid) {
 			var product;
 			for (var i = 0; i < self.serverresponse.products.length; i++) {
@@ -316,20 +326,34 @@ productlist = ContentElement.extend({
 			$('#productName').val(product.title);
 			$('#productDescription').html(product.syncdescription);
 			
-			if (product.page_idx > 0) {
-				$('label[for="createpage"]').text(lngProductlist.keepandupdatepage);
-				$('#createpage').attr('value', '2');
-			} else {
-				$('#createpage').removeAttr('checked');
+			
+			if (product.page_idx > 0 && product.element_idx > 0) {
+				$('input#targetnewpage').parent().find('span').text(lngProductlist.keepandupdatepage);
+				$("input#targetnewpage").prop("checked", true);
+			}
+			
+			if (product.page_idx > 0 && product.element_idx == null) {
+				$("input#targetlinkpage").prop("checked", true);
 			}
 		}
 		
-		$('input#createpage').change(function() {
-			$('div.productdesc').toggle($(this).is(':checked'));
-		});
 		
-		$('input#createpage').trigger('change');
+		for (var i = 0; i < self.serverresponse.pages.length; i++) {
+			var page = self.serverresponse.pages[i];
+			if (product && product.page_idx == page.idx) {
+				$(".pagelist select").append('<option value="'+page.idx+'" selected="selected">'+page.name+'</option>');
+			} else {
+				$(".pagelist select").append('<option value="'+page.idx+'">'+page.name+'</option>');
+			}
+			
+		}
 
+		
+		$('input[name="target"]').change(function() {
+			$('div.productdesc').toggle($("input#targetnewpage").is(':checked'));
+			$('div.pagelist').toggle($("input#targetlinkpage").is(':checked'));
+		}).trigger("change");
+		
 		
 	},
 	

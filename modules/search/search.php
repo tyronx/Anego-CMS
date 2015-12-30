@@ -1,6 +1,6 @@
 <?
 /*
-Plugin Name: Page Search
+Plugin Name: Search Results
 Plugin Image: search.png
 Plugin URI: http://www.anego.at
 Plugin Type: ContentElement
