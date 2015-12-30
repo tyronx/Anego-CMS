@@ -215,12 +215,12 @@ productlist = ContentElement.extend({
 					lngProductlist.image + ':<br><input id="productimage" type="file"><br><br>' +
 					'<p><strong>' + lngProductlist.target + '</strong></p>' +
 					'<label><input type="radio" name="target" id="targetdontlink" value="0"><span>' + lngProductlist.dontlink + '</span></label><br>' +
-					'<label><input type="radio" name="target" id="targetlinkpage" value="1"><span>' + lngProductlist.linkpage + '</span></label><br><br>' +
-					'<label><input type="radio" name="target" id="targetnewpage" value="2"><span>' + lngProductlist.createproductpage + '</span></label><br>' +
-					'<div class="pagelist">' +
+					'<label><input type="radio" name="target" id="targetlinkpage" value="1"><span>' + lngProductlist.linkpage + '</span></label><br>' +
+					'<p class="pagelist" style="margin-bottom:7px;">' +
 						'<select name="pageidx">' +
 						'</select>' +
-					'</div>' +
+					'</p>' +
+					'<label><input type="radio" name="target" id="targetnewpage" value="2"><span>' + lngProductlist.createproductpage + '</span></label><br><br>' +
 					'<div class="productdesc">' + lngProductlist.description + ': <textarea style="width:100%" id="productDescription"></textarea></div>',
 			buttons: {}
 		};
@@ -351,7 +351,7 @@ productlist = ContentElement.extend({
 		
 		$('input[name="target"]').change(function() {
 			$('div.productdesc').toggle($("input#targetnewpage").is(':checked'));
-			$('div.pagelist').toggle($("input#targetlinkpage").is(':checked'));
+			$('p.pagelist').toggle($("input#targetlinkpage").is(':checked'));
 		}).trigger("change");
 		
 		
