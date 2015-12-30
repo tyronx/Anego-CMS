@@ -24,7 +24,7 @@ while ($file = readdir($dir)) {
 	}
 }
 
-natsort($files);
+natcasesort ($files);
 
 $i=0;
 foreach ($files as $file) {
