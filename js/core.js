@@ -1012,7 +1012,7 @@ function OpenDialog(settings) {
 
 			$dlgBox.removeClass("minimized");
 			
-			//jQuery.cookie('dialogCollapseState-' + settings.title, false);
+			jQuery.cookie('dialogCollapseState-' + settings.title, false);
 		};
 		
 		var collapse = function() {
@@ -1030,7 +1030,7 @@ function OpenDialog(settings) {
 			
 			$dlgBox.addClass("minimized");
 			
-			//jQuery.cookie('dialogCollapseState-' + settings.title, true);
+			jQuery.cookie('dialogCollapseState-' + settings.title, true);
 		};
 
 		/* Button callbacks */
@@ -1099,6 +1099,10 @@ function OpenDialog(settings) {
 		if(settings.autocollapse) {
 			$dlgBox.mouseover(collapse);
 			$dlgBox.mouseout(expand);
+		}
+		
+		if (settings.collapse) {
+			collapse();
 		}
 		
 		if(settings.nohotkeys) return;

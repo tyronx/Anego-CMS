@@ -166,8 +166,11 @@ function DragDropElements(options) {
 			buttons: BTN_NONE,
 			autocollapse: false,
 			blocking: false,
+			collapse: jQuery.cookie('dialogCollapseState-' + __('Page Elements')) ? 1 : 0,
 			close_callback: function() { Core.endEdit(); }
 		});
+		
+		
 		
 		/* Create element mini toolbar & bind events */	
 		if($miniToolbar.length == 0) {
