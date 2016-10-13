@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS `anego_pages` (
   `parent_idx` int(11) NOT NULL DEFAULT '0',
   `content` longtext DEFAULT NULL,
   `content_prepared` text DEFAULT NULL,
-  `content_validuntil` INT NULL DEFAULT NULL,
+  `content_validuntil` BIGINT NULL DEFAULT NULL,
   `file` varchar(255) DEFAULT NULL,
   `visibility` tinyint(4) NOT NULL DEFAULT '1',
   `position` smallint(6) NOT NULL DEFAULT '0',

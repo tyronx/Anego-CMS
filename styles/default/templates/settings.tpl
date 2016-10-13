@@ -22,11 +22,11 @@
 					<br><br>{__Website title}<br>
 					<input type="text" name="pagetitle" value="{$settings.pagetitle}">
 					<br><br>
-					{__Website keywords (seperated by comma, no newlines!)}<br>
-					<textarea type="text" cols="60" style="width:100%" rows="3" name="keywords">{$settings.keywords}</textarea>
-					<br><br>
 					{__Website description (e.g. displayed in the google search results, without newlines)}<br>
 					<textarea name="description" rows="3" cols="60" style="width:100%">{$settings.description}</textarea>
+					<br><br>
+					{__Website keywords (seperated by comma, no newlines!)}<br>
+					<textarea type="text" cols="60" style="width:100%" rows="3" name="keywords">{$settings.keywords}</textarea>
 					<br><br>
 					<input type="button" name="SaveWebsite" value="{__Save settings}">
 					

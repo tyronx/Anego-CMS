@@ -61,16 +61,19 @@ if(isset($_POST['insert'])) {
 		exit("200\n" . $_POST['file'] . "\n" . $file_orig);
 	}
 	
-	//$url = parse_url($_POST['file']);
-	//$file = basename($url['path']);
-	$file = basename(substr(trim($_POST['file']), strlen($cfg['domain'])));
+	$filepath = trim($_POST['file']);
+	if (strstr($filepath, $cfg['domain'])) {
+		$filepath = substr($filepath, strlen($cfg['domain']));
+	}
+	
+	$file = basename($filepath); 
 	
 	$justResize = false;
 	// This file may either come from tmp-folder (new image), or image-folder (editing image)
 	if (! is_file($cfg['tmpPath'] . $file)) {
 		// When editing files, the image is not in the tmp path of course
 		if (! is_file($cfg['imagePath'] . $file)) {
-			exit("300\nCouldn't find image $file on disk. Has it been deleted already?");
+			exit("300\nCouldn't find image $file on disk. {$_POST['file']} Has {$cfg['domain']} it been deleted already?");
 		} else {
 			$path = $cfg['imagePath'] . $file;
 			$justResize = true;
