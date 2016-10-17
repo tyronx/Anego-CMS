@@ -20,11 +20,6 @@ $cfg['domain'] = strlen($cfg['domain']) ? $cfg['domain'] : $cfg['default_domain'
 $cfg['domain'] .= ($cfg['path']{0} == '/') ? substr($cfg['path'],1) : $cfg['path'];
 
 
-/* Only available from PHP 5.2 and onward */
-if (!function_exists('json_encode')) {
-	require 'inc/json_encode.php';
-}
-
 if (! file_exists('styles/' . STYLE . '/templates/index.tpl')) {
 	exit("File 'styles/" . STYLE . "/templates/index.tpl' not found. Missing or mistyped style name?");
 }

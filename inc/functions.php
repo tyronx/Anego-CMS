@@ -1,4 +1,30 @@
 <?
+function json_encodeutf8($array) {
+	array_walk_recursive($array, 'customutf8encode');
+	return json_encode($array);
+}
+
+function json_decodeutf8($text) {
+	$json = json_decode($text, true);
+	array_walk_recursive($json, 'customutf8decode');
+	return $json;
+}
+
+function customutf8decode(&$val) {
+	$val = utf8_decode($val);
+	return $val;
+}
+
+function customutf8encode(&$val) {
+	// JSON does not permit control characters in json
+	$val = str_replace(array("\r", "\n", "\t"), array("", "", ""), $val);
+	$val = utf8_encode($val);
+	return $val;
+}	
+
+
+
+
 /*** General File upload checks - requires config included ***/
 
 function InvalidFormat($file) {

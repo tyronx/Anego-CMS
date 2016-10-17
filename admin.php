@@ -182,7 +182,7 @@ switch ($_GET['a']) {
 		include('inc/modules.php');
 		$pmg = new PageManager();
 		$pmg->findModules();
-		exit("200\n".json_encode($pmg->getModules()));
+		exit("200\n".json_encodeutf8($pmg->getModules()));
 		break;
 	
 	
