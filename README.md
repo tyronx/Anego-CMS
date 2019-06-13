@@ -52,6 +52,6 @@ St, Fifth Floor, Boston, MA  02110-1301  USA
 Requirements
 ------------
 
-* PHP 5.2 or later
+* PHP 7.0 or later
 * MySQL 5.0 or later
 * a web-browser (doh!)
