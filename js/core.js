@@ -1472,15 +1472,10 @@ function makeTabs() {
 			return false;
 		}
 		
-		var otherclasses = $(this).parent().attr("class").replace("tabs ", "").replace(" ", ".");
-		if (otherclasses.length > 0) {
-			otherclasses = "." + otherclasses;
-		}
-		
 		$("ul.tabs li").removeClass("active");
 		$(this).addClass("active");
 		
-		$(".tab_container"+otherclasses+" .tab_content").hide();
+		$(".tab_container > .tab_content").hide();
 		
 		var activeTab = $(this).find("a").attr("href");
 		

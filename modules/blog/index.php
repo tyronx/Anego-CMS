@@ -18,8 +18,8 @@ class BlogManager {
 	var $cmtTable = 'comments_blog';
 	var $readonly = false;
 	
-	function BlogManager() {
-		global $cfg, $lng, $cdir, $anego;
+	function __construct() {
+		global $cfg, $lng, $cdir, $anego, $sql_link;
 		
 		$this->blogTable = $cfg['tablePrefix'].$this->blogTable;
 		$this->cmtTable = $cfg['tablePrefix'].$this->cmtTable;
@@ -63,10 +63,10 @@ class BlogManager {
 					
 					chdir('../../');
 					
-					$res = mysql_query("SELECT blog_id FROM " . $this->blogTable . " WHERE idx=$id");
-					list($blogId) = mysql_fetch_array($res);
-					$res = mysql_query("SELECT page_id FROM " . PAGE_ELEMENT . " WHERE module_id='blog' AND element_id=$blogId");
-					list($pageId) = mysql_fetch_row($res);
+					$res = mysqli_query($sql_link, "SELECT blog_id FROM " . $this->blogTable . " WHERE idx=$id");
+					list($blogId) = mysqli_fetch_array($res);
+					$res = mysqli_query($sql_link, "SELECT page_id FROM " . PAGE_ELEMENT . " WHERE module_id='blog' AND element_id=$blogId");
+					list($pageId) = mysqli_fetch_row($res);
 					$anego->curPg = $pageId;
 					
 					AdminBar(-1);
@@ -83,8 +83,8 @@ class BlogManager {
 					
 					chdir('../../');
 					
-					$res = mysql_query("SELECT page_id FROM " . PAGE_ELEMENT . " WHERE module_id='blog' AND element_id=$id");
-					list($pageId) = mysql_fetch_row($res);
+					$res = mysqli_query($sql_link, "SELECT page_id FROM " . PAGE_ELEMENT . " WHERE module_id='blog' AND element_id=$id");
+					list($pageId) = mysqli_fetch_row($res);
 					$anego->curPg = $pageId;
 					
 					$anego->AddContent($this->blogEntries($id));
@@ -110,10 +110,10 @@ class BlogManager {
 				$id = intval($_POST['id']);
 				
 				$q = "UPDATE " . $this->blogTable . " SET comments=comments+1 WHERE idx=$id";
-				mysql_query($q) or
+				mysqli_query($sql_link, $q) or
 					BailErr($lng['blog']['cmtaddfail'], $q);
 					
-				if (! mysql_affected_rows()) {
+				if (! mysqli_affected_rows($sql_link)) {
 					exit("400\n" . $lng['blog']['cmtaddfailmore']);
 				}
 				
@@ -122,18 +122,18 @@ class BlogManager {
 				}
 					
 				$q = "INSERT INTO " . $this->cmtTable . " (element_id,user,date,comment) VALUES 
-					($id,'" . mysql_real_escape_string(htmlspecialchars($_POST['name'])) . "',
-					'" . time() . "','" . mysql_real_escape_string(htmlspecialchars($_POST['comment'])) . "')";
+					($id,'" . mysqli_real_escape_string($sql_link, htmlspecialchars($_POST['name'])) . "',
+					'" . time() . "','" . mysqli_real_escape_string($sql_link, htmlspecialchars($_POST['comment'])) . "')";
 				
-				mysql_query($q) or
+				mysqli_query($sql_link, $q) or
 					BailErr($lng['blog']['cmtaddfail'], $q);
 					
-				$cmt_id=mysql_insert_id();
+				$cmt_id=mysqli_insert_id($sql_link);
 				
 				$q = "SELECT comments FROM " . $this->blogTable . " WHERE idx=$id";
-				$res = mysql_query($q) or
+				$res = mysqli_query($sql_link, $q) or
 					BailErr($lng['blog']['cmtcntreadfail'], $q);
-				list($cmts) = mysql_fetch_array($res);
+				list($cmts) = mysqli_fetch_array($res);
 				$c = $cmts;
 				if ($cmts == 0) $c = '0';
 				
@@ -156,19 +156,19 @@ class BlogManager {
 				$blog_id = intval($_GET['blog_id']);
 				
 				$q = 'DELETE FROM ' . $this->cmtTable . ' WHERE idx=' . $cmt_id . ' AND element_id=' . $blog_id;
-				mysql_query($q) or
+				mysqli_query($sql_link, $q) or
 					BailErr($lng['blog']['cmtdelfail'], $q);
 					
-				if (! mysql_affected_rows()) exit("400\n" . $lng['blog']['nothingtodelete']);
+				if (! mysqli_affected_rows($sql_link)) exit("400\n" . $lng['blog']['nothingtodelete']);
 					
 				$q = "UPDATE " . $this->blogTable . " SET comments=comments-1 WHERE idx=$blog_id";
-				mysql_query($q) or
+				mysqli_query($sql_link, $q) or
 					BailErr($lng['blog']['cmtdelfail'], $q);
 					
 				$q = "SELECT comments FROM " . $this->blogTable . " WHERE idx=$blog_id";
-				$res = mysql_query($q) or
+				$res = mysqli_query($sql_link, $q) or
 					BailErr($lng['blog']['cmtdelfail'],$q);
-				list($cmts) = mysql_fetch_array($res);
+				list($cmts) = mysqli_fetch_array($res);
 				$c = $cmts;
 				if ($cmts == 0) $c = '0';
 				
@@ -191,12 +191,12 @@ class BlogManager {
 
 				
 				$q = "INSERT INTO " . $this->blogTable . " (blog_id,user_id,date,title,entry,comments) VALUES ($id,0," . time() . ",
-					'" . mysql_real_escape_string($_POST['title']) . "','" . mysql_real_escape_string($_POST['content']) . "',0)";
+					'" . mysqli_real_escape_string($sql_link, $_POST['title']) . "','" . mysqli_real_escape_string($sql_link, $_POST['content']) . "',0)";
 					
-				mysql_query($q) or
+				mysqli_query($sql_link, $q) or
 					BailErr($lng['blog']['blogaddfail'],$q);
 				
-				$t = $this->blogEntry(mysql_insert_id());
+				$t = $this->blogEntry(mysqli_insert_id($sql_link));
 				echo "200\n";
 				echo $t;
 				break;
@@ -212,10 +212,10 @@ class BlogManager {
 					$_POST['content'] = stripslashes($_POST['content']);
 				}
 				
-				$q = "UPDATE " . $this->blogTable . " SET title='" . mysql_real_escape_string($_POST['title']) . "', 
-					entry='" . mysql_real_escape_string($_POST['content']) . "' WHERE idx=$id";
+				$q = "UPDATE " . $this->blogTable . " SET title='" . mysqli_real_escape_string($sql_link, $_POST['title']) . "', 
+					entry='" . mysqli_real_escape_string($sql_link, $_POST['content']) . "' WHERE idx=$id";
 				
-				mysql_query($q) or
+				mysqli_query($sql_link, $q) or
 					BailErr($lng['blog']['blogeditfail'], $q);
 					
 				echo "200\nok";
@@ -227,7 +227,7 @@ class BlogManager {
 				$id = intval($_GET['id']);
 				
 				$q = "DELETE FROM " . $this->blogTable . " WHERE idx=$id";
-				mysql_query($q) or
+				mysqli_query($sql_link, $q) or
 					BailErr($lng['blog']['blogdelfail'], $q);
 				echo "200\nok";
 				break;
@@ -238,18 +238,18 @@ class BlogManager {
 	
 	/*** Display a single blog entry ****/
 	function blogEntry($entry_id, $fullview=false) {
-		global $lng, $cfg;
+		global $lng, $cfg, $sql_link;
 		
 		$text = '';
 		$q = 'SELECT * FROM ' . $this->blogTable . ' WHERE idx=' . $entry_id;
-		$res = mysql_query($q) or
+		$res = mysqli_query($sql_link, $q) or
 			BailErr($lng['blog']['bloggetfail'], $q);
 			
-		if (! mysql_affected_rows()) {
+		if (! mysqli_affected_rows($sql_link)) {
 			return $lng['blog']['nosuchblog'];
 		}
 				
-		$row = mysql_fetch_array($res);
+		$row = mysqli_fetch_array($res);
 		
 		if ($cfg['fancyURLs']) {
 			$link = 'mdblog-l'.$row['idx'];
@@ -304,16 +304,16 @@ class BlogManager {
 	
 	
 	function entryComments($entry_id) {
-		global $lng, $cfg;
+		global $lng, $cfg, $sql_link;
 		
 		$q = "SELECT * FROM ".$this->cmtTable." WHERE element_id=$entry_id ORDER BY date DESC";
-		$res = mysql_query($q) or
+		$res = mysqli_query($sql_link, $q) or
 			BailErr($lng['blog']['cmtreadfail'],$q);
 			
-		if (! mysql_affected_rows()) return '<div class="commentSection"></div>';
+		if (! mysqli_affected_rows($sql_link)) return '<div class="commentSection"></div>';
 			
 		$cmts='<div class="commentSection">';
-		while ($row = mysql_fetch_array($res)) {
+		while ($row = mysqli_fetch_array($res)) {
 			$cmts.='<div class="blogComment" id="blogCmt'.$row['idx'].'"><p>';
 			if (LOGINOK) $cmts.='<img src="' . $cfg['path'] . 'styles/default/img/cleardot.gif" class="smallIcon smallimgBin" onclick="blogfuncs.deleteComment('.$row['idx'].','.$entry_id.')">';
 			$cmts.='<b>'.sprintf($lng['blog']['said'],$row['user']).'</b></p><p>'.$row['comment'].'</p>';
@@ -326,7 +326,7 @@ class BlogManager {
 	
 	/* Overview of all blog entries */
 	function navigation($blog_id) {
-		global $cfg;
+		global $cfg, $sql_link;
 		
 		if ($cfg['fancyURLs']) {
 			$linkBase = 'mdblog-l';
@@ -335,12 +335,12 @@ class BlogManager {
 		}
 
 		$q = 'SELECT * FROM '.$this->blogTable.' WHERE blog_id='.$blog_id.' ORDER BY date DESC';
-		$res = mysql_query($q) or
+		$res = mysqli_query($sql_link, $q) or
 			BailErr($lng['blog']['bloggetfail'],$q);
 			
 		$text = '<div class="blogNavigation">';
 
-		while ($row = mysql_fetch_array($res)) {
+		while ($row = mysqli_fetch_array($res)) {
 			$text .= '<p><a href="' . $linkBase . $row['idx'] . '">' . $row['title'] . '</a></p>';
 		}
 		
@@ -351,7 +351,7 @@ class BlogManager {
 
 	/* List of all blog entries*/
 	function blogEntries($blog_id) {
-		global $lng, $cfg;
+		global $lng, $cfg, $sql_link;
 		$text = '';
 		
 		if (LOGINOK && !$this->readonly) {
@@ -359,19 +359,19 @@ class BlogManager {
 		}
 		
 		$q = 'SELECT * FROM '.$this->blogTable.' WHERE blog_id='.$blog_id.' ORDER BY date DESC';
-		$res = mysql_query($q) or
+		$res = mysqli_query($sql_link, $q) or
 			BailErr($lng['blog']['bloggetfail'],$q);
 			
 			
-		if (! mysql_affected_rows()) {
+		if (! mysqli_affected_rows($sql_link)) {
 			return $text . '<i>' . $lng['blog']['noblogentries'] . '</i>';
 		}
 		
-		$i = mysql_affected_rows();
+		$i = mysqli_affected_rows($sql_link);
 		
 		$text.='<div class="blogElements">';
 		
-		while ($row = mysql_fetch_array($res)) {
+		while ($row = mysqli_fetch_array($res)) {
 			
 			if ($cfg['fancyURLs']) {
 				$link = 'mdblog-l'.$row['idx'];

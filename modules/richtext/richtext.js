@@ -117,14 +117,32 @@ richtext = ContentElement.extend({
 			plugins : "advimagescale,table,tablegrid,advlink,preview,media,searchreplace,contextmenu,paste,fullscreen,xhtmlxtras,inlinepopups,phpimage,anegofileupload,template",
 			height : height,
 			theme_advanced_buttons1 : "bold,italic,strikethrough,|,justifyleft,justifycenter,justifyright,justifyfull,|,formatselect,fontselect,fontsizeselect,|,forecolor,backcolor",
-			theme_advanced_buttons2 : "pastetext,|,search,|,bullist,numlist,|,outdent,indent,|,undo,redo,|,link,unlink,|,charmap,template,media,phpimage,anegofileupload,|,hr,removeformat,|,sub,sup",
+			theme_advanced_buttons2 : "pastetext,|,search,|,bullist,numlist,|,outdent,indent,|,undo,redo,|,link,unlink,anchor,|,charmap,template,media,phpimage,anegofileupload,|,hr,removeformat,|,sub,sup",
 			theme_advanced_buttons3 : "tablegrid,|,row_props,cell_props,|,row_before,row_after,delete_row,|,col_before,col_after,delete_col,|,split_cells,merge_cells,|,preview,code,fullscreen",
 			theme_advanced_toolbar_location : "top",
 			theme_advanced_toolbar_align : "left",
 			theme_advanced_statusbar_location : "bottom",
 			theme_advanced_resizing : true,
+			theme_advanced_fonts: "Andale Mono=andale mono,times;"+
+                    "Arial=arial,helvetica,sans-serif;"+
+                    "Arial Black=arial black,avant garde;"+
+                    "Book Antiqua=book_antiquaregular,palatino;"+
+                    "Calibri=calibri;"+
+					"Corda Light=CordaLight,sans-serif;"+
+                    "Courier New=courier_newregular,courier;"+
+                    "Georgia=georgia,palatino;"+
+                    "Helvetica=helvetica;"+
+                    "Impact=impactregular,chicago;"+
+                    "Symbol=webfontregular;"+
+                    "Tahoma=tahoma,arial,helvetica,sans-serif;"+
+                    "Terminal=terminal,monaco;"+
+                    "Times New Roman=times new roman,times;"+
+                    "Trebuchet MS=trebuchet ms,geneva;"+
+                    "Verdana=verdana,geneva;"+
+                    "Webdings=webdings;"+
+                    "Wingdings=wingdings,zapf dingbats",
 			theme_advanced_font_sizes : "7pt,8pt,9pt,10pt,11pt,12pt,13pt,14pt,15pt,17pt,19pt,21pt,23pt,25pt",
-			theme_advanced_styles : "Gray Frame=grayframe;Small padding right=smallpadright;Medium padding right=mediumpadright;Small padding left=smallpadleft;Small padding left+right+bottom=smallpadu;Small padding all sides=smallpadding;Large padding all sides=largepadding; No padding=nopadding",
+			theme_advanced_styles : "Volle Breite=fullwidth;Gray Frame=grayframe;Small padding right=smallpadright;Medium padding right=mediumpadright;Small padding left=smallpadleft;Small padding left+right+bottom=smallpadu;Small padding all sides=smallpadding;Large padding all sides=largepadding; No padding=nopadding",
 			language : mcelang, 
 			advlink_styles: "Spam Protected E-Mail Address=hiddenEmail",
 			paste_text_use_dialog: true,

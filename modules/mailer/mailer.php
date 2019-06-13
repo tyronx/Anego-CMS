@@ -32,8 +32,8 @@ class mailer extends ContentElement {
 	public function createElement($position) {
 		global $cfg;
 		
-		$res = mysql_query('SELECT name FROM '. PAGES . ' WHERE idx=' . $this->pageId);
-		list($pagename) = mysql_fetch_row($res);
+		$res = mysqli_query($sql_link, 'SELECT name FROM '. PAGES . ' WHERE idx=' . $this->pageId);
+		list($pagename) = mysqli_fetch_row($res);
 		
 		// Defaults
 		$subject = sprintf(__('From %s: A person used your e-mail form'), $_SERVER['SERVER_NAME']);
@@ -42,13 +42,13 @@ class mailer extends ContentElement {
 		$successMessage = __("Thank you for your message!");
 		
 		$q = "INSERT INTO " . $this->databaseTable() . " (subject, mailtemplate, formhtml, successmessage) VALUES (" .
-			"'" . mysql_real_escape_string($subject) . "', '" . mysql_real_escape_string($template) . "'," .
-			"'" . mysql_real_escape_string($formhtml) . "', '" . mysql_real_escape_string($successMessage) ."')";
+			"'" . mysqli_real_escape_string($sql_link, $subject) . "', '" . mysqli_real_escape_string($sql_link, $template) . "'," .
+			"'" . mysqli_real_escape_string($sql_link, $formhtml) . "', '" . mysqli_real_escape_string($sql_link, $successMessage) ."')";
 		
-		$res = mysql_query($q) or
+		$res = mysqli_query($sql_link, $q) or
 			BailSQL(__("Failed inserting element"), $q);
 
-		$this->elementId = mysql_insert_id();
+		$this->elementId = mysqli_insert_id($sql_link);
 		
 		return Array(
 			"id" => $this->elementId,
@@ -58,8 +58,8 @@ class mailer extends ContentElement {
 	
 	function getData() {
 		$q = 'SELECT * FROM ' . $this->databaseTable() . ' WHERE idx=' . $this->elementId;
-		$res = mysql_query($q) or BailSQL(__("Failed getting form code"), $q);
-		$response = mysql_fetch_assoc($res);
+		$res = mysqli_query($sql_link, $q) or BailSQL(__("Failed getting form code"), $q);
+		$response = mysqli_fetch_assoc($res);
 		return "200\n" . json_encode($response);
 	}
 	
@@ -74,14 +74,14 @@ class mailer extends ContentElement {
 		}
 		
 		$q = "UPDATE " . $this->databaseTable() . " SET 
-			subject='" . mysql_real_escape_string($pairs['subject']) . "',
-			recipient='" . mysql_real_escape_string($pairs['recipient']) . "',
-			mailtemplate='" . mysql_real_escape_string($pairs['mailtemplate']) . "',
-			successmessage='" . mysql_real_escape_string($pairs['successmessage']) . "',
+			subject='" . mysqli_real_escape_string($sql_link, $pairs['subject']) . "',
+			recipient='" . mysqli_real_escape_string($sql_link, $pairs['recipient']) . "',
+			mailtemplate='" . mysqli_real_escape_string($sql_link, $pairs['mailtemplate']) . "',
+			successmessage='" . mysqli_real_escape_string($sql_link, $pairs['successmessage']) . "',
 			hourlimit='" . intval($pairs['hourlimit']) . "',
-			formhtml='" . mysql_real_escape_string($pairs['formhtml']) . "' WHERE idx=" . $this->elementId;
+			formhtml='" . mysqli_real_escape_string($sql_link, $pairs['formhtml']) . "' WHERE idx=" . $this->elementId;
 			
-		$res = mysql_query($q) or 
+		$res = mysqli_query($sql_link, $q) or 
 			BailSQL(__("Failed updating mailer element"), $q);
 		
 		return "200\n" . $this->generateContent();
@@ -91,10 +91,10 @@ class mailer extends ContentElement {
 		global $cfg;
 		
 		$q = 'SELECT formhtml FROM ' . $this->databaseTable() .' WHERE idx=' . $this->elementId;
-		$res = mysql_query($q) or 
+		$res = mysqli_query($sql_link, $q) or 
 			BailSQL(__("Failed form code"), $q);
 		
-		list($form) = mysql_fetch_row($res);
+		list($form) = mysqli_fetch_row($res);
 		
 		$form = preg_replace("#(<(input|select|textarea).+name=('|\"))([^\\3]+)\\3#Usi", "\\1formdata[\\4]\\3", $form);
 		

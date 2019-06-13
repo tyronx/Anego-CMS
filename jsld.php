@@ -14,8 +14,8 @@ require "inc/db_init.php";
 require "inc/lng_init.php";
 
 // Developer mode?
-$res = mysql_query("SELECT value FROM ".SETTINGS." WHERE name='developermode'");
-list($developermode) = mysql_fetch_array($res);
+$res = mysqli_query($sql_link, "SELECT value FROM ".SETTINGS." WHERE name='developermode'");
+list($developermode) = mysqli_fetch_array($res);
 
 
 $jsFiles = array(

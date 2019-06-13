@@ -11,10 +11,10 @@ if (! LOGINOK) {
 }
 
 // Get all page which are not just for structuring (nolink)
-$res2 = mysql_query("SELECT idx,name,url FROM ".PAGES." WHERE nolink=0 order by name asc");
+$res2 = mysqli_query($sql_link, "SELECT idx,name,url FROM ".PAGES." WHERE nolink=0 order by name asc");
 $i = 0;
 
-while ($row2 = mysql_fetch_array($res2)) {
+while ($row2 = mysqli_fetch_array($res2)) {
 	if ($i>0) echo ',';
 	$name = str_replace('"','\\"', $row2['name']);
 	if ($cfg['fancyURLs']) {

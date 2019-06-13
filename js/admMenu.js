@@ -78,15 +78,15 @@ function AdminMenuFunctions() {
 				'<div class="floatleft">' +
 					lng_rename + ':<br>' + 
 					'<input type="text" name="name" size="20">' +
-				'</div><div class="floatleft">' +
+				'</div><div class="floatleft" style="padding-left:2px;">' +
 					lng_pageurl + ':<br>' + 
 					'<input type="text" size="20" name="url">' +
 				'</div><div class="bothclear"></div>' +
 				'<br>' + lng_pageinfo + ':<br>' +
-				'<input type="text" size="35" name="info"><br><br>' +
+				'<input type="text" size="35" name="info" style="width: 343px;"><br><br>' +
 				'<input type="checkbox" name="isfile" id="isfile" value="1"> <label for="isfile">' + lng_link2file + '</label><br>' +
 				'<span class="pglink">' + 
-					lng_filename + ': <input type="text" name="filename"><br><br>' + 
+					lng_filename + ': <input type="text" name="filename" style="width:264px;"><br><br>' + 
 				'</span>' +
 				'<input type="checkbox" name="menu" id="editPageMenu" value="1" checked> <label for="editPageMenu">' + lng_showinmenu + '</label><br>' +
 				'<input type="checkbox" name="admin" id="editPageAdmin" value="1"> <label for="editPageAdmin">' + lng_notvisible + '</label><br>' +
@@ -197,16 +197,16 @@ function AdminMenuFunctions() {
 					'<div class="floatleft">' +
 						lng_rename + ':<br>' + 
 						'<input type="text" name="name" size="20" value="' + page_name.replace(/\"/g,"&quot;") + '">' +
-					'</div><div class="floatleft">' +
+					'</div><div class="floatleft" style="padding-left: 2px;">' +
 						lng_pageurl + ':<br>' + 
 						'<input type="text" size="20" name="url" value="' + page_url.replace(/\"/g,"&quot;") + '">' +
 					'</div><div class="bothclear"></div>' +
 					'<br>' + lng_pageinfo + ':<br>' +
-					'<input type="text" style="width: 312px;" name="info" value="' + page_info.replace(/\"/g,"&quot;") + '">' +
+					'<input type="text" style="width: 343px;" name="info" value="' + page_info.replace(/\"/g,"&quot;") + '">' +
 					'<br><br>' +
 					'<input type="checkbox" id="pageisfile' + page_id + '" name="isfile" value="1"' + ch4 + '> <label for="pageisfile' + page_id + '">' + lng_link2file + '</label><br>' +
 					'<span class="pglink" style="' + fileDsp + '">' +
-						lng_filename + ': <input type="text" name="filename" value="' + file + '"><br><br>' +
+						lng_filename + ': <input type="text" name="filename" value="' + file + '" style="width: 264px;"><br><br>' +
 					'</span>' +
 					'<input type="checkbox" name="menu" id="editPageMenu' + page_id + '" value="1" '+ch1+'> <label for="editPageMenu' + page_id + '">' + lng_showinmenu + '</label><br>' +
 					'<input type="checkbox" name="admin" id="editPageAdmin' + page_id + '" value="1" '+ch2+'> <label for="editPageAdmin' + page_id + '">' + lng_notvisible + '</label><br>' +
@@ -284,9 +284,9 @@ function AdminMenuFunctions() {
 		}
 		
 		$.post('index.php?a=mainmenu','',function(data) {
-			$("#menu").html(data);
+			$("ul.mainnav").replaceWith(data);
 			$.post("index.php?a=minormenu",function(data) {
-				$("ul.minornav").parent().html(data);
+				$("ul.minornav").replaceWith(data);
 				/* Upgrade "degraded" links to ajax loading again */
 				if(anego.pageLoad=='ajax') Core.ajaxifyMenu();
 			});

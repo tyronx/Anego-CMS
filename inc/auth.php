@@ -19,8 +19,7 @@ function LoggedOn() {
 		}
 	}
 	
-	
-	return FALSE;
+	return false;
 }
 
 function ValidAuth($user, $pass) {

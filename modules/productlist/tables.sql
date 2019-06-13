@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS `anego_pages_product` (
   `products_idx` int(11) DEFAULT NULL,
   `page_idx` int(11) DEFAULT NULL,
   `element_idx` int(11) DEFAULT NULL,
+  `targeturl` varchar(255) DEFAULT NULL,
   `title` text DEFAULT NULL,
   `description` text DEFAULT NULL,
   `filename` varchar(255) DEFAULT NULL,

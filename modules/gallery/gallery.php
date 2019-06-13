@@ -43,10 +43,10 @@ class gallery extends ContentElement {
 	}
 	
 	function getConfig() {
-		global $cfg;
+		global $cfg, $sql_link;
 		
 		$q = 'SELECT * FROM ' . $this->imageSizesTable();
-		$res = mysql_query($q) or BailSQL('Couldn\'t retrieve preview image sizes', $q);
+		$res = mysqli_query($sql_link, $q) or BailSQL('Couldn\'t retrieve preview image sizes', $q);
 		
 		?>200
 		<form name="galleryconfig" id="galleryconfig" onsubmit="return false">
@@ -62,7 +62,7 @@ class gallery extends ContentElement {
 				</thead>
 				<tbody>
 			<?
-			while ($row = mysql_fetch_array($res)) {
+			while ($row = mysqli_fetch_array($res)) {
 				?>
 				<tr>
 					<td><?=$row['name']?></td>
@@ -155,10 +155,12 @@ class gallery extends ContentElement {
 	}
 	
 	function saveConfig() {
+		global $sql_link;
 		$newsizes = array();
 		$newCnt = -1;
 		$deleted = array();
 		
+		if (empty($_POST['formdata'])) exit("200\nok");
 		
 		foreach($_POST['formdata'] as $pair) {
 			switch ($pair['name']) {
@@ -180,16 +182,16 @@ class gallery extends ContentElement {
 		
 		foreach($deleted as $id) {
 			$q = 'DELETE FROM ' . $this->imageSizesTable() . ' where idx='.$id;
-			mysql_query($q) or
+			mysqli_query($sql_link, $q) or
 				BailSQL('Couldn\'t delete image size', $q);
 		}
 		
 		foreach($newsizes as $new) {
 			if ($new['width'] != 0 && $new['height'] != 0) {
 				$q ='INSERT INTO ' . $this->imageSizesTable() . ' (name, width, height) '.
-					'VALUES (\'' . mysql_real_escape_string($new['name']) . '\', \'' . $new['width'] . '\', \'' . $new['height'] . '\')';
+					'VALUES (\'' . mysqli_real_escape_string($sql_link, $new['name']) . '\', \'' . $new['width'] . '\', \'' . $new['height'] . '\')';
 				
-				mysql_query($q) or
+				mysqli_query($sql_link, $q) or
 					BailSQL('Couldn\'t create image size', $q);
 			}
 		}
@@ -198,6 +200,7 @@ class gallery extends ContentElement {
 	}
 	
 	function generateContent() {
+		global $sql_link;
 		if ( !is_dir($this->path)) {
 			return "Gallery not set up yet.";
 		} else {
@@ -206,10 +209,10 @@ class gallery extends ContentElement {
 			
 			$q = 'SELECT sizes.width as width, sizes.height as height FROM ' . $this->imageSizesTable() . ' as sizes, ' . $this->databaseTable() . ' as gallery WHERE 
 				 sizes.idx=gallery.preview_default_size_id AND gallery.idx = '. $this->elementId;
-			$res = mysql_query($q) or BailSQL('Couldn\'t retrieve preview image sizes', $q);
-			list($w, $h) = mysql_fetch_array($res);
+			$res = mysqli_query($sql_link, $q) or BailSQL('Couldn\'t retrieve preview image sizes', $q);
+			list($w, $h) = mysqli_fetch_array($res);
 
-			while($pic = mysql_fetch_array($pics)) {
+			while($pic = mysqli_fetch_array($pics)) {
 				$preview = preg_replace("/(\.\w+)$/i", "_r\\1", $pic['filename']);
 				$str .= '<div class="pic">';
 				$str .= '<a style="width:' . $w . 'px; height:' . $h . 'px;" rel="gallery'. $this->elementId .'" href="' . $this->path . $pic['filename'] . '" title="' . $pic['description'] . '">
@@ -232,6 +235,8 @@ EOF;
 	}
 	
 	function movePicture() {
+		global $sql_link;
+		
 		$picid = intval(@$_POST['picid']);
 		$picidxLeft = intval(@$_POST['picidxLeft']);
 		//$picidxRight = intval(@$_POST['picidxRight']);
@@ -241,36 +246,36 @@ EOF;
 		
 		if ($picidxLeft) {
 			$q = 'SELECT position FROM ' . $this->picTable() . ' WHERE idx=' . $picidxLeft;
-			$res=mysql_query($q) or BailSQL(__("Failed getting element pos"), $q);
-			list($picPosLeft) = mysql_fetch_array($res);
+			$res=mysqli_query($sql_link, $q) or BailSQL(__("Failed getting element pos"), $q);
+			list($picPosLeft) = mysqli_fetch_array($res);
 		}
 		
 		$newPos = $picPosLeft + 1;
 		
 		/* Start the move */
-		mysql_query("START TRANSACTION") or 
+		mysqli_query($sql_link, "START TRANSACTION") or 
 			BailSQL(__('Couldn\'t start transaction'), "START TRANSACTION");
 		
 		// Get old position
 		$q = 'SELECT position FROM ' . $this->picTable() . ' WHERE idx=' . $picid;
-		$res=mysql_query($q) or BailSQL(__("Failed getting element pos"), $q);
-		list($oldpos) = mysql_fetch_array($res);
+		$res=mysqli_query($sql_link, $q) or BailSQL(__("Failed getting element pos"), $q);
+		list($oldpos) = mysqli_fetch_array($res);
 		
 		// Cut it out
 		$q = 'UPDATE ' . $this->picTable() . ' SET position=position-1 WHERE gallery_id=' . $this->elementId . ' AND position>' . $oldpos;
-		mysql_query($q) or BailSQL(__("Failed cutting out element"), $q);
+		mysqli_query($sql_link, $q) or BailSQL(__("Failed cutting out element"), $q);
 		// If being moved forward, we also have to decrease that position
 		if ( $newPos > $oldpos ) $newPos--;
 
 		// Move all pictures on the right up a position
 		$q = 'UPDATE ' . $this->picTable() . ' SET position=position+1 WHERE position>=' . $newPos . ' AND gallery_id=' . $this->elementId;
-		$res = mysql_query($q) or BailSQL(__('Couldn\'t move images in db'), $q);
+		$res = mysqli_query($sql_link, $q) or BailSQL(__('Couldn\'t move images in db'), $q);
 		
 		// Finally update our element
 		$q = 'UPDATE ' . $this->picTable() . ' SET position=' . $newPos . ' WHERE idx=' . $picid;
-		$res = mysql_query($q) or BailSQL(__('Couldn\'t move image in db'), $q);
+		$res = mysqli_query($sql_link, $q) or BailSQL(__('Couldn\'t move image in db'), $q);
 
-		if (! mysql_query("COMMIT")) {
+		if (! mysqli_query($sql_link, "COMMIT")) {
 			BailSQL(__("Couldn't commit change"),"COMMIT");
 		}
 		
@@ -278,14 +283,16 @@ EOF;
 	}
 	
 	function savePicture() {
-		$desc = mysql_real_escape_string(@$_POST['description']);
-		$title = mysql_real_escape_string(@$_POST['title']);
+		global $sql_link;
+		
+		$desc = mysqli_real_escape_string($sql_link, @$_POST['description']);
+		$title = mysqli_real_escape_string($sql_link, @$_POST['title']);
 		$picid = intval(@$_POST['picid']);
 		
 		$q = 'SELECT filename FROM ' . $this->picTable() . ' WHERE idx=' . $picid;
-		$res = mysql_query($q) or BailSQL(__('Couldn\'t read image info'), $q);
+		$res = mysqli_query($sql_link, $q) or BailSQL(__('Couldn\'t read image info'), $q);
 		
-		list($filename)= mysql_fetch_array($res);
+		list($filename)= mysqli_fetch_array($res);
 		
 		if (!$filename) exit("500\n" . __('Wrong picture id or broken picture row in db'));
 		
@@ -302,7 +309,7 @@ EOF;
 			prev_h=\'' . $pic['size']['h'] . '\'
 		WHERE idx=' . $picid;
 		
-		mysql_query($q) or BailSQL(__('Couldn\'t update image info'), $q);
+		mysqli_query($sql_link, $q) or BailSQL(__('Couldn\'t update image info'), $q);
 		
 		$pic = $_POST['resizeSettings'];
 		
@@ -315,9 +322,9 @@ EOF;
 		}
 		
 		$q = 'SELECT * FROM ' . $this->picTable() . ' WHERE idx=' . $picid;
-		$res = mysql_query($q) or BailSQL(__('Couldn\'t read image info'), $q);
+		$res = mysqli_query($sql_link, $q) or BailSQL(__('Couldn\'t read image info'), $q);
 		
-		$row = mysql_fetch_array($res, MYSQL_ASSOC);
+		$row = mysqli_fetch_assoc($res);
 
 		$row['filename_preview'] = preg_replace('/(\.\w+)$/i', "_r\\1", $row['filename']);
 		
@@ -326,6 +333,8 @@ EOF;
 	
 	// Returns a JSON-Array of pictures
 	function loadPictures() {
+		global $sql_link;
+		
 		$files = array(
 			'path' => $this->path,
 			'sizes' => array(),
@@ -333,20 +342,20 @@ EOF;
 		);
 		
 		$q = 'SELECT * FROM ' . $this->imageSizesTable() . ' ORDER BY width, height';
-		$res = mysql_query($q) or BailSQL(__('Couldn\'t read image sizes info from db'), $q);
-		while($row = mysql_fetch_array($res, MYSQL_ASSOC)) {
+		$res = mysqli_query($sql_link, $q) or BailSQL(__('Couldn\'t read image sizes info from db'), $q);
+		while($row = mysqli_fetch_assoc($res)) {
 			$files['sizes'][] = $row;
 		}
 		
 		
 		$q = 'SELECT preview_default_size_id, original_default_size_id FROM ' . $this->databaseTable() . ' WHERE idx=' . $this->elementId;
-		$res = mysql_query($q) or BailSQL(__('Couldn\'t read gallery info from db'), $q);
-		$row = mysql_fetch_assoc($res);
+		$res = mysqli_query($sql_link, $q) or BailSQL(__('Couldn\'t read gallery info from db'), $q);
+		$row = mysqli_fetch_assoc($res);
 		
 		$files = array_merge($row, $files);
 		
 		$r = $this->pictures();
-		while($row = mysql_fetch_assoc($r)) {
+		while($row = mysqli_fetch_assoc($r)) {
 			$row['filename_preview'] = preg_replace('/(\.\w+)$/i', "_r\\1", $row['filename']);
 			$files['pictures'][] = $row;
 		}
@@ -357,8 +366,10 @@ EOF;
 	}
 	
 	function pictures() {
+		global $sql_link;
+		
 		$q = 'SELECT * FROM ' . $this->picTable() . ' WHERE gallery_id=' . $this->elementId . ' ORDER BY position';
-		$res = mysql_query($q) or BailSQL(__('Couldn\'t read images from db'), $q);
+		$res = mysqli_query($sql_link, $q) or BailSQL(__('Couldn\'t read images from db'), $q);
 		return $res;
 	}
 	
@@ -384,7 +395,7 @@ EOF;
 	}
 	
 	function uploadPicture() {
-		global $cfg;
+		global $cfg, $sql_link;
 		
 		$result = array();
 		
@@ -446,22 +457,22 @@ EOF;
 			$result['status'] = "200\nok";
 			
 			$q = 'SELECT max(position) FROM ' . $this->picTable() . ' WHERE gallery_id=' . $this->elementId;
-			$res = mysql_query($q) or BailSQL(__('Couldn\'t move images in db'), $q);
+			$res = mysqli_query($sql_link, $q) or BailSQL(__('Couldn\'t move images in db'), $q);
 			
-			list($maxPos) = mysql_fetch_row($res);
+			list($maxPos) = mysqli_fetch_row($res);
 			
 			$result['maxpos'] = $maxPos;
 			
 			$q = 'INSERT INTO ' . $this->picTable() . ' (gallery_id, position, filename) VALUES ';
 			$q.= "('" . $this->elementId . "','" . ($maxPos + 1) . "', '" . $newName . "')";
-			$res = mysql_query($q) or BailSQL(__('Couldn\'t insert image into db'), $q);
+			$res = mysqli_query($sql_link, $q) or BailSQL(__('Couldn\'t insert image into db'), $q);
 			
-			$idx = mysql_insert_id();
+			$idx = mysqli_insert_id($sql_link);
 			
 			$q = 'SELECT * FROM ' . $this->picTable() . ' WHERE idx='.$idx;
-			$res = mysql_query($q) or BailSQL(__('Couldn\'t insert image into db'), $q);
+			$res = mysqli_query($sql_link, $q) or BailSQL(__('Couldn\'t insert image into db'), $q);
 			
-			$result['pic'] = mysql_fetch_array($res);
+			$result['pic'] = mysqli_fetch_array($res);
 		} else {
 			$result['status'] = "300\n" . $lng_format; 
 		}
@@ -470,15 +481,17 @@ EOF;
 	}
 	
 	public function deletePicture() {
+		global $sql_link;
+		
 		$picid = intval($_POST['picid']);
 		if (! $picid) return "500\nWrong pic id?";
 		
 		$q = 'SELECT filename FROM '. $this->picTable() . ' WHERE idx='.$picid;
-		$res = mysql_query($q) or BailSQL(__('Couldn\'t read image in db'), $q);
-		list($filename) = mysql_fetch_row($res);
+		$res = mysqli_query($sql_link, $q) or BailSQL(__('Couldn\'t read image in db'), $q);
+		list($filename) = mysqli_fetch_row($res);
 		
 		$q = 'DELETE FROM '. $this->picTable() . ' WHERE idx='.$picid;
-		$res = mysql_query($q) or BailSQL(__('Couldn\'t remove image from db'), $q);
+		$res = mysqli_query($sql_link, $q) or BailSQL(__('Couldn\'t remove image from db'), $q);
 		
 		@unlink($this->path . $filename);
 		@unlink($this->path . preg_replace("/(\.\w+)$/i", "_r\\1", $filename));
@@ -487,19 +500,20 @@ EOF;
 	}
 	
 	public function updateSettings() {
+		global $sql_link;
 		$previewSize = intval($_POST['previewSize']);
 		$originalSize = intval($_POST['originalSize']);
 		
 		if($previewSize && $originalSize) {
 			$q = 'UPDATE ' . $this->databaseTable() . ' SET original_default_size_id='.$originalSize.', preview_default_size_id='.$previewSize.' WHERE idx=' . $this->elementId;
-			$res = mysql_query($q) or BailSQL(__('Couldn\'t update gallery settings'), $q);
+			$res = mysqli_query($sql_link, $q) or BailSQL(__('Couldn\'t update gallery settings'), $q);
 		}
 	
 		return "200\nok";
 	}
 	
 	private function createResizedImage(&$result, $file, $type='preview') {
-		global $cfg;
+		global $cfg, $sql_link;
 		
 		// create a resized filename_r.(jpg/png/gif) file
 		$fileExt = '';
@@ -508,10 +522,10 @@ EOF;
 		$q = 'SELECT sizes.width as width, sizes.height as height FROM ' . $this->imageSizesTable() . ' as sizes, ' . $this->databaseTable() . ' as gallery WHERE 
 			 sizes.idx=gallery.' . $type . '_default_size_id AND gallery.idx = '. $this->elementId;
 
-		$res = mysql_query($q) or BailSQL('Couldn\'t retrieve preview image sizes', $q);
+		$res = mysqli_query($sql_link, $q) or BailSQL('Couldn\'t retrieve preview image sizes', $q);
 		
 		// Id unset or wrong => dont resize, unless its a preview image. in that case just assume 160x120 as standard
-		if (! mysql_affected_rows()) {
+		if (! mysqli_affected_rows($sql_link)) {
 			if($type == 'preview') {
 				$pWidth = 160;
 				$pHeight = 120;
@@ -520,7 +534,7 @@ EOF;
 				return true;
 			}
 		} else {
-			list($pWidth, $pHeight) = mysql_fetch_row($res);
+			list($pWidth, $pHeight) = mysqli_fetch_row($res);
 		}
 		
 		if ($name_sized = CopyResized($this->path . $file, $pWidth, $pHeight, true, 'file', $fileExt)) {

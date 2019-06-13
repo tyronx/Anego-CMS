@@ -13,6 +13,7 @@ var lngProductlist = {
 	dontlink: 'Nicht verlinken',
 	createproductpage: 'Neue Seite für dieses Produkt erstellen',
 	linkpage: 'Zu einer bestehenden Seite verlinken',
+	anylink: 'Zu Folgende URL verlinken',
 	description: 'Beschreibung',
 	reallydelete: 'Produkt wirklich löschen?',
 	deleteproduct: 'Produkt löschen',

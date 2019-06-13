@@ -344,15 +344,14 @@ function addL10N($file) {
 function __($str) {
 	global $lang;
     if (isset($lang[$str]) && $lang[$str]) {
-        return $lang[$str];
-		
+        return $lang[$str];		
     } else {
         return $str;
     }
 }
 
 function i10n_smarty($source, $template) {
-     return preg_replace('!{__([^}]+)}!e', '__("$1")', $source);
+     return preg_replace_callback ('!{__([^}]+)}!',  function($match) { return __($match[1]); }, $source);
 }
 
 
@@ -373,10 +372,12 @@ function Bail($msg,$no_header=0) {
 
 // Bail after unsuccessfull SQL Query without header (only used when connecting to DB failed)
 function BailSQLn($msg,$q,$log_once=0) {
-	ExitError($msg, mysql_error() . "\r\nQuery: '$q'", 2, $log_once, true);
+	ExitError($msg, mysqli_error($sql_link) . "\r\nQuery: '$q'", 2, $log_once, true);
 }
 // Bail after unsuccessfull SQL Query with header
 function BailSQL($msg,$q,$log_once=0) {
+	global $sql_link;
+	
 	if(IS_AJAX) {
 		logError($msg,$q);
 		
@@ -385,7 +386,7 @@ function BailSQL($msg,$q,$log_once=0) {
 		
 		exit("500\n$msg");
 	}
-	ExitError($msg, mysql_error()."\r\nQuery: '$q'", 2, $log_once);
+	ExitError($msg, mysqli_error($sql_link)."\r\nQuery: '$q'", 2, $log_once);
 }
 // Normal Bail for non-Ajax Request
 function BailErr($msg , $log="", $log_once=0) {
@@ -402,13 +403,15 @@ function BailErr($msg , $log="", $log_once=0) {
 
 // Only writes extensive error messages to log file
 function logError($msg, $query = '') {
+	global $sql_link;
+	
 	$mymsg = str_replace('<br>',"\n", 
 		sprintf(__('<br>There was an error, I\'m sorry I couldnt execute your request. The respsonsible php script '.
 				   'told me: %s<br><br>A detailed error message has been logged.'), $msg));
 	
 	$log = '';
 	if (strlen($query)) {
-		$log = mysql_error()."\nQuery: '$query'";
+		$log = mysqli_error($sql_link)."\nQuery: '$query'";
 	}
 	
 	$fp = fopen('var/error.log','a');

@@ -67,16 +67,16 @@ switch($ac) {
 		$ce = new $mid($page); //eval("return new ".$mid."();");
 		
 		if($json = $ce->createElement($position)) {
-			/*$res=mysql_query("SELECT MAX(position) FROM ".PAGE_ELEMENT." WHERE page_id=$page");
-			list($maxPos) = mysql_fetch_row($res);*/
+			/*$res=mysqli_query($sql_link, "SELECT MAX(position) FROM ".PAGE_ELEMENT." WHERE page_id=$page");
+			list($maxPos) = mysqli_fetch_row($res);*/
 			
-			mysql_query("UPDATE ".PAGE_ELEMENT." SET position=position+1 WHERE page_id=$page AND position>=$position");
+			mysqli_query($sql_link, "UPDATE ".PAGE_ELEMENT." SET position=position+1 WHERE page_id=$page AND position>=$position");
 			
 			$q = "INSERT INTO ".PAGE_ELEMENT." (page_id,element_id,module_id,position,style,padding,margin,alignment) VALUES ('$page','" . $json['id'] . "','$mid','$position', '', '', '', '')";
-			mysql_query($q) or
+			mysqli_query($sql_link, $q) or
 				BailSQL("500\nFailed inserting page_element", $q);
 				
-			//list($maxPos) = mysql_fetch_row($res);
+			//list($maxPos) = mysqli_fetch_row($res);
 			
 			$pmg->generatePage($page);
 			
@@ -171,23 +171,23 @@ switch($ac) {
 		
 		// Get old position and page id
 		$q = "SELECT page_id,position FROM ".PAGE_ELEMENT." WHERE element_id=$elid AND module_id='$mid'";
-		$res=mysql_query($q) or
+		$res=mysqli_query($sql_link, $q) or
 			BailErr("Failed getting page",$q);
-		list($page_id,$oldpos) = mysql_fetch_array($res);
+		list($page_id,$oldpos) = mysqli_fetch_array($res);
 		
 		// Cut it out
 		$q = "UPDATE ".PAGE_ELEMENT." SET position=position-1 WHERE page_id=$page_id AND position>$oldpos";
-		mysql_query($q) or
+		mysqli_query($sql_link, $q) or
 			BailErr("Failed cutting out element",$q);
 
 		// Re-Insert (make space)
 		$q = "UPDATE ".PAGE_ELEMENT." SET position=position+1 WHERE page_id=$page_id AND position>=$newpos";
-		mysql_query($q) or
+		mysqli_query($sql_link, $q) or
 			BailErr("Failed making space for element",$q);
 
 		// Finally set the new position on the element
 		$q = "UPDATE ".PAGE_ELEMENT." SET position=$newpos WHERE element_id=$elid AND module_id='$mid'";
-		mysql_query($q) or
+		mysqli_query($sql_link, $q) or
 			BailErr("Failed setting element position",$q);
 
 		$pmg->generatePage($page_id);
@@ -218,18 +218,18 @@ switch($ac) {
 		$ce = new $mid($pid);
 		if ($ce->deleteElement($elid)) {
 			$q = "SELECT page_id, position FROM ".PAGE_ELEMENT." WHERE element_id=$elid AND module_id='$mid'";
-			$res = mysql_query($q) or
+			$res = mysqli_query($sql_link, $q) or
 				BailSQL("Failed getting page id", $q);
 
-			list($page_id, $elpos) = mysql_fetch_array($res);
+			list($page_id, $elpos) = mysqli_fetch_array($res);
 
 			$q = "DELETE FROM " . PAGE_ELEMENT . " WHERE element_id=$elid AND module_id='$mid'";
-			$res = mysql_query($q) or
+			$res = mysqli_query($sql_link, $q) or
 				BailSQL("Failed deleting content element table", $q);
 				
-			if (mysql_affected_rows()) {
+			if (mysqli_affected_rows($sql_link)) {
 				$q = "UPDATE " . PAGE_ELEMENT . " SET position=position-1 WHERE page_id=$page_id AND position>$elpos";
-				$res = mysql_query($q) or
+				$res = mysqli_query($sql_link, $q) or
 					BailSQL("Failed decreasing position", $q);
 			}
 			
@@ -269,19 +269,19 @@ switch($ac) {
 
 			$selection = "idx='$p'";
 		} else {
-			$selection = "(url='" . mysql_real_escape_string($p) . "' AND nolink=0 AND file='')";
+			$selection = "(url='" . mysqli_real_escape_string($sql_link, $p) . "' AND nolink=0 AND file='')";
 		}
 		
 		
 		$q = "SELECT idx, name, file, content, content_prepared FROM ".PAGES." WHERE " . $selection . ' ' . (!LOGINOK?"AND (visibility&1)=1":"");
-		if (! ($res = mysql_query($q)))	 {
+		if (! ($res = mysqli_query($sql_link, $q)))	 {
 			$json['content'] = "Failed getting page data for page $p";
 			logError("Failed getting page data for page $p<br>", $q);
 			exit("500\n" . json_encode($json)); 
 		}
-		$row = mysql_fetch_array($res);
+		$row = mysqli_fetch_array($res);
 		
-		if (!mysql_affected_rows()) {
+		if (!mysqli_affected_rows($sql_link)) {
 			$json['content'] = __('Page does not exist or no permission to see it');
 			exit("404\n" . json_encode($json)); 
 		}

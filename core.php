@@ -36,6 +36,8 @@ require "inc/lng_init.php";
 
 // Main HTML output handler
 $anego = new Anego(STYLE);
+$anego->error_reporting = E_ALL & ~E_NOTICE; 
+
 $anego->assign('language', $cfg['interfacelanguage']);
 if (strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE')) {
 	$anego->assign('browser', 'ie');
@@ -95,10 +97,10 @@ require "inc/db_init.php";
 $s = array();
 // Todo: Reduce to the needed settings (dont retrieve all)
 $q = "SELECT * FROM ".SETTINGS;
-$res = mysql_query($q) or
+$res = mysqli_query($sql_link, $q) or
 	BailSQLn(__('A database query failed.'),$q); 
 
-while($row = mysql_fetch_array($res)) {
+while($row = mysqli_fetch_array($res)) {
 	$settings[$row['name']] = $row;
 }
 
@@ -117,8 +119,10 @@ function getSetting($name, $full = false) {
 }
 
 function setSetting($name, $value) {
+	global $sql_link;
+	
 	$q = 'REPLACE INTO '.SETTINGS.' (name,value) VALUES (\'' . $name . '\', \'' . $value . '\')';
-	mysql_query($q) or
+	mysqli_query($sql_link, $q) or
 		BailErr('Failed applying setings', $q);
 }
 
@@ -168,23 +172,25 @@ function CurrentPage() {
 
 /* Returns and defines constant HOMEPAGE, which is the first page to be shown when a visitor comes to the site */
 function HomePage() {
+	global $sql_link;
+	
 	if(defined('HOMEPAGE')) {
 		return HOMEPAGE;
 	}
 		
 	$q = "SELECT value FROM ".SETTINGS." WHERE name='firstpage'";
-	$res = mysql_query($q) or
+	$res = mysqli_query($sql_link, $q) or
 		BailSQLn(__('Failed getting settings data'),$q);
-	list($p) = mysql_fetch_array($res);
+	list($p) = mysqli_fetch_array($res);
 
 	/* No home page set up => lets just take the first page we can find */
-	if(mysql_affected_rows()==0) {
+	if(mysqli_affected_rows($sql_link)==0) {
 		$q = "SELECT idx FROM ".PAGES." LIMIT 1";
-		$res = mysql_query($q) or
+		$res = mysqli_query($sql_link, $q) or
 			BailSQLn(__('Failed getting settings data'),$q);
-		list($p) = mysql_fetch_array($res);
+		list($p) = mysqli_fetch_array($res);
 		// Not even a page available? Damn.
-		if (mysql_affected_rows() == 0) $p = -1;
+		if (mysqli_affected_rows($sql_link) == 0) $p = -1;
 	}
 		
 	define('HOMEPAGE',$p);
@@ -193,12 +199,13 @@ function HomePage() {
 }
 
 function getURLFromPage($pageidx) {
-
+	global $sql_link;
+	
 	$q = "SELECT url FROM ".PAGES." WHERE idx=" . intval($pageidx);
 	
-	$res = mysql_query($q) or
+	$res = mysqli_query($sql_link, $q) or
 		BailSQLn(__('Failed getting settings data'),$q);
-	list($url) = mysql_fetch_array($res);
+	list($url) = mysqli_fetch_array($res);
 	return $url;
 }
 
@@ -225,7 +232,7 @@ function AdminBar($p) {
 
 /* Print the page */
 function PrintPage($p) {
-	global $anego, $cfg;
+	global $anego, $cfg, $sql_link;
 	
 	
 	if($p == -1) {
@@ -240,18 +247,18 @@ function PrintPage($p) {
 	if (is_numeric($p)) {
 		$selection = "idx='$p'";
 	} else {
-		$selection = "(url='" . mysql_real_escape_string($p) . "' AND nolink=0 AND file='')";
+		$selection = "(url='" . mysqli_real_escape_string($sql_link, $p) . "' AND nolink=0 AND file='')";
 	}
 
 	$q = "SELECT idx, name, file, content, content_prepared, content_validuntil FROM ".PAGES." WHERE " . $selection . ' ' . (!LOGINOK?"AND (visibility&1)=1":"");
 	
-	$res = mysql_query($q) or
+	$res = mysqli_query($sql_link, $q) or
 		BailSQL("Failed getting page data for page $p<br>",$q);
-	$page = mysql_fetch_array($res);
+	$page = mysqli_fetch_array($res);
 	
 	AdminBar($page['idx']);
 	
-	if(!mysql_affected_rows()) {
+	if(!mysqli_affected_rows($sql_link)) {
 		$anego->AddContent(__('Page nonexistant or no permission to see it'));
 		$anego->display('index.tpl');
 		exit();
@@ -312,7 +319,7 @@ function refreshPageCache($p) {
 
 // Returns required module-js and module-css files per page
 function pageLoadFiles($p) {
-	global $cfg;
+	global $cfg, $sql_link;
 	
 	if (file_exists('var/installed_modules')) {
 		$modules = unserialize(file_get_contents('var/installed_modules'));
@@ -322,7 +329,7 @@ function pageLoadFiles($p) {
 		
 	// Optimize: Save this information in PAGES so we can eliminate this query
 	$q = 'SELECT module_id FROM '.PAGE_ELEMENT.' WHERE page_id='.$p.' GROUP BY module_id';
-	$res = mysql_query($q) or
+	$res = mysqli_query($sql_link, $q) or
 		BailErr("Failed getting page data for page $p<br>",$q);
 	
 	$js = array();
@@ -330,7 +337,7 @@ function pageLoadFiles($p) {
 	$modcss = array();
 	$css = array();
 	
-	while (list($mid) = mysql_fetch_row($res)) {
+	while (list($mid) = mysqli_fetch_row($res)) {
 		// typecast to array to allow non-array values in the module config
 		if (LOGINOK) {
 			$modjs = array_merge(@(array)$modules[$mid]['config']['js']['load'],@(array)$modules[$mid]['config']['js']['pageMod']);

@@ -54,7 +54,7 @@ $cfg['galThumbnailHeight'] = 120;
 define("FILESROOT",'files/');
 
 /**** Smarty path ****/
-define("SMARTYPATH",'lib/Smarty-2.6/');
+define("SMARTYPATH",'lib/Smarty/');
 
 
 /* How show submenus be displayed, default is visible

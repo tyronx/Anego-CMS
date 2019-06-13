@@ -8,7 +8,9 @@ if (!isset($_POST['mailerid'])) {
 	addL10N('modules/mailer/lang/' . $cfg['interfacelanguage'] . '.php');
 
 	class MailTemplate extends Smarty {	
-		function MailTemplate() {
+		function __construct() {
+			parent::__construct();
+			
 			$this->template_dir = '';
 			$this->compile_dir = 'tmp';
 			$this->register_resource('string', array(
@@ -46,16 +48,16 @@ function string_get_trusted($tpl_name, &$smarty) {
 function databaseTable() { return $GLOBALS['cfg']['tablePrefix'].'pages_mailer'; }
 
 function sendMail() {
-	global $cfg;
+	global $cfg, $sql_link;
 	
 	$mailerid = intval($_POST['mailerid']);
 	
 	
 	$q = "SELECT * FROM " . databaseTable() . " WHERE idx=" . $mailerid;
-	$res = mysql_query($q) or
+	$res = mysqli_query($sql_link, $q) or
 		BailSQL('Failed getting Form Data from DB', $q);
 		
-	$row = mysql_fetch_assoc($res);
+	$row = mysqli_fetch_assoc($res);
 	
 	if (!isset($row['recipient'])) {
 		BailErr(__('Mailer: No receiver E-Mail in DB found. Missing entry or wrong id?'));
@@ -101,7 +103,7 @@ function sendMail() {
 			currenthour=$currenthour
 		WHERE idx=$mailerid";
 		
-	mysql_query($q);
+	mysqli_query($sql_link, $q);
 	
 	
 	$successMessage = @$row['successmessage'];

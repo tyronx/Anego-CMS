@@ -45,27 +45,28 @@ abstract class ContentElement extends BasicModule {
 	 */
 	// does not make use of pageID/position. This information is stored in the anego_page_element table
 	public function createElement($position) {
-		global $cfg;
+		global $cfg, $sql_link;
 		
 		$q = "INSERT INTO " . $this->databaseTable() . " (value) VALUES ('')";
-		$res = mysql_query($q) or
+		$res = mysqli_query($sql_link, $q) or
 			BailSQL("Failed inserting element", $q);
 
-		$this->elementId = mysql_insert_id();
+		$this->elementId = mysqli_insert_id($sql_link);
 		
 		return Array("id" => $this->elementId, "html" => $this->generateContent($this->elementId));
 	}
 	
 	/* Called when the user presses Save when editing that content element */
 	public function saveElement($html) {
+		global $sql_link;
 		if (! $this->elementId) return "300\nMissing element id";
 		
 		if (get_magic_quotes_gpc())
 			$html = stripslashes($html);
 				
-		$q = "UPDATE " . $this->databaseTable() . " SET value='" . mysql_real_escape_string($html) . "' WHERE idx=" . $this->elementId;
-		mysql_query($q) or
-			BailErr("Failed saving element ", mysql_error());
+		$q = "UPDATE " . $this->databaseTable() . " SET value='" . mysqli_real_escape_string($sql_link, $html) . "' WHERE idx=" . $this->elementId;
+		mysqli_query($sql_link, $q) or
+			BailErr("Failed saving element ", mysqli_error($sql_link));
 		
 		return "200\nok";
 	}
@@ -76,20 +77,20 @@ abstract class ContentElement extends BasicModule {
 	 * $elementId is cleaned via intval() so you don't have to worry about SQL injection 
 	 */
 	public function generateContent() {
-		global $cfg;
+		global $cfg, $sql_link;
 		$q = "SELECT value FROM ".$this->databaseTable()." WHERE idx=" . $this->elementId;
-		$res = mysql_query($q) or
+		$res = mysqli_query($sql_link, $q) or
 			BailErr("Failed deleting element", $q);
-		list($str) = mysql_fetch_array($res);
+		list($str) = mysqli_fetch_array($res);
 
 		return $str;
 	}
 	
 	/* $elementId is cleaned via intval() so you don't have to worry about SQL injection */
 	public function deleteElement() {
-		global $cfg;
+		global $cfg, $sql_link;
 		$q = "DELETE FROM ".$this->databaseTable()." WHERE idx=" . $this->elementId;
-		mysql_query($q) or
+		mysqli_query($sql_link, $q) or
 			BailErr("Failed deleting element", $q);
 		return true;
 	}
@@ -136,7 +137,7 @@ class PageManager {
 	*/
 	private $loadedModules = false;
 		
-	function PageManager() {
+	function __construct() {
 		$this->loadModules();
 	}
 	
@@ -167,7 +168,7 @@ class PageManager {
 	/* Retrieves general information about the content element modules as well as information of 
 	   the meaning of the individual content elements that are on the page of given id */
 	function contentElementModules($page_id) {
-		global $cfg;
+		global $cfg, $sql_link;
 		
 		$page_id = intval($page_id);
 		
@@ -184,9 +185,9 @@ class PageManager {
 
 		// Send the source too since its not much more overhead
 		$q = "SELECT content_prepared, name  FROM ".PAGES." WHERE idx=$page_id";
-		$res = mysql_query($q) or
+		$res = mysqli_query($sql_link, $q) or
 			BailErr("Failed getting page content for editing",$q);
-		$row = mysql_fetch_array($res);
+		$row = mysqli_fetch_array($res);
 		
 		
 		$ret['title'] = $row['name'];
@@ -196,15 +197,17 @@ class PageManager {
 	
 	/* Rebuilds a page's HTML by calling each individual module generateContent() method and stitching that together */
 	function generatePage($page_id) {
+		global $sql_link;
+		
 		$page_id = intval($page_id);
 		$validuntil = time() + 24*3600*365*99;
 		
 		$q = "SELECT * FROM ".PAGE_ELEMENT." WHERE page_id=$page_id ORDER BY position";
-		$res = mysql_query($q) or
+		$res = mysqli_query($sql_link, $q) or
 			BailErr("Failed getting page elements for page generation", $q);
 		
 		$txt = '';
-		while ($row = mysql_fetch_array($res)) {
+		while ($row = mysqli_fetch_array($res)) {
 			$mid = $row['module_id'];
 			if(!isset($this->loadedModules[$mid])) {
 				BailErr("Cannot recreate page as there is a module missing!");
@@ -244,9 +247,9 @@ class PageManager {
 			$validuntil = min($validuntil, $ce->contentValidUntil());
 		}
 		
-		$q = "UPDATE ".PAGES." SET `content_prepared`='" . mysql_real_escape_string($txt) . "', `content_validuntil`='".$validuntil."' WHERE idx=$page_id";
+		$q = "UPDATE ".PAGES." SET `content_prepared`='" . mysqli_real_escape_string($sql_link, $txt) . "', `content_validuntil`='".$validuntil."' WHERE idx=$page_id";
 		
-		$res = mysql_query($q) or
+		$res = mysqli_query($sql_link, $q) or
 			BailErr("Failed generating page",$q);
 		
 		return $txt;

@@ -116,14 +116,14 @@ switch ($_GET['a']) {
 		}
 		
 		$settings = array();
-		$res = mysql_query("SELECT * FROM ".SETTINGS);
-		while ($row = mysql_fetch_array($res)) {
+		$res = mysqli_query($sql_link, "SELECT * FROM ".SETTINGS);
+		while ($row = mysqli_fetch_array($res)) {
 			$settings[$row['name']] = $row['value'];
 		}
 		
-		$res = mysql_query("SELECT idx, name FROM ".PAGES." WHERE nolink=0 AND file='' ORDER BY name");
+		$res = mysqli_query($sql_link, "SELECT idx, name FROM ".PAGES." WHERE nolink=0 AND file='' ORDER BY name");
 		$pages = array();
-		while ($row = mysql_fetch_assoc($res)) {
+		while ($row = mysqli_fetch_assoc($res)) {
 			$pages[] = $row;
 		}
 		
@@ -155,10 +155,10 @@ switch ($_GET['a']) {
 		if(UserRole() < Role::Admin) BailErr(__('No permission to access this page, sorry.'));
 		
 		// Unfortunately can only be done one by one
-		mysql_query('REPLACE INTO '.SETTINGS.' (name,value) VALUES (\'firstpage\',\'' . mysql_real_escape_string($_POST['homepage'])  . '\')');
-		mysql_query('REPLACE INTO '.SETTINGS.' (name,value) VALUES (\'pagetitle\',\'' . mysql_real_escape_string($_POST['pagetitle']) . '\')');
-		mysql_query('REPLACE INTO '.SETTINGS.' (name,value) VALUES (\'keywords\',\'' . mysql_real_escape_string($_POST['keywords']) . '\')');
-		mysql_query('REPLACE INTO '.SETTINGS.' (name,value) VALUES (\'description\',\'' . mysql_real_escape_string($_POST['description']) . '\')');
+		mysqli_query($sql_link, 'REPLACE INTO '.SETTINGS.' (name,value) VALUES (\'firstpage\',\'' . mysqli_real_escape_string($sql_link, $_POST['homepage'])  . '\')');
+		mysqli_query($sql_link, 'REPLACE INTO '.SETTINGS.' (name,value) VALUES (\'pagetitle\',\'' . mysqli_real_escape_string($sql_link, $_POST['pagetitle']) . '\')');
+		mysqli_query($sql_link, 'REPLACE INTO '.SETTINGS.' (name,value) VALUES (\'keywords\',\'' . mysqli_real_escape_string($sql_link, $_POST['keywords']) . '\')');
+		mysqli_query($sql_link, 'REPLACE INTO '.SETTINGS.' (name,value) VALUES (\'description\',\'' . mysqli_real_escape_string($sql_link, $_POST['description']) . '\')');
 		
 		exit("200\n");
 		break;
@@ -168,8 +168,8 @@ switch ($_GET['a']) {
 	case 'savesetgen':
 		if(UserRole() < Role::Admin) BailErr(__('No permission to access this page, sorry.'));
 		
-		mysql_query('REPLACE INTO '.SETTINGS.' (name,value) VALUES (\'autoeditmode\',\'' . intval(@$_POST['autoeditmode'])  . '\')');
-		mysql_query('REPLACE INTO '.SETTINGS.' (name,value) VALUES (\'developermode\',\'' . intval(@$_POST['developermode'])  . '\')');
+		mysqli_query($sql_link, 'REPLACE INTO '.SETTINGS.' (name,value) VALUES (\'autoeditmode\',\'' . intval(@$_POST['autoeditmode'])  . '\')');
+		mysqli_query($sql_link, 'REPLACE INTO '.SETTINGS.' (name,value) VALUES (\'developermode\',\'' . intval(@$_POST['developermode'])  . '\')');
 		
 		exit("200\n");
 		break;
@@ -243,9 +243,9 @@ switch ($_GET['a']) {
 		
 		// Add page to the bottom of the tree
 		$q = "SELECT MAX(position) as pos FROM ".PAGES." WHERE parent_idx=$intopage AND menu='".$menu."'";
-		$res = mysql_query($q) or
+		$res = mysqli_query($sql_link, $q) or
 			BailSQL(__('Failed freeing a position for new page'),$q);
-		$row = mysql_fetch_array($res);
+		$row = mysqli_fetch_array($res);
 
 		$pos = $row['pos'] + 1;
 		
@@ -263,17 +263,17 @@ switch ($_GET['a']) {
 			$_POST['menu'] = stripslashes($_POST['menu']);
 			$fname = stripslashes($fname);
 		}
-		$_POST['name'] = mysql_real_escape_string($_POST['name']);
-		$_POST['info'] = mysql_real_escape_string($_POST['info']);
-		$_POST['url'] = mysql_real_escape_string($_POST['url']);
+		$_POST['name'] = mysqli_real_escape_string($sql_link, $_POST['name']);
+		$_POST['info'] = mysqli_real_escape_string($sql_link, $_POST['info']);
+		$_POST['url'] = mysqli_real_escape_string($sql_link, $_POST['url']);
 		
-		$fname = mysql_real_escape_string($fname);
+		$fname = mysqli_real_escape_string($sql_link, $fname);
 				
 		$q = "INSERT INTO ".PAGES . 
 			 " (name, url, info, date, parent_idx, file, visibility, position, nolink,content,menu) VALUES " .
 			 " ('".$_POST['name']."','".$_POST['url']."','".$_POST['info']."',".time().",'".$par."','".$fname."','".$vis."','".$pos."','$nolink','','".$menu."')";
 		
-		mysql_query($q) or
+		mysqli_query($sql_link, $q) or
 			BailSQL(__('Failed inserting new page'),$q);
 		
 		echo "200\n".PrintLinks();
@@ -298,16 +298,16 @@ switch ($_GET['a']) {
 		if($movingNodeId == $targetNodeId && $_GET['position'] == 'inside') exit("400\nProgramming error: dropped node == target node");
 		
 		$q = "SELECT idx,name,position,parent_idx,menu FROM ".PAGES." WHERE idx=$movingNodeId";
-		$res = mysql_query($q) or
+		$res = mysqli_query($sql_link, $q) or
 			BailSQL(__('Failed moving page'),$q);
 		
-		$movingNode = mysql_fetch_array($res);
+		$movingNode = mysqli_fetch_array($res);
 			
 		$q = "SELECT idx,name,position,parent_idx,menu FROM ".PAGES." WHERE idx=$targetNodeId";
-		$res = mysql_query($q) or
+		$res = mysqli_query($sql_link, $q) or
 			BailSQL(__('Failed moving page'),$q);
 			
-		$targetNode = mysql_fetch_array($res);
+		$targetNode = mysqli_fetch_array($res);
 		
 		// Prevent moving an element into its direct child
 		if ($targetNode['parent_idx'] == $movingNodeId) {
@@ -315,66 +315,66 @@ switch ($_GET['a']) {
 		}
 		
 		/* Start the move */
-		mysql_query("START TRANSACTION") or 
+		mysqli_query($sql_link, "START TRANSACTION") or 
 			BailSQL('Couldn\'t start transaction',"START TRANSACTION");
 		
 		// Free the space from old place
 		$q="UPDATE ".PAGES." SET position=position-1 WHERE position>".$movingNode['position']." AND parent_idx=".$movingNode['parent_idx']." AND menu='".$movingNode['menu']."'";
-		if(!($res=mysql_query($q)))
-			{ @mysql_query("ROLLBACK"); BailSQL(__('Failed moving page'),$q); }
+		if(!($res=mysqli_query($sql_link, $q)))
+			{ @mysqli_query($sql_link, "ROLLBACK"); BailSQL(__('Failed moving page'),$q); }
 		
 		switch($_GET['position']) {
 			case 'before':
 				// Make space in new place
 				$q="UPDATE ".PAGES." SET position=position+1 WHERE position>=".$targetNode['position']." AND parent_idx=".$targetNode['parent_idx']." AND menu='".$targetNode['menu']."'";
-				if(!($res=mysql_query($q)))
-					{ @mysql_query("ROLLBACK"); BailSQL(__('Failed moving page'),$q); }
+				if(!($res=mysqli_query($sql_link, $q)))
+					{ @mysqli_query($sql_link, "ROLLBACK"); BailSQL(__('Failed moving page'),$q); }
 				
 				// Move the node
 				$q="UPDATE ".PAGES." SET parent_idx=".$targetNode['parent_idx'].", position=".$targetNode['position'].", menu='".$targetNode['menu']."' WHERE idx=".$movingNode['idx'];
-				if(!($res=mysql_query($q)))
-					{ @mysql_query("ROLLBACK"); BailSQL(__('Failed moving page'),$q); }
+				if(!($res=mysqli_query($sql_link, $q)))
+					{ @mysqli_query($sql_link, "ROLLBACK"); BailSQL(__('Failed moving page'),$q); }
 				
 				break;
 				
 			case 'after':
 				// Make space in new place
 				$q="UPDATE ".PAGES." SET position=position+1 WHERE position>".$targetNode['position']." AND parent_idx=".$targetNode['parent_idx']." AND menu='".$targetNode['menu']."'";
-				if(!($res=mysql_query($q)))
-					{ @mysql_query("ROLLBACK"); BailSQL(__('Failed moving page'),$q); }
+				if(!($res=mysqli_query($sql_link, $q)))
+					{ @mysqli_query($sql_link, "ROLLBACK"); BailSQL(__('Failed moving page'),$q); }
 				
 				// Move the node
 				$q="UPDATE ".PAGES." SET parent_idx=".$targetNode['parent_idx'].", position=".$targetNode['position']."+1, menu='".$targetNode['menu']."' WHERE idx=".$movingNode['idx'];
-				if(!($res=mysql_query($q)))
-					{ @mysql_query("ROLLBACK"); BailSQL(__('Failed moving page'),$q); }
+				if(!($res=mysqli_query($sql_link, $q)))
+					{ @mysqli_query($sql_link, "ROLLBACK"); BailSQL(__('Failed moving page'),$q); }
 					
 				break;
 				
 			case 'inside':
 				// 'inside' always moves to the bottom of the target parent
 				$q='SELECT MAX(position) FROM '.PAGES.' WHERE parent_idx='.$targetNode['idx']." AND menu='".$targetNode['menu']."'";;
-				if(!($res=mysql_query($q)))
-					{ @mysql_query("ROLLBACK"); BailSQL(__('Failed moving page'),$q); }
-				list($newPos)=mysql_fetch_row($res);
+				if(!($res=mysqli_query($sql_link, $q)))
+					{ @mysqli_query($sql_link, "ROLLBACK"); BailSQL(__('Failed moving page'),$q); }
+				list($newPos)=mysqli_fetch_row($res);
 				$newPos++;
 				
 				// Move the node
 				$q="UPDATE ".PAGES." SET parent_idx=".$targetNode['idx'].", position=".$newPos.", menu='".$targetNode['menu']."' WHERE idx=".$movingNode['idx'];
-				if(!($res=mysql_query($q)))
-					{ @mysql_query("ROLLBACK"); BailSQL(__('Failed moving page'),$q); }
+				if(!($res=mysqli_query($sql_link, $q)))
+					{ @mysqli_query($sql_link, "ROLLBACK"); BailSQL(__('Failed moving page'),$q); }
 			
 				break;
 				
 			case 'bottom':
 				$q='SELECT MAX(position) FROM '.PAGES.' WHERE parent_idx=0 AND menu=\''.$targetmenu.'\'';
-				if(!($res=mysql_query($q)))
-					{ @mysql_query("ROLLBACK"); BailSQL(__('Failed moving page'),$q); }
-				list($newPos)=mysql_fetch_row($res);
+				if(!($res=mysqli_query($sql_link, $q)))
+					{ @mysqli_query($sql_link, "ROLLBACK"); BailSQL(__('Failed moving page'),$q); }
+				list($newPos)=mysqli_fetch_row($res);
 				$newPos++;
 				
 				$q = "UPDATE ".PAGES." SET parent_idx=0, menu='".$targetmenu."', position=".$newPos." WHERE idx=".$movingNode['idx'];
 				// Move the node
-				if(!($res = mysql_query($q))) { @mysql_query("ROLLBACK"); BailSQL(__('Failed moving page'),$q); }
+				if(!($res = mysqli_query($sql_link, $q))) { @mysqli_query($sql_link, "ROLLBACK"); BailSQL(__('Failed moving page'),$q); }
 				
 				break;
 				
@@ -382,7 +382,7 @@ switch ($_GET['a']) {
 				exit("500\nWrong command");
 		}
 		
-		if (!mysql_query("COMMIT"))
+		if (!mysqli_query($sql_link, "COMMIT"))
 			BailSQL("500\nCouldn't commit change","COMMIT");
 
 		echo "200\n".PrintLinks();
@@ -405,10 +405,10 @@ switch ($_GET['a']) {
 		}
 		
 		if (strlen(trim($_POST['url']))) {
-			$q = "SELECT idx, name FROM ".PAGES." WHERE url='" . mysql_real_escape_string($_POST['url']) . "'";
-			$res = mysql_query($q);
-			list ($idxWithSameUrl, $pgname) = mysql_fetch_row($res);
-			if  (mysql_affected_rows() && $idxWithSameUrl != $id) {
+			$q = "SELECT idx, name FROM ".PAGES." WHERE url='" . mysqli_real_escape_string($sql_link, $_POST['url']) . "'";
+			$res = mysqli_query($sql_link, $q);
+			list ($idxWithSameUrl, $pgname) = mysqli_fetch_row($res);
+			if  (mysqli_affected_rows($sql_link) && $idxWithSameUrl != $id) {
 				echo "304\n" . sprintf(__("The page '%s' already uses this URL-Alias, please choose another!"), $pgname);
 				exit();
 			}
@@ -417,13 +417,13 @@ switch ($_GET['a']) {
 		$vis = intval($_POST['vis']);
 			
 		$q = "UPDATE ".PAGES." SET " . 
-			"name='".mysql_real_escape_string($_POST['name'])."', " .
-			"info='".mysql_real_escape_string($_POST['info'])."', " .
-			"url='".mysql_real_escape_string(trim($_POST['url']))."', " .
-			"file='".mysql_real_escape_string($_POST['filename'])."', " .
+			"name='".mysqli_real_escape_string($sql_link, $_POST['name'])."', " .
+			"info='".mysqli_real_escape_string($sql_link, $_POST['info'])."', " .
+			"url='".mysqli_real_escape_string($sql_link, trim($_POST['url']))."', " .
+			"file='".mysqli_real_escape_string($sql_link, $_POST['filename'])."', " .
 			"visibility='".$vis."' WHERE idx='$id'";
 
-		mysql_query($q) or
+		mysqli_query($sql_link, $q) or
 			BailSQL(__('Failed renaming page'), $q);
 			
 		echo "200\n".PrintLinks();
@@ -437,7 +437,7 @@ switch ($_GET['a']) {
 		$id = intval($_POST['page_id']);
 		
 		$q = "DELETE FROM ".PAGES." WHERE idx=$id";
-		mysql_query($q) or
+		mysqli_query($sql_link, $q) or
 			BailErr(__('Failed deleting page'),$q);
 			
 		DeleteChildPages($id);
@@ -450,9 +450,9 @@ switch ($_GET['a']) {
 		if (UserRole() < Role::Admin) Bail(__('No permission to access this page, sorry.'));
 		
 		$q = "SELECT module_id, element_id, style, padding, margin, alignment, width, maxwidth from " . PAGE_ELEMENT . " where page_id=" . intval($_GET['page_id']) . " and element_id=" . intval($_GET["element_id"]);
-		$res = mysql_query($q);
+		$res = mysqli_query($sql_link, $q);
 		
-		$data = mysql_fetch_array($res, MYSQL_ASSOC);
+		$data = mysqli_fetch_assoc($res);
 		$data["elemid"] = intval($_GET["element_id"]);
 		$data["pageid"] = intval($_GET["page_id"]);
 
@@ -460,9 +460,9 @@ switch ($_GET['a']) {
 	
 	// Save element settings
 	case 'ses':
-		$q = "UPDATE " . PAGE_ELEMENT . " SET style='".mysql_real_escape_string($_POST['style'])."', padding='".mysql_real_escape_string($_POST['padding'])."', margin='".mysql_real_escape_string($_POST['margin'])."', alignment='".mysql_real_escape_string($_POST['alignment'])."', width='".mysql_real_escape_string($_POST['width'])."', maxwidth='".mysql_real_escape_string($_POST['maxwidth'])."' where page_id=" . intval($_POST['page_id']) . " and element_id=" . intval($_POST["element_id"]);
+		$q = "UPDATE " . PAGE_ELEMENT . " SET style='".mysqli_real_escape_string($sql_link, $_POST['style'])."', padding='".mysqli_real_escape_string($sql_link, $_POST['padding'])."', margin='".mysqli_real_escape_string($sql_link, $_POST['margin'])."', alignment='".mysqli_real_escape_string($sql_link, $_POST['alignment'])."', width='".mysqli_real_escape_string($sql_link, $_POST['width'])."', maxwidth='".mysqli_real_escape_string($sql_link, $_POST['maxwidth'])."' where page_id=" . intval($_POST['page_id']) . " and element_id=" . intval($_POST["element_id"]);
 		
-		mysql_query($q) or
+		mysqli_query($sql_link, $q) or
 			BailErr(__('Failed saving element settings'), $q);
 		
 		refreshPageCache(intval($_POST['page_id']));
@@ -502,16 +502,16 @@ function PrintLinks() {
 }
 
 function PrintLinksRec($parent, $menu, $first=0) {
-	global $defIcons, $cfg;
+	global $defIcons, $cfg, $sql_link;
 	
 	$q = "SELECT * FROM ".PAGES." WHERE parent_idx=$parent AND menu='".$menu."' ORDER BY position";
-	$res=mysql_query($q) or
+	$res=mysqli_query($sql_link, $q) or
 		BailSQLn(__('Couldn\'t read pages for menu'), $q);
 	
 	$id='1';
 	if ($first) $id='0';
 
-	if (!mysql_affected_rows() && !$first) return;
+	if (!mysqli_affected_rows($sql_link) && !$first) return;
 
 	if ($first) {
 		echo '<div class="innertreeDiv">';
@@ -524,14 +524,14 @@ function PrintLinksRec($parent, $menu, $first=0) {
 	} else echo '<ul>';
 	
 	
-	$numRows=mysql_affected_rows();
+	$numRows=mysqli_affected_rows($sql_link);
 	if (!$numRows && $first) {
 		echo "</ul></div>";
 		return;
 	}
 	
 	$j=0;
-	while ($row = mysql_fetch_array($res)) {
+	while ($row = mysqli_fetch_array($res)) {
 		$j++;
 		$link = "index.php?p=".$row['idx'];
 		
@@ -548,9 +548,9 @@ function PrintLinksRec($parent, $menu, $first=0) {
 		
 		echo "<a id=\"adm".$row['idx']."\" href=\"#\" onclick=\"return adminMenu.renamePage(" . 
 			$row['idx'] . ",'" . 
-			addslashes(htmlentities($row['name'], ENT_COMPAT,'UTF-8')) . "','" . 
-			addslashes(htmlentities(@$row['url'], ENT_COMPAT,'UTF-8')) . "','" . 
-			addslashes(htmlentities(@$row['info'], ENT_COMPAT,'UTF-8')) . "'," . 
+			trim(addslashes(htmlentities($row['name'], ENT_COMPAT,'UTF-8'))) . "','" . 
+			trim(addslashes(htmlentities(@$row['url'], ENT_COMPAT,'UTF-8'))) . "','" . 
+			trim(addslashes(htmlentities(@$row['info'], ENT_COMPAT,'UTF-8'))) . "'," . 
 			$row['visibility'] . ",'" . 
 			$row['file'] . "')\">$name</a> ";
 		
@@ -571,15 +571,16 @@ function PrintLinksRec($parent, $menu, $first=0) {
 }
 
 function DeleteChildPages($id) {
+	global $sql_link;
 	$q = "SELECT idx FROM ".PAGES." WHERE parent_idx=$id";
-	$res=mysql_query($q) or
+	$res=mysqli_query($sql_link, $q) or
 		BailSQLn(__('Failed getting child pages for deletion'), $q);
 	
-	while (list($idx)=mysql_fetch_row($res)) {
+	while (list($idx)=mysqli_fetch_row($res)) {
 		DeleteChildPages($idx);
 	}
 		
 	$q = "DELETE FROM ".PAGES." WHERE idx=$id";
-	mysql_query($q) or
+	mysqli_query($sql_link, $q) or
 		BailSQLn(sprintf(__('Failed deleting page %s'), $id), $q);
 }

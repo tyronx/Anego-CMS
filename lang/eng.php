@@ -22,6 +22,7 @@ $lang = array(
 	'File/Folder Names may only contain letters, numbers, dot (.) dash (-) and underscore (_)' => 'File/Folder Names may only contain letters, numbers, dot (.) dash (-) and underscore (_)',
 	'The file you want to rename does not exist (anymore)' => 'The file you want to rename does not exist (anymore)',
 	'Main menu' => 'Main menu',
+	'Failed retrieving the main menu' => 'Failed retrieving the main menu',
 	'Secondary menu' => 'Secondary menu',
 	'Couldn\'t read pages for menu' => 'Couldn\'t read pages for menu',
 	'New page' => 'New page',

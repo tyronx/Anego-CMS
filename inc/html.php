@@ -1,10 +1,10 @@
 <?
-require(SMARTYPATH.'Smarty.class.php');
+require(SMARTYPATH.'SmartyBC.class.php');
 
 define('MAXDEPTH', 6);
 
 /* Main HTML Output class based on Smarty */
-class Anego extends Smarty {
+class Anego extends SmartyBC {
 	var $smarty;
 	var $header_general, $header_jspreload, $header_prependjs,$header_appendjs, $admin_links;
 	var $header_jsmodules="";
@@ -16,7 +16,9 @@ class Anego extends Smarty {
 	
 	var $customphpincluded = false;
 	
-	function Anego($style) {
+	function __construct($style) {
+		parent::__construct();
+	
 		$this->template_dir = 'styles/'.$style.'/templates';
 		$this->compile_dir = 'styles/'.$style.'/templates_c';
 		$this->cache_dir = 'styles/'.$style.'/cache';
@@ -41,22 +43,22 @@ class Anego extends Smarty {
 	}
 	
 	// Displays given template and ends php execution
-	function display($template, $cache_id = null, $compile_id = null) {
+	function display($template = null, $cache_id = null, $compile_id = null, $parent = null) {
 		$this->prepare();
 		
 		if (!file_exists($this->template_dir . '/'. $template)) {
 			$template = '../../default/templates/' . $template;
 		}
 		
-		parent::display($template, $cache_id, $compile_id);
+		parent::display($template, $cache_id, $compile_id, $parent);
 	}
 	
-	function fetchContent($template, $cache_id = null, $compile_id = null) {
+	function fetchContent($template, $cache_id = null, $compile_id = null, $parent = null) {
 		if (!file_exists($this->template_dir . '/'. $template)) {
 			$template = '../../default/templates/' . $template;
 		}
 		
-		return parent::fetch($template, $cache_id, $compile_id);
+		return parent::fetch($template, $cache_id, $compile_id, $parent = null);
 	}
 	
 	function display_element($template) {
@@ -98,7 +100,7 @@ class Anego extends Smarty {
 			}
 		}*/
 		
-		define('DISPLAY_ATTEMPTED', 1);
+		if (!defined('DISPLAY_ATTEMPTED')) define('DISPLAY_ATTEMPTED', 1);
 		
 		if (!$skipsql) {
 			$pages = array(
@@ -158,7 +160,7 @@ class Anego extends Smarty {
 		$this->assign('header',$css."\t".'<script type="text/javascript">'."\n".$js."\t".'</script>'."\r\n".$jsfiles.$header);
 		// footer
 		$ft = "";
-		if (count($this->footer)) {
+		if (!empty($this->footer)) {
 			foreach($this->footer as $code)
 				$ft.="$code\n";
 		}
@@ -198,17 +200,18 @@ class Anego extends Smarty {
 
 	// Builds the main menu array
 	function pageTreeByMenu($menuid) {
-		global $cfg;
+		global $cfg, $sql_link;
+		
 		$this->_addCustomCode();
 	
-		// Get Flat array of pages
+		// Get Flat array of page
 		$q = "SELECT idx, parent_idx, name, url, info, file, nolink, defImg, hoverImg, activeImg FROM ". PAGES . " WHERE menu='$menuid' AND (visibility&2)=2 ".(!LOGINOK?"AND (visibility&1)=1":"") . " ORDER BY parent_idx, position";
 		
-		$res = @mysql_query($q) or
-			BailSQL($GLOBALS['lng_failedmain'],$q);
-			
+		$res = @mysqli_query($sql_link, $q) or
+			BailSQL(__('Failed retrieving the main menu'), $q);
+		
 		$pages_flat = array();
-		while ($row = mysql_fetch_assoc($res)) {
+		while ($row = mysqli_fetch_assoc($res)) {
 			$pages_flat[$row['idx']] = $this->createPageLink($row);
 		}
 		

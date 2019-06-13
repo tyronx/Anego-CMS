@@ -114,7 +114,7 @@ div#padder {
 	else { echo $bad; $configGood=false; }
 	echo '(php.ini) short_open_tag on<br>';
 	
-	if(function_exists('mysql_connect')) echo $good;
+	if(function_exists('mysqli_connect')) echo $good;
 		else { echo $bad; $configGood=false; }
 	echo '(php.ini) MySQL extension<br>';
 	
@@ -183,12 +183,12 @@ div#padder {
 					echo $icon.'Config file '.$err.'<br>';
 				} else {
 					if(file_exists('conf.inc.php'))
-						$sql_link=@mysql_connect(HOST,SQLUSER,SQLPASS);
+						$sql_link=@mysqli_connect(HOST,SQLUSER,SQLPASS);
 					
 					if (isset($_GET['a']) && $_GET['a'] == 'crdb') {
-						if( @mysql_query('CREATE DATABASE IF NOT EXISTS '.$_POST['dbname']))
+						if( @mysqli_query($sql_link, 'CREATE DATABASE IF NOT EXISTS '.$_POST['dbname']))
 							echo '<b>Database \''.$_POST['dbname'].'\' created.</b> You have to add it to the conf.inc.php to be recognized by Setup.<br>';
-						else echo '<b>Couldn\'t create database, please create it manually.</b><span class="err">Error was \''.mysql_error().'\'</span><br>';
+						else echo '<b>Couldn\'t create database, please create it manually.</b><span class="err">Error was \''.mysqli_error($sql_link).'\'</span><br>';
 					}
 					
 					$icon = $good;
@@ -197,7 +197,7 @@ div#padder {
 						$icon = $bad;
 						$err = ' <span class="err">- couldn\'t connect to database</span>'; 
 					} else {
-						if(!@mysql_select_db(SQLDB)) { 
+						if(!@mysqli_select_db($sql_link, SQLDB)) { 
 							$sql_link=0;
 							$icon=$bad;
 							$err=' <span class="err">- connected but couldn\'t select database (create a database with name: <form style="display:inline;" action="setup.php?a=crdb" method="post"><input type="text" size="10" name="dbname"> <input type="submit" value="Create">)</form></span>'; 
@@ -287,8 +287,8 @@ div#padder {
 						
 						$tablesOK=false;
 						if($sql_link) {
-							mysql_query("show tables like '".$cfg['tablePrefix']."%'");
-							if(mysql_affected_rows()>=2) $tablesOK=true;
+							mysqli_query($sql_link, "show tables like '".$cfg['tablePrefix']."%'");
+							if(mysqli_affected_rows($sql_link)>=2) $tablesOK=true;
 						}
 						
 						echo ($tablesOK?$good:$bad).' Database tables';
@@ -408,7 +408,7 @@ function CheckWriteableRec($f) {
 }
 
 function createTables() {
-	global $cfg;
+	global $cfg, $sql_link;
 	
 	$sql = file('tables.sql');
 	
@@ -439,10 +439,10 @@ function createTables() {
 		
 		if (preg_match("/;$/",$line)) {
 		
-			if (!@mysql_query($statement)) {
+			if (!@mysqli_query($sql_link, $statement)) {
 				return array(
 					"success" => false,
-					"message" => '<b>Automatic creation of tables failed, please create them manually (use tables.sql file)</b><br>' . '<span class="err">(Error was \''.mysql_error().'\')</span><br>'
+					"message" => '<b>Automatic creation of tables failed, please create them manually (use tables.sql file)</b><br>' . '<span class="err">(Error was \''.mysqli_error($sql_link).'\')</span><br>'
 				);
 				break;
 			} else $statement='';

@@ -192,6 +192,7 @@ productlist = ContentElement.extend({
 					productid = $(this).attr('href').substr('#editproduct-'.length);
 					
 					self.editProduct(productid);
+					return false;
 				});
 				
 			}
@@ -220,6 +221,10 @@ productlist = ContentElement.extend({
 						'<select name="pageidx">' +
 						'</select>' +
 					'</p>' +
+					'<label><input type="radio" name="target" id="targetanylink" value="3"><span>' + lngProductlist.anylink+ '</span></label><br>' +
+					'<p>' +
+						'<input type="text" id="targeturl" name="targeturl" value="">' +
+					'</p>' +
 					'<label><input type="radio" name="target" id="targetnewpage" value="2"><span>' + lngProductlist.createproductpage + '</span></label><br><br>' +
 					'<div class="productdesc">' + lngProductlist.description + ': <textarea style="width:100%" id="productDescription"></textarea></div>',
 			buttons: {}
@@ -244,6 +249,7 @@ productlist = ContentElement.extend({
 					target: $("input[name='target']:checked").val(),
 					productid: productid,
 					pageidx: $("select[name='pageidx']").val(),
+					targeturl: $("input[name='targeturl']").val(),
 					filename: productimage.name,
 					filedata: productimagedata 
 				},
@@ -322,7 +328,7 @@ productlist = ContentElement.extend({
 					product = self.serverresponse.products[i];
 			}
 			
-			
+			$('#targeturl').val(product.targeturl);
 			$('#productName').val(product.title);
 			$('#productDescription').html(product.syncdescription);
 			

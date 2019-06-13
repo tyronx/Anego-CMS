@@ -34,9 +34,11 @@ class productlist extends ContentElement {
 	}
 	
 	function getCSS($nostyletag = false) {
+		global $sql_link;
+		
 		$q = 'SELECT * FROM ' . $this->databaseTable() . ' WHERE idx=' . $this->elementId;
-		$res = mysql_query($q) or BailSQL('Couldn\'t read settings', $q);
-		$settings = mysql_fetch_array($res);
+		$res = mysqli_query($sql_link, $q) or BailSQL('Couldn\'t read settings', $q);
+		$settings = mysqli_fetch_array($res);
 		
 		$css = array();
 		if ($settings['productwidth'] > 0) 
@@ -58,36 +60,44 @@ class productlist extends ContentElement {
 	}
 
 	function generateContent() {
-		global $cfg;
+		global $cfg, $sql_link;
+		
 		$products = $this->getProducts();
 		
 		$q = 'SELECT * FROM ' . $this->databaseTable() . ' WHERE idx=' . $this->elementId;
-		$res = mysql_query($q) or BailSQL('Couldn\'t read settings', $q);
-		$settings = mysql_fetch_array($res);
+		$res = mysqli_query($sql_link, $q) or BailSQL('Couldn\'t read settings', $q);
+		$settings = mysqli_fetch_array($res);
 
 		
 		$str = '<div class="products"';
 		if ($settings['productswidth']) $str .= ' style="width:'.$settings['productswidth'].'px"';
 		$str .= '>';
 		
-		foreach($products as $product) {
+		foreach ($products as $product) {
 			$str .= '<div class="product"'.$this->getCSS().'>';
 			
-			if ($product['page_idx'] > 0) {
-				if ($product['pageurl']) {
-					$link = $cfg['pageLoad'] == 'ajax' ? '#pages/' . $product['pageurl'] : $cfg['path'] . $product['pageurl'];
-				} else {
-					$link = ($cfg['pageLoad'] == 'ajax' ? '#pages/' . $product['page_idx'] : $cfg['path'] . 'pages/' . $product['page_idx']);
-				}
-				$str .= '<a href="' . $link . '">';
-			}
+			if ($product["targeturl"]) {
+				
+				$str .= '<a href="' . $product["targeturl"] . '">';
+				
+			} else {
 			
+				if ($product['page_idx'] > 0) {
+					if ($product['pageurl']) {
+						$link = $cfg['pageLoad'] == 'ajax' ? '#pages/' . $product['pageurl'] : $cfg['path'] . $product['pageurl'];
+					} else {
+						$link = ($cfg['pageLoad'] == 'ajax' ? '#pages/' . $product['page_idx'] : $cfg['path'] . 'pages/' . $product['page_idx']);
+					}
+					$str .= '<a href="' . $link . '">';
+				}
+			}
+				
 			if ($product['filename'])
 				$str .= '<div class="productpicture"><img src="' . $cfg['path'] . $this->path . $product['filename'] . '" alt="' . $product['title'] . '"></div>';
 			
 			$str .= '<div class="producttitle">'. str_replace(array("  ", "\n"), array("&nbsp;&nbsp;", "<br>"), $product['title']) . '</div>';
 			
-			if ($product['page_idx']) {
+			if ($product['page_idx'] || $product["targeturl"]) {
 				$str .= '</a>';
 			}
 			
@@ -99,7 +109,8 @@ class productlist extends ContentElement {
 	
 
 	function loadProducts() {
-		global $cfg;
+		global $cfg, $sql_link;
+		
 		$products = $this->getProducts();
 		$productsbyIndex = array();
 		
@@ -108,15 +119,15 @@ class productlist extends ContentElement {
 		}
 		
 		$q = 'SELECT * FROM ' . $this->databaseTable() . ' WHERE idx=' . $this->elementId;
-		$res = mysql_query($q) or BailSQL('Couldn\'t read settings', $q);
-		$settings = mysql_fetch_array($res);
+		$res = mysqli_query($sql_link, $q) or BailSQL('Couldn\'t read settings', $q);
+		$settings = mysqli_fetch_array($res);
 
 	
 		$q = "SELECT idx,name,url FROM ".PAGES." WHERE nolink=0 order by name asc";
-		$res = mysql_query($q) or BailSQL('Couldn\'t read pages', $q);
+		$res = mysqli_query($sql_link, $q) or BailSQL('Couldn\'t read pages', $q);
 		
 		$pages = array();
-		while ($row = mysql_fetch_array($res)) {
+		while ($row = mysqli_fetch_array($res)) {
 			$pages[] = $row;
 		}
 	
@@ -124,16 +135,19 @@ class productlist extends ContentElement {
 	}
 	
 	function saveProduct() {
+		global $sql_link;
+		
 		if (get_magic_quotes_gpc()) {
 			$_POST['title'] = stripslashes($_POST['title']);
 			$_POST['description'] = stripslashes($_POST['description']);
 		}
 		
-		$desc = mysql_real_escape_string(@$_POST['description']);
-		$title = mysql_real_escape_string(@$_POST['title']);
+		$desc = mysqli_real_escape_string($sql_link, @$_POST['description']);
+		$title = mysqli_real_escape_string($sql_link, @$_POST['title']);
 		// TODO SECURITY RISC
 		$filename = @$_POST['filename'];
 		$target = intval(@$_POST['target']);
+		$targeturl = mysqli_real_escape_string($sql_link, @$_POST['targeturl']);
 		$productid = intval(@$_POST['productid']);
 		$pageidx = intval(@$_POST['pageidx']);
 		
@@ -141,8 +155,8 @@ class productlist extends ContentElement {
 		$elementidx = 'null';
 		if ($productid) {
 			$q = 'SELECT * FROM ' . $this->productTable() . ' WHERE idx='.$productid;
-			$res = mysql_query($q) or BailSQL(__('Couldn\'t get product info'), $q);
-			$oldproduct  = mysql_fetch_row($res);
+			$res = mysqli_query($sql_link, $q) or BailSQL(__('Couldn\'t get product info'), $q);
+			$oldproduct  = mysqli_fetch_row($res);
 			
 			$elementidx = $oldproduct["element_idx"];
 		}
@@ -163,10 +177,10 @@ class productlist extends ContentElement {
 			$fp = fopen($this->path . $filename, 'w');
 			fwrite($fp, base64_decode(substr($_POST['filedata'], strpos($_POST['filedata'], 'base64') + 6)));
 			
-			$filename = mysql_real_escape_string($filename);
+			$filename = mysqli_real_escape_string($sql_link, $filename);
 		}
 		
-		if ($target == 0) {
+		if ($target == 0 || $target == 3) {
 			$pageidx = 'null';
 			$elementidx = 'null';
 		}
@@ -181,25 +195,25 @@ class productlist extends ContentElement {
 			if(!$productid || empty($oldproduct["page_idx"])) {
 				// Add page to the bottom of the root tree
 				$q = "SELECT MAX(position) as pos FROM ".PAGES." WHERE parent_idx=".$this->pageId;
-				$res = mysql_query($q) or
+				$res = mysqli_query($sql_link, $q) or
 					BailErr(__('Failed getting position for new page'),$q);
-				$row = mysql_fetch_array($res);
+				$row = mysqli_fetch_array($res);
 				$pos = $row['pos'] + 1;
 				
 				$q = "INSERT INTO ". PAGES . " (name, date, parent_idx, visibility, position, menu)
 					VALUES ('$title','".time()."','".$this->pageId."', 3, '$pos', 'MAIN')";
 				
-				mysql_query($q) or BailSQL(__('Couldn\'t insert page'), $q);
+				mysqli_query($sql_link, $q) or BailSQL(__('Couldn\'t insert page'), $q);
 				
-				$pageidx = mysql_insert_id();
+				$pageidx = mysqli_insert_id($sql_link);
 				
 				$q = "INSERT INTO ". $this->richtextTable() ." (value) VALUES('".$desc."')";
-				mysql_query($q) or BailSQL(__('Couldn\'t insert richtext'), $q);
+				mysqli_query($sql_link, $q) or BailSQL(__('Couldn\'t insert richtext'), $q);
 				
-				$elementidx = mysql_insert_id();
+				$elementidx = mysqli_insert_id($sql_link);
 				
 				$q = "INSERT INTO ". PAGE_ELEMENT . " (page_id, element_id, module_id, position,style,padding,margin,alignment) VALUES ('$pageidx', '$elementidx', 'richtext', 0, '', '', '', '')";
-				mysql_query($q) or BailSQL(__('Couldn\'t insert richtext into page'), $q);
+				mysqli_query($sql_link, $q) or BailSQL(__('Couldn\'t insert richtext into page'), $q);
 			
 			// Update existing page
 			} else {
@@ -208,12 +222,16 @@ class productlist extends ContentElement {
 						value=\'' . $desc . '\' 
 						WHERE idx=' . $elementidx;
 				
-					mysql_query($q) or BailSQL(__('Couldn\'t update product page info'), $q);
+					mysqli_query($sql_link, $q) or BailSQL(__('Couldn\'t update product page info'), $q);
 					
 					$pmg = new PageManager();
 					$pmg->generatePage($pageidx);
 				}
 			}
+		}
+		
+		if ($target != 3) {
+			$targeturl = "";
 		}
 		
 		
@@ -222,31 +240,36 @@ class productlist extends ContentElement {
 			$q = 'UPDATE ' . $this->productTable() . ' SET 
 				description=\'' . $desc . '\', '
 				. 'page_idx='.$pageidx.', '
+				. 'targeturl=\''.$targeturl.'\', '
 				. 'element_idx='.$elementidx.', '
 				. ($filename ? "filename='$filename', " : '')
 				. 'title=\'' . $title . '\' WHERE idx=' . $productid;
 				
-			mysql_query($q) or BailSQL(__('Couldn\'t insert product'), $q);
+			mysqli_query($sql_link, $q) or BailSQL(__('Couldn\'t insert product'), $q);
 			
-			return "200\n" . mysql_insert_id();
+			return "200\n" . mysqli_insert_id($sql_link);
 			
 		} else {
-			$q = "INSERT INTO " . $this->productTable() . " (products_idx, page_idx, element_idx, title, description, filename) VALUES
-				('".$this->elementId."',$pageidx,$elementidx,'$title','$desc','$filename')";
+			$q = "INSERT INTO " . $this->productTable() . " (products_idx, page_idx, element_idx, title, description, filename, targeturl) VALUES
+				('".$this->elementId."',$pageidx,$elementidx,'$title','$desc','$filename', '$targeturl')";
 			
-			mysql_query($q) or BailSQL(__('Couldn\'t insert product'), $q);
+			mysqli_query($sql_link, $q) or BailSQL(__('Couldn\'t insert product'), $q);
 			
 			return "200\nok";
 		}
 	}
 	
 	function deleteProduct() {
+		global $sql_link;
+		
 		$q = 'DELETE FROM '. $this->productTable() .' WHERE idx=' . intval($_POST['productid']);
-		mysql_query($q) or BailSQL(__('Couldn\'t delete product'), $q);
+		mysqli_query($sql_link, $q) or BailSQL(__('Couldn\'t delete product'), $q);
 		return "200\nok";
 	}
 	
 	function getProducts() {
+		global $sql_link;
+		
 		$products = array();
 		
 		$q = '
@@ -261,9 +284,9 @@ class productlist extends ContentElement {
 			WHERE products_idx = '. $this->elementId . '
 			ORDER BY products_idx';
 			
-		$res = mysql_query($q) or BailSQL('Couldn\'t retrieve product list', $q);
+		$res = mysqli_query($sql_link, $q) or BailSQL('Couldn\'t retrieve product list', $q);
 		
-		while($row = mysql_fetch_array($res, MYSQL_ASSOC)) {
+		while($row = mysqli_fetch_assoc($res)) {
 			$products[] = $row;
 		}
 		
@@ -271,13 +294,17 @@ class productlist extends ContentElement {
 	}
 	
 	function getSettings() {
-		$q = 'SELECT * FROM ' . $this->databaseTable() . ' WHERE idx=' . $this->elementId;
-		$res = mysql_query($q) or BailSQL('Couldn\'t read settings', $q);
+		global $sql_link;
 		
-		return "200\n" . json_encode(mysql_fetch_array($res, MYSQL_ASSOC));
+		$q = 'SELECT * FROM ' . $this->databaseTable() . ' WHERE idx=' . $this->elementId;
+		$res = mysqli_query($sql_link, $q) or BailSQL('Couldn\'t read settings', $q);
+		
+		return "200\n" . json_encode(mysqli_fetch_assoc($res));
 	}
 	
 	function saveSettings() {
+		global $sql_link;
+		
 		$productswidth = intval($_POST['productswidth']);
 		$productwidth = intval($_POST['productwidth']);
 		$productheight = intval($_POST['productheight']);
@@ -292,7 +319,7 @@ class productlist extends ContentElement {
 			productvertispacing = $productvertispacing
 			WHERE idx=" . $this->elementId;
 			
-		$res = mysql_query($q) or BailSQL('Couldn\'t update settings', $q);
+		$res = mysqli_query($sql_link, $q) or BailSQL('Couldn\'t update settings', $q);
 		
 		return "200\nok";
 	}

@@ -61,13 +61,15 @@ class search extends ContentElement {
 
 
 	function getSearchResults($searchtext) {
-		$res = mysql_query("select * from ".PAGES);
+		global $sql_link;
+		
+		$res = mysqli_query($sql_link, "select * from ".PAGES);
 
 		$resultweights = array();
 		$surroundingtexts = array();
 
 		$pages = array();
-		while ($page = mysql_fetch_array($res)) {
+		while ($page = mysqli_fetch_array($res)) {
 			if ($this->containsSearchElement($page["idx"])) continue;
 			
 			$pages[$page["idx"]] = $page;
@@ -99,8 +101,8 @@ class search extends ContentElement {
 	function containsSearchElement($pageid) {
 		if ($this->pageidswithsearch == -1) {
 			$this->pageidswithsearch = array();
-			$res = mysql_query("SELECT page_id from ".PAGE_ELEMENT." WHERE module_id='search'");
-			while ($row = mysql_fetch_array($res)) {
+			$res = mysqli_query($sql_link, "SELECT page_id from ".PAGE_ELEMENT." WHERE module_id='search'");
+			while ($row = mysqli_fetch_array($res)) {
 				$this->pageidswithsearch[$row["page_id"]] = 1;
 			}
 		}
