@@ -7,7 +7,7 @@ if (!isset($_POST['mailerid'])) {
 	include('core.php');
 	addL10N('modules/mailer/lang/' . $cfg['interfacelanguage'] . '.php');
 
-	class MailTemplate extends Smarty {	
+	class MailTemplate extends SmartyBC {	
 		function __construct() {
 			parent::__construct();
 			
