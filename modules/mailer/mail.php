@@ -27,21 +27,21 @@ if (!isset($_POST['mailerid'])) {
 
 
 /* String input for smarty templates */
-function string_get_template($tpl_name, &$tpl_source, &$smarty) {
+function string_get_template($tpl_name, &$tpl_source, $smarty) {
     $tpl_source = $tpl_name;
     return true;
 }
 
-function string_get_timestamp($tpl_name, &$tpl_timestamp, &$smarty) {
+function string_get_timestamp($tpl_name, &$tpl_timestamp, $smarty) {
     $tpl_timestamp = time();
     return true;
 }
 
-function string_get_secure($tpl_name, &$smarty) {
+function string_get_secure($tpl_name, $smarty) {
     return true;
 }
 
-function string_get_trusted($tpl_name, &$smarty) {
+function string_get_trusted($tpl_name, $smarty) {
     // not used for templates
 }
 
