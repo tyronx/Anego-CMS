@@ -88,7 +88,7 @@ class mailer extends ContentElement {
 	}
 
 	function generateContent() {
-		global $cfg;
+		global $cfg, $sql_link;
 		
 		$q = 'SELECT formhtml FROM ' . $this->databaseTable() .' WHERE idx=' . $this->elementId;
 		$res = mysqli_query($sql_link, $q) or 
