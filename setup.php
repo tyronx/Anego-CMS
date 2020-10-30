@@ -302,8 +302,8 @@ div#padder {
 			<?php
 					if (isset($_GET['a']) && $_GET['a']=='gu') {
 						if (isset($_POST['users'])) {
-							$users=unserialize(urldecode($_POST['users']));
-							$userroles=unserialize(urldecode($_POST['userroles']));
+							$users=json_decode(urldecode($_POST['users']), true);
+							$userroles=json_decode(urldecode($_POST['userroles']), true);
 						} else { 
 							$users=Array();
 							$userroles=Array(); 
@@ -332,7 +332,7 @@ div#padder {
 					}
 			?>
 					<form action="setup.php?a=gu" method="post">
-					<?php if(isset($users)) echo '<input type="hidden" name="users" value="'.urlencode(serialize($users)).'"><input type="hidden" name="userroles" value="'.urlencode(serialize($userroles)).'">';  ?>
+					<?php if(isset($users)) echo '<input type="hidden" name="users" value="'.urlencode(json_encode($users)).'"><input type="hidden" name="userroles" value="'.urlencode(json_encode($userroles)).'">';  ?>
 					New user: <input type="text" name="name">, password: <input type="text" name="pass">, role <select name="role"><option>Admin</option><option>ProMod</option><option>SimpleMod</option></select>
 					<input type="submit" value="Generate">
 					<br>
