@@ -16,13 +16,16 @@
 /* mod_rewrite test for setup.php */
 if(isset($_GET['rewrite'])) exit ('yes');
 
+if (file_exists("setup.php")) echo "<h3 align=\"center\">setup.php found, please make sure to delete it!</h3>";
+
 /* Main functions file for page printing, db access, error reporting, etc. */
 include("core.php");
 
 /* Some AJAX Callbacks */
 if(isset($_GET['a']) || isset($_POST['a'])) {
-	include('inc/ajax.php');
+ include('inc/ajax.php');
 }
+
 
 /* Display page */
 PrintPage(CurrentPage());
