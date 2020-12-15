@@ -24,7 +24,7 @@ class blog extends ContentElement {
 	function generateContent() {
 		global $cfg;
 		
-		include('modules/blog/'.$cfg['interfacelanguage'].'.php');
+		include('modules/blog/lang/'.$cfg['interfacelanguage'].'.php');
 		
 		if($cfg['fancyURLs']) {
 			$noscript = '<h1><a href="mdblog-v' . $this->elementId . '">' . $lng['blog']['gotomyblog'] . '</a></h1>';

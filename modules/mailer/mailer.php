@@ -30,7 +30,7 @@ class mailer extends ContentElement {
 	}
 	
 	public function createElement($position) {
-		global $cfg;
+		global $cfg, $sql_link;
 		
 		$res = mysqli_query($sql_link, 'SELECT name FROM '. PAGES . ' WHERE idx=' . $this->pageId);
 		list($pagename) = mysqli_fetch_row($res);
@@ -57,6 +57,8 @@ class mailer extends ContentElement {
 	}
 	
 	function getData() {
+		global $sql_link;
+		
 		$q = 'SELECT * FROM ' . $this->databaseTable() . ' WHERE idx=' . $this->elementId;
 		$res = mysqli_query($sql_link, $q) or BailSQL(__("Failed getting form code"), $q);
 		$response = mysqli_fetch_assoc($res);
@@ -64,6 +66,8 @@ class mailer extends ContentElement {
 	}
 	
 	function saveData($data) {
+		global $sql_link;
+		
 		$pairs = array();
 		
 		foreach($data as $pair) {

@@ -84,10 +84,15 @@ function sendMail() {
 	
 	$m = $mail->fetch('string:' . $row['mailtemplate']);
 	
+	$replyto = $_SERVER['SERVER_NAME'] . ' Mailer <no-reply@'.$_SERVER['SERVER_NAME'].'>';
+	if (strstr($_POST['formdata']['email'], "@")) {
+		$replyto = $_POST['formdata']['email'];
+	}
+	
 	$headers  =	'MIME-Version: 1.0' . "\n";
 	$headers .=	'Content-type: text/plain; charset=iso-8859-1' . "\n";  
 	$headers .=	'From: ' . $_SERVER['SERVER_NAME'] . ' Mailer <no-reply@'.$_SERVER['SERVER_NAME'].'>' . "\n" .
-				'Reply-To: ' . $_SERVER['SERVER_NAME'] . ' Mailer <no-reply@'.$_SERVER['SERVER_NAME'].'>' . "\n" .
+				'Reply-To: ' . $replyto . "\n" .
 				'X-Mailer: PHP/' . phpversion()."\n";    
 
 	
