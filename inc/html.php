@@ -188,7 +188,7 @@ class Anego extends SmartyBC {
 		}
 
 		$dir = dirname($_SERVER['PHP_SELF']);
-		if ($dir{strlen($dir)-1} != '/' && $file{0} != '/') {
+		if ($dir[strlen($dir)-1] != '/' && $file[0] != '/') {
 			$dir.="/";
 		}
 
@@ -260,22 +260,11 @@ class Anego extends SmartyBC {
 						- submenuStyle set to 'submenu onselect' and 2 level deep submenus appear when clicked, 1 level deep always visible
 				*/
 				$page['childcontainerclasses'] = 
-						(
-							$cfg['submenuStyle'] == 'dropdown' 
-							//&& !@$page['selected']
-						) ? 'hidden ' : '' 
+						($cfg['submenuStyle'] == 'dropdown'  ? 'hidden ' : '' )
 					.
-						(
-							$cfg['submenuStyle'] == 'onselect' 
-							&& (!@$page['selected'] && !@$page['childselected'])
-							&& $depth > 0
-						) ? 'hidden ' : ''
+						( $cfg['submenuStyle'] == 'onselect'  && (!@$page['selected'] && !@$page['childselected']) && $depth > 0 ? 'hidden ' : '')
 					.
-						(
-							$cfg['submenuStyle'] == 'submenu onselect' 
-							&& (!$page['selected'] && !$page['childselected'])
-							&& $depth > 1
-						) ? 'hidden ' : ''
+						( $cfg['submenuStyle'] == 'submenu onselect'  && (!$page['selected'] && !$page['childselected']) && $depth > 1 ? 'hidden ' : '')
 					;
 				
 				$children[$page['idx']] = $page;
@@ -293,7 +282,7 @@ class Anego extends SmartyBC {
 		$row['link'] = $cfg['path'];
 		$row['linkclass'] = '';
 		
-		if (strlen($row['url']) && $row['url']{0} == '/') $row['url'] = substr($row['url'], 1);
+		if (strlen($row['url']) && $row['url'][0] == '/') $row['url'] = substr($row['url'], 1);
 		
 		if($cfg['fancyURLs']) {
 			if (@$row['url']) {
@@ -310,7 +299,7 @@ class Anego extends SmartyBC {
 			if (preg_match("/^http/", $row['file'])) {
 				$row['link'] = $row['file'];
 			} else {
-				$row['link'] = ($row['file']{0} != '#' ?$cfg['path'] : "") . $row['file'];
+				$row['link'] = ($row['file'][0] != '#' ?$cfg['path'] : "") . $row['file'];
 			}
 			
 		}
