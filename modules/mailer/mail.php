@@ -1,29 +1,38 @@
 <?
 if (!isset($_POST['mailerid'])) {
 	exit();
-} else {
-	chdir('../../');
-	$cfg['interfacelanguage'] = '';
-	include('core.php');
-	addL10N('modules/mailer/lang/' . $cfg['interfacelanguage'] . '.php');
-
-	class MailTemplate extends SmartyBC {	
-		function __construct() {
-			parent::__construct();
-			
-			$this->template_dir = '';
-			$this->compile_dir = 'tmp';
-			$this->register_resource('string', array(
-				'string_get_template',
-				'string_get_timestamp',
-				'string_get_secure',
-				'string_get_trusted'));
-		}
-	}
-
-
-	sendMail();
 }
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+use PHPMailer\PHPMailer\Exception;
+
+chdir('../../');
+$cfg['interfacelanguage'] = '';
+include 'core.php';
+include "lib/PHPMailer/SMTP.php";
+include "lib/PHPMailer/PHPMailer.php";
+include "lib/PHPMailer/Exception.php";
+
+addL10N('modules/mailer/lang/' . $cfg['interfacelanguage'] . '.php');
+
+class MailTemplate extends SmartyBC {	
+	function __construct() {
+		parent::__construct();
+		
+		$this->template_dir = '';
+		$this->compile_dir = 'tmp';
+		$this->register_resource('string', array(
+			'string_get_template',
+			'string_get_timestamp',
+			'string_get_secure',
+			'string_get_trusted'));
+	}
+}
+
+
+sendMail();
+
 
 
 /* String input for smarty templates */
@@ -50,13 +59,13 @@ function databaseTable() { return $GLOBALS['cfg']['tablePrefix'].'pages_mailer';
 function sendMail() {
 	global $cfg, $sql_link;
 	
-	$mailerid = intval($_POST['mailerid']);
 	
+	$mailerid = intval($_POST['mailerid']);
 	
 	$q = "SELECT * FROM " . databaseTable() . " WHERE idx=" . $mailerid;
 	$res = mysqli_query($sql_link, $q) or
 		BailSQL('Failed getting Form Data from DB', $q);
-		
+	
 	$row = mysqli_fetch_assoc($res);
 	
 	if (!isset($row['recipient'])) {
@@ -72,9 +81,8 @@ function sendMail() {
 	}
 	
 	if ($hrcount >= $row['hourlimit']) {
-		BailErr(__('Sorry, hourly contact request limit reached. Please try again later.'));
+		//BailErr(__('Sorry, hourly contact request limit reached. Please try again later.'));
 	}
-	
 	
 	$mail = new MailTemplate();
 
@@ -83,22 +91,30 @@ function sendMail() {
 	}
 	
 	$m = $mail->fetch('string:' . $row['mailtemplate']);
-	
-	$replyto = $_SERVER['SERVER_NAME'] . ' Mailer <no-reply@'.$_SERVER['SERVER_NAME'].'>';
-	if (strstr($_POST['formdata']['email'], "@")) {
-		$replyto = $_POST['formdata']['email'];
-	}
-	
-	$headers  =	'MIME-Version: 1.0' . "\n";
-	$headers .=	'Content-type: text/plain; charset=iso-8859-1' . "\n";  
-	$headers .=	'From: ' . $_SERVER['SERVER_NAME'] . ' Mailer <no-reply@'.$_SERVER['SERVER_NAME'].'>' . "\n" .
-				'Reply-To: ' . $replyto . "\n" .
-				'X-Mailer: PHP/' . phpversion()."\n";    
 
+	$mailer = new PHPMailer(true);
+	try {
+		$mailer->isSMTP();
+		$mailer->Host = $cfg['mailer']['host'];
+		$mailer->SMTPAuth = true;
+		$mailer->Username = $cfg['mailer']['username'];
+		$mailer->Password = $cfg['mailer']['password'];
+		$mailer->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+		$mailer->Port = 465;
+		$mailer->setFrom($cfg['mailer']['from'], $cfg['mailer']['fromname']);
+		$mailer->addAddress($row['recipient']);
+		if (strstr($_POST['formdata']['email'], "@")) {
+			$mailer->addReplyTo($_POST['formdata']['email']);
+		}
+		$mailer->isHTML(false);
+		$mailer->Subject = $row['subject'];
+		$mailer->Body = $m;
+
+		$mailer->send();
+	} catch (Exception $e) {
+		BailErr(__('I\'m sorry, but I was unable to send out a mail. Something must be wrong with the server configuration -' . $mailer->ErrorInfo));
+	}	
 	
-	if(! @mail($row['recipient'], $row['subject'], utf8_decode($m), $headers)) {
-		BailErr(__('I\'m sorry, but I was unable to send out a mail. Something must be wrong with the server configuration'));
-	}
 	
 	$hrcount++;
 	

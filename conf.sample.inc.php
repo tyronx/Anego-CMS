@@ -12,6 +12,17 @@ define ("SQLPASS","password");
 // Databasename
 define ("SQLDB","database");
 
+/* SMTP Settings for contact form emailer */
+
+$cfg["mailer"] = array(
+	"from" => "noreply@yoursite.com",
+	"host" => "smtp.yoursite.com",
+	"username" => "user",
+	"password" => "pass",
+	"port" => 465
+);
+
+
 /******** User accounts ********/
 
 /* Example Syntax of user accounts, generate these with the setup.php script 

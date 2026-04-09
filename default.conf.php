@@ -24,6 +24,16 @@ $cfg['cookieTime'] = 10*24;
 /* Name of cookie */
 $cfg['cookieName'] = 'ancms_auth';
 
+/* SMTP Settings for contact form emailer */
+
+$cfg["mailer"] = array(
+	"from" => "noreply@yoursite.com",
+	"host" => "smtp.yoursite.com",
+	"username" => "user",
+	"password" => "pass",
+	"port" => 465
+);
+
 /**
  * Gallery sizes
  */
